@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mein Golf HCP Rechner</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+    </script>
+    <style>
+        :root {
+            --primary: #2d6a4f;
+            --primary-light: #40916c;
+            --bg-color: #f4f8f5;
+            --card-bg: #ffffff;
+            --text-dark: #1b4332;
+            --text-muted: #52796f;
+            --border-color: #d8e2dc;
+            --highlight: #ffd166;
+            --danger: #e63946;
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-dark); padding: 20px; }
+        header { background-color: var(--primary); color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        
+        .container { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; max-width: 1200px; margin: 0 auto; }
+        @media (max-width: 900px) { .container { grid-template-columns: 1fr; } }
+        
+        .card { background-color: var(--card-bg); border-radius: 10px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid var(--border-color); }
+        .card h2 { font-size: 1.2rem; margin-bottom: 15px; color: var(--primary); border-bottom: 2px solid var(--border-color); padding-bottom: 5px; display: flex; justify-content: space-between; align-items: center; }
+        
+        /* Stats Dashboard */
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        .stat-box { background: var(--bg-color); padding: 15px; border-radius: 8px; text-align: center; border: 1px solid var(--border-color); }
+        .stat-value { font-size: 2rem; font-weight: bold; color: var(--primary); margin: 5px 0; }
+        .stat-label { font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        /* Forms */
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.9rem; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 5px; font-size: 1rem; }
+        
+        /* Live Preview Box */
+        .live-preview { background-color: rgba(255, 209, 102, 0.2); border: 1px solid var(--highlight); padding: 15px; border-radius: 8px; margin-bottom: 15px; text-align: center; display: none; }
+        .live-preview-title { font-size: 0.85rem; color: #b07d00; text-transform: uppercase; letter-spacing: 0.5px; font-weight: bold; }
+        .live-preview-value { font-size: 1.8rem; font-weight: bold; color: #e76f51; margin-top: 5px; }
+
+        .btn { background-color: var(--primary); color: white; border: none; padding: 10px 15px; font-size: 1rem; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.2s; display: inline-block; text-align: center; }
+        .btn:hover { background-color: var(--primary-light); }
+        .btn-small { padding: 5px 10px; font-size: 0.8rem; margin-right: 5px; }
+        .btn-danger { background-color: var(--danger); }
+        .btn-danger:hover { background-color: #d62828; }
+        
+        /* Tables */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.9rem; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid var(--border-color); }
+        th { background-color: var(--bg-color); color: var(--primary); font-weight: bold; }
+        tr.best-round { background-color: rgba(255, 209, 102, 0.2); }
+        tr.best-round td:first-child::before { content: "★ "; color: #f4a261; }
+        
+        /* Tabs */
+        .tabs { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+        .tab { padding: 8px 15px; background: #e9ecef; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 0.9rem; color: #495057; border: 1px solid #dee2e6; flex-grow: 1; text-align: center; }
+        .tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        /* File Input */
+        .file-upload { margin-top: 10px; font-size: 0.85rem; padding: 20px; border: 2px dashed var(--primary); border-radius: 5px; text-align: center; background: #f8f9fa; cursor: pointer; }
+        
+        /* Modal */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); }
+        .modal-content { background-color: #fefefe; margin: 10% auto; padding: 20px; border: 1px solid #888; width: 90%; max-width: 500px; border-radius: 10px; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 15px; }
+        .close { color: #aaa; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .close:hover, .close:focus { color: black; text-decoration: none; }
+        .flex-row { display: flex; gap: 10px; }
+        .flex-row .form-group { flex: 1; }
+        .loader { display: none; margin-top: 10px; font-weight: bold; color: var(--primary); }
+        
+        /* Filter Header */
+        .filter-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
+        .filter-header select { padding: 8px; border-radius: 5px; border: 1px solid var(--border-color); font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>⛳ Golf Handicap Tracker</h1>
+    <p>Berechnung des Score Differentials & WHS Handicap</p>
+</header>
+
+<div class="container">
+    <!-- Left Column: Dashboard & Input -->
+    <div>
+        <div class="card">
+            <h2>Aktuelle Statistik</h2>
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-label">Handicap Index</div>
+                    <div class="stat-value" id="ui-hcp">0.0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Gewertete Runden</div>
+                    <div class="stat-value" id="ui-rounds-count">0</div>
+                </div>
+            </div>
+            <div style="margin-top: 15px; text-align: center;">
+                <button class="btn btn-danger btn-small" onclick="clearData()">Alle lokalen Daten zurücksetzen</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Neue Runde erfassen</h2>
+            <form id="round-form">
+                <div class="form-group">
+                    <label>Datum</label>
+                    <input type="date" id="input-datum" required>
+                </div>
+                <div class="form-group">
+                    <label>Golfclub</label>
+                    <select id="input-club" required></select>
+                </div>
+                <div class="form-group">
+                    <label>Gespielte Löcher</label>
+                    <select id="input-loecher" required>
+                        <option value="18">18 Löcher</option>
+                        <option value="9">9 Löcher</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Brutto Ergebnis (Schläge)</label>
+                    <input type="number" id="input-brutto" min="20" max="200" required>
+                </div>
+
+                <!-- Live Preview Box -->
+                <div id="sd-preview" class="live-preview">
+                    <div class="live-preview-title">Berechneter Score Differential (SD)</div>
+                    <div class="live-preview-value" id="sd-preview-value">--</div>
+                </div>
+
+                <button type="submit" class="btn" style="width: 100%;">Runde hinzufügen & Speichern</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Right Column: Tables & History -->
+    <div>
+        <div class="card">
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('history')">Runden Historie</div>
+                <div class="tab" onclick="switchTab('clubs')">Golfclubs verwalten</div>
+                <div class="tab" onclick="switchTab('import')">PDF Import</div>
+            </div>
+
+            <div id="tab-history" class="tab-content active">
+                <div class="filter-header">
+                    <h2 style="border:none; margin:0; padding:0;">Historie <small style="font-size: 0.8rem; font-weight: normal; color: var(--text-muted);">(Top 8 markiert)</small></h2>
+                    <select id="history-filter" onchange="renderFilteredHistory()">
+                        <option value="recent">Zuletzt gespielt (Neueste zuerst)</option>
+                        <option value="18">Nur 18-Loch Runden</option>
+                        <option value="9">Nur 9-Loch Runden</option>
+                        <option value="best_sd">Bester Score Differential (SD)</option>
+                    </select>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Datum</th>
+                                <th>Club / Turnier</th>
+                                <th>Löcher</th>
+                                <th>Brutto</th>
+                                <th>SD</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-history-body">
+                            <!-- Rows via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="tab-clubs" class="tab-content">
+                <h2>
+                    Deine Golfclubs
+                    <button class="btn btn-small" onclick="openClubModal()">+ Neuer Club</button>
+                </h2>
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Club Name</th>
+                                <th>Par (18/9)</th>
+                                <th>CR (18/9)</th>
+                                <th>SR (18/9)</th>
+                                <th>Aktion</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-clubs-body">
+                            <!-- Rows via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div id="tab-import" class="tab-content">
+                <h2>Scoring Record importieren</h2>
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 15px;">Lade deine PDF-Datei "Scoring_Record_Kompakt" hoch, um deine Historie automatisch auszulesen.</p>
+                
+                <div class="form-group file-upload" onclick="document.getElementById('file-pdf').click()">
+                    <div style="font-size: 2rem; margin-bottom: 10px;">📄</div>
+                    <div style="font-weight: bold;">PDF Datei hier klicken um auszuwählen</div>
+                    <input type="file" id="file-pdf" accept="application/pdf" style="display: none;" onchange="handlePDFUpload(event)">
+                </div>
+                <div id="pdf-loader" class="loader">PDF wird verarbeitet... Bitte warten.</div>
+                <div id="pdf-result" style="margin-top: 15px; color: var(--primary); font-weight: bold;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for adding/editing clubs -->
+<div id="club-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modal-title">Golfclub bearbeiten</h3>
+            <span class="close" onclick="closeClubModal()">&times;</span>
+        </div>
+        <form id="club-form">
+            <input type="hidden" id="edit-club-index" value="-1">
+            <div class="form-group">
+                <label>Club Name</label>
+                <input type="text" id="edit-name" required>
+            </div>
+            <div class="form-group">
+                <label>Tee (z.B. gelb, rot)</label>
+                <input type="text" id="edit-tee">
+            </div>
+            
+            <h4>18-Loch Werte</h4>
+            <div class="flex-row">
+                <div class="form-group"><label>Par</label><input type="number" id="edit-par18" step="1"></div>
+                <div class="form-group"><label>CR</label><input type="number" id="edit-cr18" step="0.1"></div>
+                <div class="form-group"><label>SR</label><input type="number" id="edit-sr18" step="1"></div>
+            </div>
+
+            <h4>9-Loch Werte</h4>
+            <div class="flex-row">
+                <div class="form-group"><label>Par</label><input type="number" id="edit-par9" step="1"></div>
+                <div class="form-group"><label>CR</label><input type="number" id="edit-cr9" step="0.1"></div>
+                <div class="form-group"><label>SR</label><input type="number" id="edit-sr9" step="1"></div>
+            </div>
+            
+            <button type="submit" class="btn" style="width: 100%; margin-top: 10px;">Speichern</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // --- INITIAL DATA & LOCALSTORAGE ---
+    const defaultClubs = [{"name": "Escheburg 18", "tee": "gelb", "par18": 72.0, "cr18": 71.8, "sr18": 131.0, "par9": "", "cr9": "", "sr9": ""}, {"name": "Escheburg1-9", "tee": "gelb", "par18": "", "cr18": "", "sr18": "", "par9": 36.0, "cr9": 35.6, "sr9": 129.0}, {"name": "Escheburg10-18", "tee": "gelb", "par18": "", "cr18": "", "sr18": "", "par9": 36.0, "cr9": 36.1, "sr9": 132.0}, {"name": "Jersbek18", "tee": "gelb", "par18": 72.0, "cr18": 71.4, "sr18": 132.0, "par9": "", "cr9": "", "sr9": ""}, {"name": "Jersbek1-9", "tee": "gelb", "par18": "", "cr18": "", "sr18": "", "par9": 36.0, "cr9": 35.7, "sr9": 132.0}, {"name": "Jersbek10-18", "tee": "gelb", "par18": "", "cr18": "", "sr18": "", "par9": 36.0, "cr9": 36.6, "sr9": 130.0}, {"name": "Pinnau18 A+B", "tee": "gelb", "par18": 73.0, "cr18": 71.8, "sr18": 137.0, "par9": "", "cr9": "", "sr9": ""}, {"name": "Pinnau18 A+C", "tee": "gelb", "par18": 72.0, "cr18": 71.4, "sr18": 131.0, "par9": "", "cr9": "", "sr9": ""}, {"name": "Pinnau18 B+C", "tee": "gelb", "par18": 73.0, "cr18": 71.0, "sr18": 126.0, "par9": "", "cr9": "", "sr9": ""}, {"name": "Pinnau9 A", "tee": "gelb", "par18": "", "cr18": "", "sr18": "", "par9": 36.0, "cr9": 36.1, "sr9": 142.0}, {"name": "Pinnau9 B", "tee": "gelb", "par18": "", "cr18": "", "sr18": "", "par9": 37.0, "cr9": 35.7, "sr9": 132.0}, {"name": "Pinnau9 C", "tee": "gelb", "par18": "", "cr18": "", "sr18": "", "par9": 36.0, "cr9": 35.3, "sr9": 121.0}, {"name": "Grossensee18", "tee": "gelb", "par18": 73.0, "cr18": 72.3, "sr18": 130.0, "par9": "", "cr9": "", "sr9": ""}, {"name": "Grossensee1-9", "tee": "gelb", "par18": "", "cr18": "", "sr18": "", "par9": 36.0, "cr9": 35.4, "sr9": 133.0}, {"name": "Grossensee10-18", "tee": "gelb", "par18": "", "cr18": "", "sr18": "", "par9": 37.0, "cr9": 36.8, "sr9": 129.0}, {"name": "Sachsenwald18", "tee": "gelb", "par18": 72.0, "cr18": 72.6, "sr18": 130.0, "par9": "", "cr9": "", "sr9": ""}, {"name": "Sachsenwald1-9", "tee": "gelb", "par18": "", "cr18": "", "sr18": "", "par9": 36.0, "cr9": 36.2, "sr9": 132.0}, {"name": "Sachsenwald10-18", "tee": "gelb", "par18": "", "cr18": "", "sr18": "", "par9": 36.0, "cr9": 36.4, "sr9": 129.0}, {"name": "Grambek18", "tee": "gelb", "par18": 71.0, "cr18": 71.8, "sr18": 126.0, "par9": "", "cr9": "", "sr9": ""}, {"name": "Grambek1-9", "tee": "gelb", "par18": "", "cr18": "", "sr18": "", "par9": 35.0, "cr9": 35.1, "sr9": 128.0}, {"name": "Grambek10-18", "tee": "gelb", "par18": "", "cr18": "", "sr18": "", "par9": 36.0, "cr9": 36.7, "sr9": 125.0}];
+    const defaultSdErgaenzung = [{"min_hcp": -5.0, "max_hcp": -4.6, "wert": -1.0}, {"min_hcp": -4.5, "max_hcp": -4.4, "wert": -0.9}, {"min_hcp": -4.3, "max_hcp": -4.2, "wert": -0.8}, {"min_hcp": -4.1, "max_hcp": -4.0, "wert": -0.7}, {"min_hcp": -3.9, "max_hcp": -3.8, "wert": -0.6}, {"min_hcp": -3.7, "max_hcp": -3.6, "wert": -0.5}, {"min_hcp": -3.5, "max_hcp": -3.4, "wert": -0.4}, {"min_hcp": -3.3, "max_hcp": -3.2, "wert": -0.3}, {"min_hcp": -3.1, "max_hcp": -3.0, "wert": -0.2}, {"min_hcp": -2.9, "max_hcp": -2.8, "wert": -0.1}, {"min_hcp": -2.7, "max_hcp": -2.6, "wert": 0.0}, {"min_hcp": -2.5, "max_hcp": -2.4, "wert": 0.1}, {"min_hcp": -2.3, "max_hcp": -2.2, "wert": 0.2}, {"min_hcp": -2.1, "max_hcp": -2.0, "wert": 0.3}, {"min_hcp": -1.9, "max_hcp": -1.8, "wert": 0.4}, {"min_hcp": -1.7, "max_hcp": -1.6, "wert": 0.5}, {"min_hcp": -1.5, "max_hcp": -1.4, "wert": 0.6}, {"min_hcp": -1.3, "max_hcp": -1.2, "wert": 0.7}, {"min_hcp": -1.1, "max_hcp": -1.0, "wert": 0.8}, {"min_hcp": -0.9, "max_hcp": -0.8, "wert": 0.9}, {"min_hcp": -0.7, "max_hcp": -0.6, "wert": 1.0}, {"min_hcp": -0.5, "max_hcp": -0.4, "wert": 1.1}, {"min_hcp": -0.3, "max_hcp": -0.2, "wert": 1.2}, {"min_hcp": -0.1, "max_hcp": 0.0, "wert": 1.3}, {"min_hcp": 0.1, "max_hcp": 0.2, "wert": 1.4}, {"min_hcp": 0.3, "max_hcp": 0.4, "wert": 1.5}, {"min_hcp": 0.5, "max_hcp": 0.6, "wert": 1.6}, {"min_hcp": 0.7, "max_hcp": 0.8, "wert": 1.7}, {"min_hcp": 0.9, "max_hcp": 1.0, "wert": 1.8}, {"min_hcp": 1.1, "max_hcp": 1.2, "wert": 1.9}, {"min_hcp": 1.3, "max_hcp": 1.4, "wert": 2.0}, {"min_hcp": 1.5, "max_hcp": 1.6, "wert": 2.1}, {"min_hcp": 1.7, "max_hcp": 1.8, "wert": 2.2}, {"min_hcp": 1.9, "max_hcp": 2.0, "wert": 2.3}, {"min_hcp": 2.1, "max_hcp": 2.2, "wert": 2.4}, {"min_hcp": 2.3, "max_hcp": 2.5, "wert": 2.5}, {"min_hcp": 2.6, "max_hcp": 2.7, "wert": 2.6}, {"min_hcp": 2.8, "max_hcp": 2.9, "wert": 2.7}, {"min_hcp": 3.0, "max_hcp": 3.1, "wert": 2.8}, {"min_hcp": 3.2, "max_hcp": 3.3, "wert": 2.9}, {"min_hcp": 3.4, "max_hcp": 3.5, "wert": 3.0}, {"min_hcp": 3.6, "max_hcp": 3.7, "wert": 3.1}, {"min_hcp": 3.8, "max_hcp": 3.9, "wert": 3.2}, {"min_hcp": 4.0, "max_hcp": 4.1, "wert": 3.3}, {"min_hcp": 4.2, "max_hcp": 4.4, "wert": 3.4}, {"min_hcp": 4.5, "max_hcp": 4.6, "wert": 3.5}, {"min_hcp": 4.7, "max_hcp": 4.8, "wert": 3.6}, {"min_hcp": 4.9, "max_hcp": 5.0, "wert": 3.7}, {"min_hcp": 5.1, "max_hcp": 5.2, "wert": 3.8}, {"min_hcp": 5.3, "max_hcp": 5.4, "wert": 3.9}, {"min_hcp": 5.5, "max_hcp": 5.6, "wert": 4.0}, {"min_hcp": 5.7, "max_hcp": 5.9, "wert": 4.1}, {"min_hcp": 6.0, "max_hcp": 6.1, "wert": 4.2}, {"min_hcp": 6.2, "max_hcp": 6.3, "wert": 4.3}, {"min_hcp": 6.4, "max_hcp": 6.5, "wert": 4.4}, {"min_hcp": 6.6, "max_hcp": 6.7, "wert": 4.5}, {"min_hcp": 6.8, "max_hcp": 6.9, "wert": 4.6}, {"min_hcp": 7.0, "max_hcp": 7.1, "wert": 4.7}, {"min_hcp": 7.2, "max_hcp": 7.4, "wert": 4.8}, {"min_hcp": 7.5, "max_hcp": 7.6, "wert": 4.9}, {"min_hcp": 7.7, "max_hcp": 7.8, "wert": 5.0}, {"min_hcp": 7.9, "max_hcp": 8.0, "wert": 5.1}, {"min_hcp": 8.1, "max_hcp": 8.2, "wert": 5.2}, {"min_hcp": 8.3, "max_hcp": 8.4, "wert": 5.3}, {"min_hcp": 8.5, "max_hcp": 8.7, "wert": 5.4}, {"min_hcp": 8.8, "max_hcp": 8.9, "wert": 5.5}, {"min_hcp": 9.0, "max_hcp": 9.1, "wert": 5.6}, {"min_hcp": 9.2, "max_hcp": 9.3, "wert": 5.7}, {"min_hcp": 9.4, "max_hcp": 9.5, "wert": 5.8}, {"min_hcp": 9.6, "max_hcp": 9.7, "wert": 5.9}, {"min_hcp": 9.8, "max_hcp": 10.0, "wert": 6.0}, {"min_hcp": 10.1, "max_hcp": 10.2, "wert": 6.1}, {"min_hcp": 10.3, "max_hcp": 10.4, "wert": 6.2}, {"min_hcp": 10.5, "max_hcp": 10.6, "wert": 6.3}, {"min_hcp": 10.7, "max_hcp": 10.8, "wert": 6.4}, {"min_hcp": 10.9, "max_hcp": 11.1, "wert": 6.5}, {"min_hcp": 11.2, "max_hcp": 11.3, "wert": 6.6}, {"min_hcp": 11.4, "max_hcp": 11.5, "wert": 6.7}, {"min_hcp": 11.6, "max_hcp": 11.7, "wert": 6.8}, {"min_hcp": 11.8, "max_hcp": 11.9, "wert": 6.9}, {"min_hcp": 12.0, "max_hcp": 12.1, "wert": 7.0}, {"min_hcp": 12.2, "max_hcp": 12.4, "wert": 7.1}, {"min_hcp": 12.5, "max_hcp": 12.6, "wert": 7.2}, {"min_hcp": 12.7, "max_hcp": 12.8, "wert": 7.3}, {"min_hcp": 12.9, "max_hcp": 13.0, "wert": 7.4}, {"min_hcp": 13.1, "max_hcp": 13.2, "wert": 7.5}, {"min_hcp": 13.3, "max_hcp": 13.5, "wert": 7.6}, {"min_hcp": 13.6, "max_hcp": 13.7, "wert": 7.7}, {"min_hcp": 13.8, "max_hcp": 13.9, "wert": 7.8}, {"min_hcp": 14.0, "max_hcp": 14.1, "wert": 7.9}, {"min_hcp": 14.2, "max_hcp": 14.3, "wert": 8.0}, {"min_hcp": 14.4, "max_hcp": 14.6, "wert": 8.1}, {"min_hcp": 14.7, "max_hcp": 14.8, "wert": 8.2}, {"min_hcp": 14.9, "max_hcp": 15.0, "wert": 8.3}, {"min_hcp": 15.1, "max_hcp": 15.2, "wert": 8.4}, {"min_hcp": 15.3, "max_hcp": 15.4, "wert": 8.5}, {"min_hcp": 15.5, "max_hcp": 15.7, "wert": 8.6}, {"min_hcp": 15.8, "max_hcp": 15.9, "wert": 8.7}, {"min_hcp": 16.0, "max_hcp": 16.1, "wert": 8.8}, {"min_hcp": 16.2, "max_hcp": 16.3, "wert": 8.9}, {"min_hcp": 16.4, "max_hcp": 16.5, "wert": 9.0}, {"min_hcp": 16.6, "max_hcp": 16.8, "wert": 9.1}, {"min_hcp": 16.9, "max_hcp": 17.0, "wert": 9.2}, {"min_hcp": 17.1, "max_hcp": 17.2, "wert": 9.3}, {"min_hcp": 17.3, "max_hcp": 17.4, "wert": 9.4}, {"min_hcp": 17.5, "max_hcp": 17.6, "wert": 9.5}, {"min_hcp": 17.7, "max_hcp": 17.9, "wert": 9.6}, {"min_hcp": 18.0, "max_hcp": 18.1, "wert": 9.7}, {"min_hcp": 18.2, "max_hcp": 18.3, "wert": 9.8}, {"min_hcp": 18.4, "max_hcp": 18.5, "wert": 9.9}, {"min_hcp": 18.6, "max_hcp": 18.7, "wert": 10.0}, {"min_hcp": 18.8, "max_hcp": 19.0, "wert": 10.1}, {"min_hcp": 19.1, "max_hcp": 19.2, "wert": 10.2}, {"min_hcp": 19.3, "max_hcp": 19.4, "wert": 10.3}, {"min_hcp": 19.5, "max_hcp": 19.6, "wert": 10.4}, {"min_hcp": 19.7, "max_hcp": 19.8, "wert": 10.5}, {"min_hcp": 19.9, "max_hcp": 20.1, "wert": 10.6}, {"min_hcp": 20.2, "max_hcp": 20.3, "wert": 10.7}, {"min_hcp": 20.4, "max_hcp": 20.5, "wert": 10.8}, {"min_hcp": 20.6, "max_hcp": 20.7, "wert": 10.9}, {"min_hcp": 20.8, "max_hcp": 20.9, "wert": 11.0}, {"min_hcp": 21.0, "max_hcp": 21.2, "wert": 11.1}, {"min_hcp": 21.3, "max_hcp": 21.4, "wert": 11.2}, {"min_hcp": 21.5, "max_hcp": 21.6, "wert": 11.3}, {"min_hcp": 21.7, "max_hcp": 21.8, "wert": 11.4}, {"min_hcp": 21.9, "max_hcp": 22.0, "wert": 11.5}, {"min_hcp": 22.1, "max_hcp": 22.3, "wert": 11.6}, {"min_hcp": 22.4, "max_hcp": 22.5, "wert": 11.7}, {"min_hcp": 22.6, "max_hcp": 22.7, "wert": 11.8}, {"min_hcp": 22.8, "max_hcp": 22.9, "wert": 11.9}, {"min_hcp": 23.0, "max_hcp": 23.1, "wert": 12.0}, {"min_hcp": 23.2, "max_hcp": 23.4, "wert": 12.1}, {"min_hcp": 23.5, "max_hcp": 23.6, "wert": 12.2}, {"min_hcp": 23.7, "max_hcp": 23.8, "wert": 12.3}, {"min_hcp": 23.9, "max_hcp": 24.0, "wert": 12.4}, {"min_hcp": 24.1, "max_hcp": 24.2, "wert": 12.5}, {"min_hcp": 24.3, "max_hcp": 24.5, "wert": 12.6}, {"min_hcp": 24.6, "max_hcp": 24.7, "wert": 12.7}, {"min_hcp": 24.8, "max_hcp": 24.9, "wert": 12.8}, {"min_hcp": 25.0, "max_hcp": 25.1, "wert": 12.9}, {"min_hcp": 25.2, "max_hcp": 25.3, "wert": 13.0}, {"min_hcp": 25.4, "max_hcp": 25.6, "wert": 13.1}, {"min_hcp": 25.7, "max_hcp": 25.8, "wert": 13.2}, {"min_hcp": 25.9, "max_hcp": 26.0, "wert": 13.3}, {"min_hcp": 26.1, "max_hcp": 26.2, "wert": 13.4}, {"min_hcp": 26.3, "max_hcp": 26.4, "wert": 13.5}, {"min_hcp": 26.5, "max_hcp": 26.7, "wert": 13.6}, {"min_hcp": 26.8, "max_hcp": 26.9, "wert": 13.7}, {"min_hcp": 27.0, "max_hcp": 27.1, "wert": 13.8}, {"min_hcp": 27.2, "max_hcp": 27.3, "wert": 13.9}, {"min_hcp": 27.4, "max_hcp": 27.5, "wert": 14.0}, {"min_hcp": 27.6, "max_hcp": 27.8, "wert": 14.1}, {"min_hcp": 27.9, "max_hcp": 28.0, "wert": 14.2}, {"min_hcp": 28.1, "max_hcp": 28.2, "wert": 14.3}, {"min_hcp": 28.3, "max_hcp": 28.4, "wert": 14.4}, {"min_hcp": 28.5, "max_hcp": 28.6, "wert": 14.5}, {"min_hcp": 28.7, "max_hcp": 28.9, "wert": 14.6}, {"min_hcp": 29.0, "max_hcp": 29.1, "wert": 14.7}, {"min_hcp": 29.2, "max_hcp": 29.3, "wert": 14.8}, {"min_hcp": 29.4, "max_hcp": 29.5, "wert": 14.9}, {"min_hcp": 29.6, "max_hcp": 29.7, "wert": 15.0}, {"min_hcp": 29.8, "max_hcp": 30.0, "wert": 15.1}, {"min_hcp": 30.1, "max_hcp": 30.2, "wert": 15.2}, {"min_hcp": 30.3, "max_hcp": 30.4, "wert": 15.3}, {"min_hcp": 30.5, "max_hcp": 30.6, "wert": 15.4}, {"min_hcp": 30.7, "max_hcp": 30.8, "wert": 15.5}, {"min_hcp": 30.9, "max_hcp": 31.1, "wert": 15.6}, {"min_hcp": 31.2, "max_hcp": 31.3, "wert": 15.7}, {"min_hcp": 31.4, "max_hcp": 31.5, "wert": 15.8}, {"min_hcp": 31.6, "max_hcp": 31.7, "wert": 15.9}, {"min_hcp": 31.8, "max_hcp": 31.9, "wert": 16.0}, {"min_hcp": 32.0, "max_hcp": 32.2, "wert": 16.1}, {"min_hcp": 32.3, "max_hcp": 32.4, "wert": 16.2}, {"min_hcp": 32.5, "max_hcp": 32.6, "wert": 16.3}, {"min_hcp": 32.7, "max_hcp": 32.8, "wert": 16.4}, {"min_hcp": 32.9, "max_hcp": 33.0, "wert": 16.5}, {"min_hcp": 33.1, "max_hcp": 33.3, "wert": 16.6}, {"min_hcp": 33.4, "max_hcp": 33.5, "wert": 16.7}, {"min_hcp": 33.6, "max_hcp": 33.7, "wert": 16.8}, {"min_hcp": 33.8, "max_hcp": 33.9, "wert": 16.9}, {"min_hcp": 34.0, "max_hcp": 34.1, "wert": 17.0}, {"min_hcp": 34.2, "max_hcp": 34.4, "wert": 17.1}, {"min_hcp": 34.5, "max_hcp": 34.6, "wert": 17.2}, {"min_hcp": 34.7, "max_hcp": 34.8, "wert": 17.3}, {"min_hcp": 34.9, "max_hcp": 35.0, "wert": 17.4}, {"min_hcp": 35.1, "max_hcp": 35.2, "wert": 17.5}, {"min_hcp": 35.3, "max_hcp": 35.5, "wert": 17.6}, {"min_hcp": 35.6, "max_hcp": 35.7, "wert": 17.7}, {"min_hcp": 35.8, "max_hcp": 35.9, "wert": 17.8}, {"min_hcp": 36.0, "max_hcp": 36.1, "wert": 17.9}, {"min_hcp": 36.2, "max_hcp": 36.3, "wert": 18.0}, {"min_hcp": 36.4, "max_hcp": 36.6, "wert": 18.1}, {"min_hcp": 36.7, "max_hcp": 36.8, "wert": 18.2}, {"min_hcp": 36.9, "max_hcp": 37.0, "wert": 18.3}, {"min_hcp": 37.1, "max_hcp": 37.2, "wert": 18.4}, {"min_hcp": 37.3, "max_hcp": 37.4, "wert": 18.5}, {"min_hcp": 37.5, "max_hcp": 37.7, "wert": 18.6}, {"min_hcp": 37.8, "max_hcp": 37.9, "wert": 18.7}, {"min_hcp": 38.0, "max_hcp": 38.1, "wert": 18.8}, {"min_hcp": 38.2, "max_hcp": 38.3, "wert": 18.9}, {"min_hcp": 38.4, "max_hcp": 38.5, "wert": 19.0}, {"min_hcp": 38.6, "max_hcp": 38.8, "wert": 19.1}, {"min_hcp": 38.9, "max_hcp": 39.0, "wert": 19.2}, {"min_hcp": 39.1, "max_hcp": 39.2, "wert": 19.3}, {"min_hcp": 39.3, "max_hcp": 39.4, "wert": 19.4}, {"min_hcp": 39.5, "max_hcp": 39.6, "wert": 19.5}, {"min_hcp": 39.7, "max_hcp": 39.9, "wert": 19.6}, {"min_hcp": 40.0, "max_hcp": 40.1, "wert": 19.7}, {"min_hcp": 40.2, "max_hcp": 40.3, "wert": 19.8}, {"min_hcp": 40.4, "max_hcp": 40.5, "wert": 19.9}, {"min_hcp": 40.6, "max_hcp": 40.7, "wert": 20.0}, {"min_hcp": 40.8, "max_hcp": 41.0, "wert": 20.1}, {"min_hcp": 41.1, "max_hcp": 41.2, "wert": 20.2}, {"min_hcp": 41.3, "max_hcp": 41.4, "wert": 20.3}, {"min_hcp": 41.5, "max_hcp": 41.6, "wert": 20.4}, {"min_hcp": 41.7, "max_hcp": 41.8, "wert": 20.5}, {"min_hcp": 41.9, "max_hcp": 42.1, "wert": 20.6}, {"min_hcp": 42.2, "max_hcp": 42.3, "wert": 20.7}, {"min_hcp": 42.4, "max_hcp": 42.5, "wert": 20.8}, {"min_hcp": 42.6, "max_hcp": 42.7, "wert": 20.9}, {"min_hcp": 42.8, "max_hcp": 42.9, "wert": 21.0}, {"min_hcp": 43.0, "max_hcp": 43.2, "wert": 21.1}, {"min_hcp": 43.3, "max_hcp": 43.4, "wert": 21.2}, {"min_hcp": 43.5, "max_hcp": 43.6, "wert": 21.3}, {"min_hcp": 43.7, "max_hcp": 43.8, "wert": 21.4}, {"min_hcp": 43.9, "max_hcp": 44.0, "wert": 21.5}, {"min_hcp": 44.1, "max_hcp": 44.3, "wert": 21.6}, {"min_hcp": 44.4, "max_hcp": 44.5, "wert": 21.7}, {"min_hcp": 44.6, "max_hcp": 44.7, "wert": 21.8}, {"min_hcp": 44.8, "max_hcp": 44.9, "wert": 21.9}, {"min_hcp": 45.0, "max_hcp": 45.1, "wert": 22.0}, {"min_hcp": 45.2, "max_hcp": 45.4, "wert": 22.1}, {"min_hcp": 45.5, "max_hcp": 45.6, "wert": 22.2}, {"min_hcp": 45.7, "max_hcp": 45.8, "wert": 22.3}, {"min_hcp": 45.9, "max_hcp": 46.0, "wert": 22.4}, {"min_hcp": 46.1, "max_hcp": 46.2, "wert": 22.5}, {"min_hcp": 46.3, "max_hcp": 46.5, "wert": 22.6}, {"min_hcp": 46.6, "max_hcp": 46.7, "wert": 22.7}, {"min_hcp": 46.8, "max_hcp": 46.9, "wert": 22.8}, {"min_hcp": 47.0, "max_hcp": 47.1, "wert": 22.9}, {"min_hcp": 47.2, "max_hcp": 47.3, "wert": 23.0}, {"min_hcp": 47.4, "max_hcp": 47.6, "wert": 23.1}, {"min_hcp": 47.7, "max_hcp": 47.8, "wert": 23.2}, {"min_hcp": 47.9, "max_hcp": 48.0, "wert": 23.3}, {"min_hcp": 48.1, "max_hcp": 48.2, "wert": 23.4}, {"min_hcp": 48.3, "max_hcp": 48.4, "wert": 23.5}, {"min_hcp": 48.5, "max_hcp": 48.7, "wert": 23.6}, {"min_hcp": 48.8, "max_hcp": 48.9, "wert": 23.7}, {"min_hcp": 49.0, "max_hcp": 49.1, "wert": 23.8}, {"min_hcp": 49.2, "max_hcp": 49.3, "wert": 23.9}, {"min_hcp": 49.4, "max_hcp": 49.5, "wert": 24.0}, {"min_hcp": 49.6, "max_hcp": 49.8, "wert": 24.1}, {"min_hcp": 49.9, "max_hcp": 50.0, "wert": 24.2}, {"min_hcp": 50.1, "max_hcp": 50.2, "wert": 24.3}, {"min_hcp": 50.3, "max_hcp": 50.4, "wert": 24.4}, {"min_hcp": 50.5, "max_hcp": 50.6, "wert": 24.5}, {"min_hcp": 50.7, "max_hcp": 50.9, "wert": 24.6}, {"min_hcp": 51.0, "max_hcp": 51.1, "wert": 24.7}, {"min_hcp": 51.2, "max_hcp": 51.3, "wert": 24.8}, {"min_hcp": 51.4, "max_hcp": 51.5, "wert": 24.9}, {"min_hcp": 51.6, "max_hcp": 51.7, "wert": 25.0}, {"min_hcp": 51.8, "max_hcp": 52.0, "wert": 25.1}, {"min_hcp": 52.1, "max_hcp": 52.2, "wert": 25.2}, {"min_hcp": 52.3, "max_hcp": 52.4, "wert": 25.3}, {"min_hcp": 52.5, "max_hcp": 52.6, "wert": 25.4}, {"min_hcp": 52.7, "max_hcp": 52.8, "wert": 25.5}, {"min_hcp": 52.9, "max_hcp": 53.1, "wert": 25.6}, {"min_hcp": 53.2, "max_hcp": 53.3, "wert": 25.7}, {"min_hcp": 53.4, "max_hcp": 53.5, "wert": 25.8}, {"min_hcp": 53.6, "max_hcp": 53.7, "wert": 25.9}, {"min_hcp": 53.8, "max_hcp": 53.9, "wert": 26.0}, {"min_hcp": 54.0, "max_hcp": 54.0, "wert": 26.1}];
+    const defaultRounds = [{"datum": "26.04.2026", "club_name": "SACHSENWALDBECHER - ...", "loecher": 18, "brutto": 100, "sd": 23.8}, {"datum": "04.11.2025", "club_name": "RPR: Moldzio, Dr. Th...", "loecher": 18, "brutto": 92, "sd": 17.0}, {"datum": "17.10.2025", "club_name": "GolfHouse Freitagswe...", "loecher": 18, "brutto": 96, "sd": 20.9}, {"datum": "10.10.2025", "club_name": "GolfHouse Freitagswe...", "loecher": 18, "brutto": 97, "sd": 21.7}, {"datum": "05.10.2025", "club_name": "Sachsenwaldbecher 18...", "loecher": 18, "brutto": 96, "sd": 20.3}, {"datum": "28.09.2025", "club_name": "BSV Finale 2025...", "loecher": 18, "brutto": 87, "sd": 13.9}, {"datum": "17.09.2025", "club_name": "RPR: Plickert, Thors...", "loecher": 18, "brutto": 96, "sd": 20.9}, {"datum": "10.09.2025", "club_name": "RPR: Plickert, Thors...", "loecher": 18, "brutto": 88, "sd": 14.2}, {"datum": "09.09.2025", "club_name": "After Work Pro-Shop ...", "loecher": 9, "brutto": 49, "sd": 21.2}, {"datum": "06.09.2025", "club_name": "CLUBMEISTERSCHAFT 20...", "loecher": 18, "brutto": 91, "sd": 16.1}, {"datum": "06.09.2025", "club_name": "CLUBMEISTERSCHAFT 20...", "loecher": 18, "brutto": 93, "sd": 17.9}, {"datum": "29.08.2025", "club_name": "GolfHouse Freitagswe...", "loecher": 18, "brutto": 88, "sd": 14.0}, {"datum": "23.08.2025", "club_name": "4. offener Monatspre...", "loecher": 18, "brutto": 98, "sd": 22.2}, {"datum": "19.08.2025", "club_name": "ECCO-Day...", "loecher": 9, "brutto": 47, "sd": 19.2}, {"datum": "16.08.2025", "club_name": "Monatsbecher...", "loecher": 18, "brutto": 89, "sd": 16.1}, {"datum": "14.08.2025", "club_name": "Mercedes-Benz AWGC -...", "loecher": 9, "brutto": 51, "sd": 23.8}, {"datum": "09.08.2025", "club_name": "22. HH BSV-Betriebss...", "loecher": 18, "brutto": 96, "sd": 21.7}, {"datum": "08.08.2025", "club_name": "RPR: Plickert, Thors...", "loecher": 18, "brutto": 101, "sd": 24.8}, {"datum": "05.08.2025", "club_name": "Mercedes-Benz AWGC, ...", "loecher": 9, "brutto": 52, "sd": 24.3}, {"datum": "02.08.2025", "club_name": "MP 5 AK 50 Herren E...", "loecher": 18, "brutto": 93, "sd": 20.6}];
+    
+    let clubs = [];
+    let sdErgaenzung = [];
+    let runden = [];
+    let aktuellesHCP = 26.0;
+
+    function loadData() {
+        clubs = JSON.parse(localStorage.getItem('golf_clubs')) || defaultClubs;
+        sdErgaenzung = JSON.parse(localStorage.getItem('golf_sd')) || defaultSdErgaenzung;
+        runden = JSON.parse(localStorage.getItem('golf_runden')) || defaultRounds;
+    }
+
+    function saveData() {
+        localStorage.setItem('golf_clubs', JSON.stringify(clubs));
+        localStorage.setItem('golf_runden', JSON.stringify(runden));
+        localStorage.setItem('golf_sd', JSON.stringify(sdErgaenzung));
+    }
+
+    function clearData() {
+        if(confirm("Bist du sicher, dass du alle Runden und selbsterstellten Clubs löschen möchtest? Dies stellt den Startzustand wieder her.")) {
+            localStorage.clear();
+            loadData();
+            updateApp();
+        }
+    }
+
+    // --- CORE LOGIC ---
+    function parseDateDe(dateStr) {
+        let parts = dateStr.split('.');
+        if(parts.length === 3) return new Date(parts[2], parts[1]-1, parts[0]);
+        return new Date(dateStr); 
+    }
+
+    function findSDErgaenzung(hcp) {
+        for(let e of sdErgaenzung) {
+            if(hcp >= e.min_hcp && hcp <= e.max_hcp) return e.wert;
+        }
+        return 0;
+    }
+
+    function calculateSD(club, loecher, brutto, currentHcp) {
+        if(loecher == 18) {
+            if(!club.sr18 || !club.cr18) return null;
+            return (113 / parseFloat(club.sr18)) * (parseFloat(brutto) - parseFloat(club.cr18));
+        } else {
+            if(!club.sr9 || !club.cr9) return null;
+            let basisSD = (113 / parseFloat(club.sr9)) * (parseFloat(brutto) - parseFloat(club.cr9));
+            let ergaenzung = findSDErgaenzung(currentHcp);
+            return basisSD + ergaenzung;
+        }
+    }
+
+    function updateHCP() {
+        // Sortiere alle Runden chronologisch
+        runden.sort((a,b) => parseDateDe(a.datum) - parseDateDe(b.datum));
+        let letzte20 = runden.slice(-20);
+        
+        let anzahlZuWerten = 8;
+        if(letzte20.length < 20) {
+            anzahlZuWerten = Math.max(1, Math.floor(letzte20.length / 2));
+        }
+
+        // Flag zurücksetzen für alle
+        runden.forEach(r => r.isBest = false);
+        
+        let sortedForBest = [...letzte20].sort((a,b) => parseFloat(a.sd) - parseFloat(b.sd));
+        let beste = sortedForBest.slice(0, anzahlZuWerten);
+        
+        beste.forEach(b => {
+            let original = runden.find(r => r === b);
+            if(original) original.isBest = true;
+        });
+
+        if(beste.length > 0) {
+            let sum = beste.reduce((acc, r) => acc + parseFloat(r.sd), 0);
+            aktuellesHCP = (sum / beste.length).toFixed(1);
+        } else {
+            aktuellesHCP = 26.0;
+        }
+        
+        document.getElementById('ui-hcp').innerText = aktuellesHCP;
+        document.getElementById('ui-rounds-count').innerText = runden.length;
+        
+        renderFilteredHistory();
+    }
+
+    // --- LIVE PREVIEW LOGIC ---
+    function updateLivePreview() {
+        const bruttoInput = document.getElementById('input-brutto').value;
+        const clubName = document.getElementById('input-club').value;
+        const loecher = parseInt(document.getElementById('input-loecher').value);
+        const previewBox = document.getElementById('sd-preview');
+        const previewValue = document.getElementById('sd-preview-value');
+
+        if(bruttoInput.length >= 2 && parseInt(bruttoInput) >= 10 && clubName) {
+            const club = clubs.find(c => c.name === clubName);
+            let sd = calculateSD(club, loecher, parseFloat(bruttoInput), parseFloat(aktuellesHCP));
+            
+            if(sd !== null) {
+                previewValue.innerText = sd.toFixed(1);
+                previewBox.style.display = 'block';
+            } else {
+                previewBox.style.display = 'none';
+            }
+        } else {
+            previewBox.style.display = 'none';
+        }
+    }
+
+    document.getElementById('input-brutto').addEventListener('input', updateLivePreview);
+    document.getElementById('input-club').addEventListener('change', updateLivePreview);
+    document.getElementById('input-loecher').addEventListener('change', updateLivePreview);
+
+
+    // --- UI RENDERING ---
+    function updateApp() {
+        renderClubsDropdown();
+        renderClubsTable();
+        updateHCP();
+        saveData();
+    }
+
+    function renderClubsDropdown() {
+        const select = document.getElementById('input-club');
+        select.innerHTML = '<option value="">-- Bitte wählen --</option>';
+        let sortedClubs = [...clubs].sort((a,b) => a.name.localeCompare(b.name));
+        sortedClubs.forEach(c => {
+            let opt = document.createElement('option');
+            opt.value = c.name;
+            opt.innerText = c.name + (c.tee ? ` (${c.tee})` : '');
+            select.appendChild(opt);
+        });
+    }
+
+    function renderClubsTable() {
+        const tbody = document.getElementById('table-clubs-body');
+        tbody.innerHTML = '';
+        clubs.forEach((c, index) => {
+            let tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><b>${c.name}</b> <br><small>${c.tee || ''}</small></td>
+                <td>${c.par18 || '-'} / ${c.par9 || '-'}</td>
+                <td>${c.cr18 || '-'} / ${c.cr9 || '-'}</td>
+                <td>${c.sr18 || '-'} / ${c.sr9 || '-'}</td>
+                <td>
+                    <button class="btn btn-small" onclick="editClub(${index})">✏️</button>
+                    <button class="btn btn-small btn-danger" onclick="deleteClub(${index})">🗑️</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function renderFilteredHistory() {
+        const tbody = document.getElementById('table-history-body');
+        tbody.innerHTML = '';
+        
+        const filterValue = document.getElementById('history-filter').value;
+        let displayList = [...runden];
+        
+        // runden is already sorted chronologically (oldest to newest) by updateHCP
+        if(filterValue === '18') {
+            displayList = displayList.filter(r => r.loecher == 18).reverse();
+        } else if (filterValue === '9') {
+            displayList = displayList.filter(r => r.loecher == 9).reverse();
+        } else if (filterValue === 'best_sd') {
+            displayList.sort((a,b) => parseFloat(a.sd) - parseFloat(b.sd));
+        } else {
+            // 'recent'
+            displayList.reverse();
+        }
+        
+        displayList.forEach((r) => {
+            let tr = document.createElement('tr');
+            if(r.isBest) tr.className = 'best-round';
+            tr.innerHTML = `
+                <td>${r.datum}</td>
+                <td>${r.club_name}</td>
+                <td>${r.loecher}</td>
+                <td>${r.brutto}</td>
+                <td><b>${parseFloat(r.sd).toFixed(1)}</b></td>
+                <td><button class="btn btn-small btn-danger" onclick="deleteRound('${r.datum}', ${r.brutto})">🗑️</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.querySelector(`.tab[onclick="switchTab('${tabId}')"]`).classList.add('active');
+        document.getElementById(`tab-${tabId}`).classList.add('active');
+    }
+
+    // --- CRUD CLUBS ---
+    const modal = document.getElementById('club-modal');
+    
+    function openClubModal() {
+        document.getElementById('club-form').reset();
+        document.getElementById('edit-club-index').value = "-1";
+        document.getElementById('modal-title').innerText = "Neuen Golfclub hinzufügen";
+        modal.style.display = "block";
+    }
+
+    function closeClubModal() { modal.style.display = "none"; }
+
+    function editClub(index) {
+        const c = clubs[index];
+        document.getElementById('edit-club-index').value = index;
+        document.getElementById('modal-title').innerText = "Golfclub bearbeiten";
+        document.getElementById('edit-name').value = c.name || "";
+        document.getElementById('edit-tee').value = c.tee || "";
+        document.getElementById('edit-par18').value = c.par18 || "";
+        document.getElementById('edit-cr18').value = c.cr18 || "";
+        document.getElementById('edit-sr18').value = c.sr18 || "";
+        document.getElementById('edit-par9').value = c.par9 || "";
+        document.getElementById('edit-cr9').value = c.cr9 || "";
+        document.getElementById('edit-sr9').value = c.sr9 || "";
+        modal.style.display = "block";
+    }
+
+    function deleteClub(index) {
+        if(confirm(`Möchtest du den Club "${clubs[index].name}" wirklich löschen?`)) {
+            clubs.splice(index, 1);
+            updateApp();
+        }
+    }
+
+    document.getElementById('club-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const index = parseInt(document.getElementById('edit-club-index').value);
+        const newClub = {
+            name: document.getElementById('edit-name').value,
+            tee: document.getElementById('edit-tee').value,
+            par18: document.getElementById('edit-par18').value,
+            cr18: document.getElementById('edit-cr18').value,
+            sr18: document.getElementById('edit-sr18').value,
+            par9: document.getElementById('edit-par9').value,
+            cr9: document.getElementById('edit-cr9').value,
+            sr9: document.getElementById('edit-sr9').value
+        };
+
+        if(index >= 0) clubs[index] = newClub;
+        else clubs.push(newClub);
+
+        closeClubModal();
+        updateApp();
+    });
+
+    // Delete round
+    function deleteRound(datum, brutto) {
+        if(confirm("Diese Runde wirklich löschen?")) {
+            const index = runden.findIndex(r => r.datum === datum && r.brutto == brutto);
+            if(index > -1) {
+                runden.splice(index, 1);
+                updateApp();
+            }
+        }
+    }
+
+    // Add round
+    document.getElementById('round-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const d = new Date(document.getElementById('input-datum').value);
+        const dateStr = `${String(d.getDate()).padStart(2, '0')}.${String(d.getMonth()+1).padStart(2, '0')}.${d.getFullYear()}`;
+        const clubName = document.getElementById('input-club').value;
+        const loecher = parseInt(document.getElementById('input-loecher').value);
+        const brutto = parseFloat(document.getElementById('input-brutto').value);
+        
+        const club = clubs.find(c => c.name === clubName);
+        let sd = calculateSD(club, loecher, brutto, parseFloat(aktuellesHCP));
+        
+        if(sd === null) {
+            alert(`Der Club "${clubName}" hat keine/unvollständige Werte für ${loecher} Löcher hinterlegt.`);
+            return;
+        }
+
+        runden.push({ datum: dateStr, club_name: clubName, loecher: loecher, brutto: brutto, sd: sd });
+        updateApp();
+        
+        // Reset Form & Preview
+        this.reset();
+        document.getElementById('input-datum').valueAsDate = new Date();
+        document.getElementById('sd-preview').style.display = 'none';
+        
+        alert("Runde erfolgreich gespeichert!");
+    });
+
+    // --- PDF IMPORT (using PDF.js) ---
+    async function handlePDFUpload(event) {
+        const file = event.target.files[0];
+        if(!file) return;
+
+        document.getElementById('pdf-loader').style.display = 'block';
+        document.getElementById('pdf-result').innerText = '';
+
+        const fileReader = new FileReader();
+        fileReader.onload = async function() {
+            const typedarray = new Uint8Array(this.result);
+            try {
+                const pdf = await pdfjsLib.getDocument(typedarray).promise;
+                let textContent = "";
+                for(let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const text = await page.getTextContent();
+                    const pageText = text.items.map(item => item.str).join(' ');
+                    textContent += pageText + " ";
+                }
+                
+                parsePDFText(textContent);
+            } catch(err) {
+                console.error(err);
+                alert("Fehler beim Lesen der PDF-Datei.");
+            } finally {
+                document.getElementById('pdf-loader').style.display = 'none';
+            }
+        };
+        fileReader.readAsArrayBuffer(file);
+    }
+
+    function parsePDFText(text) {
+        let normalized = text.replace(/\s+/g, ' ');
+        const pattern = /(?:^|\s)(\d{1,3})\s+(\d{2}\.\d{2}\.\d{4})\s+(\d{4,5})?\s*(.*?)\s+(18|9)\s+([A-Za-z])\s+(\d{2,3})\s+(\d+,\d+)(?=\s|$)/g;
+        
+        let match;
+        let count = 0;
+        
+        while ((match = pattern.exec(normalized)) !== null) {
+            const datum = match[2];
+            const turnier = match[4].trim();
+            const loecher = parseInt(match[5]);
+            const brutto = parseInt(match[7]);
+            const sdStr = match[8].replace(',', '.');
+            const sd = parseFloat(sdStr);
+            
+            const exists = runden.some(r => r.datum === datum && r.brutto === brutto);
+            if(!exists) {
+                runden.push({
+                    datum: datum,
+                    club_name: turnier.substring(0, 25) + (turnier.length > 25 ? '...' : ''),
+                    loecher: loecher,
+                    brutto: brutto,
+                    sd: sd
+                });
+                count++;
+            }
+        }
+
+        if(count > 0) {
+            document.getElementById('pdf-result').innerText = `Erfolgreich ${count} neue Runden aus dem PDF importiert!`;
+            updateApp();
+            switchTab('history');
+        } else {
+            document.getElementById('pdf-result').innerText = `Keine neuen Runden gefunden (oder sie existieren bereits).`;
+        }
+    }
+
+    // Init App
+    document.getElementById('input-datum').valueAsDate = new Date();
+    loadData();
+    updateApp();
+</script>
+
+</body>
+</html>
