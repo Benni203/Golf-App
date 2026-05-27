@@ -72,9 +72,32 @@ class GolfAppUI(tk.Tk):
         btn_speichern.grid(row=5, column=0, columnspan=2, pady=10)
 
     def _baue_historie(self):
+        # Filter und Sortierung (NEU)
+        filter_frame = ttk.Frame(self.tab_historie)
+        filter_frame.pack(fill='x', padx=10, pady=5)
+
+        ttk.Label(filter_frame, text="Ansicht:").pack(side='left', padx=5)
+        
+        self.combo_filter = ttk.Combobox(filter_frame, state="readonly", width=35)
+        self.combo_filter['values'] = [
+            "Zuletzt gespielt (Neueste zuerst)",
+            "Nur 18-Loch Runden",
+            "Nur 9-Loch Runden",
+            "Bester Score Differential (SD)"
+        ]
+        self.combo_filter.current(0)
+        self.combo_filter.pack(side='left', padx=5)
+        self.combo_filter.bind('<<ComboboxSelected>>', lambda e: self.aktualisiere_historie())
+
+        # Tabelle
         columns = ('Datum', 'Club', 'Löcher', 'Brutto', 'SD', 'Gewertet')
         self.tree = ttk.Treeview(self.tab_historie, columns=columns, show='headings')
-        for col in columns: self.tree.heading(col, text=col)
+        for col in columns: 
+            self.tree.heading(col, text=col)
+            # Spaltenbreite anpassen
+            if col in ['Löcher', 'Brutto', 'SD']:
+                self.tree.column(col, width=60, anchor='center')
+        
         self.tree.pack(expand=True, fill='both', padx=10, pady=10)
 
     def _baue_import(self):
@@ -108,6 +131,7 @@ class GolfAppUI(tk.Tk):
         if erfolg:
             messagebox.showinfo("Erfolg", "Runde gespeichert!")
             self.var_brutto.set("")
+            self.entry_datum.delete(0, tk.END) # Datum leeren
             self.aktualisiere_ui()
         else:
             messagebox.showerror("Fehler", "Berechnung nicht möglich (Fehlende Clubdaten?)")
@@ -122,6 +146,32 @@ class GolfAppUI(tk.Tk):
             else:
                 messagebox.showerror("Fehler", "Fehler beim PDF Import.")
 
+    def aktualisiere_historie(self):
+        """Aktualisiert die Runden-Tabelle basierend auf dem gewählten Filter/Sortierung."""
+        # Tabelle leeren
+        for row in self.tree.get_children(): 
+            self.tree.delete(row)
+
+        auswahl = self.combo_filter.get()
+        alle_runden = self.logik.daten.runden.copy()
+
+        # Logik für Filter und Sortierung
+        if auswahl == "Zuletzt gespielt (Neueste zuerst)":
+            anzeige_runden = list(reversed(alle_runden))
+        elif auswahl == "Nur 18-Loch Runden":
+            anzeige_runden = [r for r in reversed(alle_runden) if r['loecher'] == 18]
+        elif auswahl == "Nur 9-Loch Runden":
+            anzeige_runden = [r for r in reversed(alle_runden) if r['loecher'] == 9]
+        elif auswahl == "Bester Score Differential (SD)":
+            anzeige_runden = sorted(alle_runden, key=lambda x: float(x['sd']))
+        else:
+            anzeige_runden = list(reversed(alle_runden))
+
+        # Gefilterte/Sortierte Runden in die Tabelle einfügen
+        for r in anzeige_runden:
+            markierung = "★ Ja" if r.get('isBest') else "Nein"
+            self.tree.insert('', tk.END, values=(r['datum'], r['club_name'], r['loecher'], r['brutto'], r['sd'], markierung))
+
     def aktualisiere_ui(self):
         # HCP Update
         hcp = self.logik.berechne_hcp()
@@ -131,8 +181,5 @@ class GolfAppUI(tk.Tk):
         club_namen = [c['name'] for c in self.logik.daten.clubs]
         self.combo_club['values'] = club_namen
 
-        # Historie Tabelle Update
-        for row in self.tree.get_children(): self.tree.delete(row)
-        for r in reversed(self.logik.daten.runden[-20:]): # Neueste oben
-            markierung = "★ Ja" if r.get('isBest') else "Nein"
-            self.tree.insert('', tk.END, values=(r['datum'], r['club_name'], r['loecher'], r['brutto'], r['sd'], markierung))
+        # Historie aktualisieren (berücksichtigt den aktuellen Filter)
+        self.aktualisiere_historie()
