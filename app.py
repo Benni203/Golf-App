@@ -343,14 +343,15 @@ def delete_club(club_id):
 @app.route('/')
 def index():
     """Liefert die Frontend HTML-Seite aus."""
-    return send_from_directory('.', 'index.html')
+    return send_from_directory(basis_ordner, 'index.html')
 
 @app.route('/<path:path>')
 def static_files(path):
     """Liefert zusätzliche statische Dateien (z.B. CSS, JS, Bilder) aus."""
-    if os.path.exists(os.path.join(basis_ordner, path)):
-        return send_from_directory('.', path)
-    return send_from_directory('.', 'index.html')
+    file_path = os.path.join(basis_ordner, path)
+    if os.path.isfile(file_path):
+        return send_from_directory(basis_ordner, path)
+    return send_from_directory(basis_ordner, 'index.html')
 
 # --- 8. START DES LOKALEN ENTWICKLUNGSSERVERS ---
 if __name__ == '__main__':
