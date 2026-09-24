@@ -1,8 +1,11 @@
 import os
 import secrets
-from datetime import datetime
+import smtplib
+from email.mime.text import MIMEText
+from datetime import datetime, timedelta
 from flask import Flask, request, jsonify, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import func
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_cors import CORS
 
@@ -28,13 +31,25 @@ class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False, index=True)
+    email = db.Column(db.String(120), unique=True, nullable=True, index=True)
     password_hash = db.Column(db.String(256), nullable=False)
     api_token = db.Column(db.String(64), unique=True, index=True, nullable=True)
+    reset_token = db.Column(db.String(64), nullable=True)
+    reset_token_expires = db.Column(db.DateTime, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     runden = db.relationship('Runde', backref='user', cascade='all, delete-orphan', lazy=True)
     clubs = db.relationship('Club', backref='user', cascade='all, delete-orphan', lazy=True)
     turniere = db.relationship('Turnier', backref='user', cascade='all, delete-orphan', lazy=True)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "username": self.username,
+            "email": self.email or "",
+            "runden_count": len(self.runden) if self.runden else 0,
+            "created_at": self.created_at.isoformat() if self.created_at else None
+        }
 
 class Runde(db.Model):
     """Speichert gespielte Runden eines Benutzers."""
@@ -183,19 +198,71 @@ KATALOG_TURNIERE = [
     {"club_name": "GC St. Leon-Rot (St. Leon)", "name": "St. Leon Open Championship", "datum": "25.10.2026", "loecher": 18, "spielform": "Zählspiel", "vorgabewirksam": True}
 ]
 
+def send_reset_email(to_email, reset_code):
+    """Sendet optional eine E-Mail mit dem Reset-Code, wenn SMTP konfiguriert ist."""
+    smtp_host = os.environ.get('SMTP_HOST')
+    smtp_port = int(os.environ.get('SMTP_PORT', 587))
+    smtp_user = os.environ.get('SMTP_USER')
+    smtp_pass = os.environ.get('SMTP_PASSWORD')
+    smtp_from = os.environ.get('SMTP_FROM', smtp_user or 'noreply@golfapp.local')
+
+    if not smtp_host or not to_email:
+        return False, "Kein SMTP konfiguriert oder keine E-Mail"
+
+    try:
+        msg = MIMEText(
+            f"Hallo,\n\n"
+            f"dein Bestätigungscode zum Zurücksetzen deines GolfApp-Passworts lautet:\n\n"
+            f"  {reset_code}\n\n"
+            f"Dieser Code ist 30 Minuten lang gültig.\n\n"
+            f"Falls du diese Anfrage nicht gestellt hast, kannst du diese Nachricht ignorieren.\n\n"
+            f"Sportliche Grüße,\nDein GolfApp Team"
+        )
+        msg['Subject'] = 'GolfApp - Passwort zurücksetzen'
+        msg['From'] = smtp_from
+        msg['To'] = to_email
+
+        with smtplib.SMTP(smtp_host, smtp_port, timeout=10) as server:
+            server.starttls()
+            if smtp_user and smtp_pass:
+                server.login(smtp_user, smtp_pass)
+            server.send_message(msg)
+        return True, "E-Mail erfolgreich versendet"
+    except Exception as e:
+        print(f"SMTP-Fehler: {e}")
+        return False, str(e)
+
 def migrate_and_seed_database():
     """Stellt sicher, dass alle Tabellenspalten existieren und initialisiert Katalog-Clubs & Turniere."""
-    # 1. Sicherstellen, dass neue Spalten (region, city) in bestehenden SQLite-Tabellen existieren
+    # 1. Sicherstellen, dass neue Spalten in bestehenden Tabellen existieren
     try:
         with db.engine.connect() as conn:
-            cursor = conn.connection.cursor()
-            cursor.execute("PRAGMA table_info(clubs)")
-            cols = [row[1] for row in cursor.fetchall()]
-            if cols and 'region' not in cols:
-                cursor.execute("ALTER TABLE clubs ADD COLUMN region VARCHAR(100) DEFAULT 'Schleswig-Holstein / Hamburg'")
-            if cols and 'city' not in cols:
-                cursor.execute("ALTER TABLE clubs ADD COLUMN city VARCHAR(100) DEFAULT ''")
-            conn.connection.commit()
+            if db.engine.name == 'sqlite':
+                cursor = conn.connection.cursor()
+                cursor.execute("PRAGMA table_info(clubs)")
+                club_cols = [row[1] for row in cursor.fetchall()]
+                if club_cols and 'region' not in club_cols:
+                    cursor.execute("ALTER TABLE clubs ADD COLUMN region VARCHAR(100) DEFAULT 'Schleswig-Holstein / Hamburg'")
+                if club_cols and 'city' not in club_cols:
+                    cursor.execute("ALTER TABLE clubs ADD COLUMN city VARCHAR(100) DEFAULT ''")
+
+                cursor.execute("PRAGMA table_info(users)")
+                user_cols = [row[1] for row in cursor.fetchall()]
+                if user_cols and 'email' not in user_cols:
+                    cursor.execute("ALTER TABLE users ADD COLUMN email VARCHAR(120)")
+                if user_cols and 'reset_token' not in user_cols:
+                    cursor.execute("ALTER TABLE users ADD COLUMN reset_token VARCHAR(64)")
+                if user_cols and 'reset_token_expires' not in user_cols:
+                    cursor.execute("ALTER TABLE users ADD COLUMN reset_token_expires DATETIME")
+                conn.connection.commit()
+            elif db.engine.name == 'postgresql':
+                from sqlalchemy import text
+                conn.execute(text("ALTER TABLE clubs ADD COLUMN IF NOT EXISTS region VARCHAR(100) DEFAULT 'Schleswig-Holstein / Hamburg'"))
+                conn.execute(text("ALTER TABLE clubs ADD COLUMN IF NOT EXISTS city VARCHAR(100) DEFAULT ''"))
+                conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR(120)"))
+                conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token VARCHAR(64)"))
+                conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expires TIMESTAMP"))
+                conn.commit()
     except Exception as e:
         print(f"Hinweis zur Tabellenmigration: {e}")
 
@@ -268,40 +335,48 @@ def register():
     """Registriert einen neuen Benutzer und liefert einen Auth-Token zurück."""
     daten = request.get_json(silent=True) or {}
     username = daten.get('username', '').strip()
+    email = daten.get('email', '').strip().lower()
     password = daten.get('password', '').strip()
 
     if not username or len(username) < 3:
         return jsonify({"fehler": "Benutzername muss mindestens 3 Zeichen lang sein."}), 400
+    if not email or '@' not in email or '.' not in email:
+        return jsonify({"fehler": "Bitte eine gültige E-Mail-Adresse angeben."}), 400
     if not password or len(password) < 4:
         return jsonify({"fehler": "Passwort muss mindestens 4 Zeichen lang sein."}), 400
 
-    if User.query.filter_by(username=username).first():
+    if User.query.filter(func.lower(User.username) == username.lower()).first():
         return jsonify({"fehler": "Dieser Benutzername ist bereits vergeben."}), 409
+
+    if User.query.filter(func.lower(User.email) == email).first():
+        return jsonify({"fehler": "Diese E-Mail-Adresse wird bereits verwendet."}), 409
 
     hashed_pw = generate_password_hash(password)
     token = secrets.token_hex(32)
 
-    neuer_user = User(username=username, password_hash=hashed_pw, api_token=token)
+    neuer_user = User(username=username, email=email, password_hash=hashed_pw, api_token=token)
     db.session.add(neuer_user)
     db.session.commit()
 
     return jsonify({
         "nachricht": "Benutzer erfolgreich registriert!",
         "token": token,
-        "user": {
-            "id": neuer_user.id,
-            "username": neuer_user.username
-        }
+        "user": neuer_user.to_dict()
     }), 201
 
 @app.route('/api/login', methods=['POST'])
 def login():
-    """Prüft Logindaten und gibt neuen/aktuellen Token zurück."""
+    """Prüft Logindaten (E-Mail oder Benutzername) und gibt neuen/aktuellen Token zurück."""
     daten = request.get_json(silent=True) or {}
-    username = daten.get('username', '').strip()
+    identifier = (daten.get('identifier') or daten.get('username') or daten.get('email') or '').strip().lower()
     password = daten.get('password', '').strip()
 
-    user = User.query.filter_by(username=username).first()
+    if not identifier or not password:
+        return jsonify({"fehler": "Bitte E-Mail/Benutzername und Passwort eingeben."}), 400
+
+    user = User.query.filter(
+        (func.lower(User.username) == identifier) | (func.lower(User.email) == identifier)
+    ).first()
 
     if user and check_password_hash(user.password_hash, password):
         user.api_token = secrets.token_hex(32)
@@ -310,13 +385,83 @@ def login():
         return jsonify({
             "nachricht": "Login erfolgreich!",
             "token": user.api_token,
-            "user": {
-                "id": user.id,
-                "username": user.username
-            }
+            "user": user.to_dict()
         }), 200
     else:
-        return jsonify({"fehler": "Falscher Benutzername oder Passwort."}), 401
+        return jsonify({"fehler": "Falsche Anmeldedaten oder Passwort."}), 401
+
+@app.route('/api/forgot-password', methods=['POST'])
+def forgot_password():
+    """Generiert einen 6-stelligen Bestätigungscode zum Zurücksetzen des Passworts."""
+    daten = request.get_json(silent=True) or {}
+    identifier = (daten.get('email') or daten.get('identifier') or daten.get('username') or '').strip().lower()
+
+    if not identifier:
+        return jsonify({"fehler": "Bitte gib deine E-Mail-Adresse oder deinen Benutzernamen ein."}), 400
+
+    user = User.query.filter(
+        (func.lower(User.email) == identifier) | (func.lower(User.username) == identifier)
+    ).first()
+
+    if not user:
+        return jsonify({"fehler": "Kein Benutzerkonto mit dieser E-Mail-Adresse oder diesem Benutzernamen gefunden."}), 404
+
+    # 6-stelligen Code generieren (100000 bis 999999)
+    code = f"{secrets.randbelow(900000) + 100000}"
+    user.reset_token = code
+    user.reset_token_expires = datetime.utcnow() + timedelta(minutes=30)
+    db.session.commit()
+
+    email_to = user.email or identifier
+    email_gesendet, smtp_info = send_reset_email(email_to, code)
+
+    return jsonify({
+        "nachricht": "Bestätigungscode wurde generiert.",
+        "code": code,
+        "email": user.email or user.username,
+        "email_gesendet": email_gesendet,
+        "hinweis": "Prüfe dein Postfach oder nutze den angezeigten Code."
+    }), 200
+
+@app.route('/api/reset-password', methods=['POST'])
+def reset_password():
+    """Validiert den Bestätigungscode und setzt das Passwort neu."""
+    daten = request.get_json(silent=True) or {}
+    identifier = (daten.get('email') or daten.get('identifier') or daten.get('username') or '').strip().lower()
+    code = daten.get('code', '').strip()
+    new_password = daten.get('new_password', '').strip()
+
+    if not identifier or not code or not new_password:
+        return jsonify({"fehler": "Bitte alle Felder ausfüllen (E-Mail/Benutzername, Code und neues Passwort)."}), 400
+
+    if len(new_password) < 4:
+        return jsonify({"fehler": "Das neue Passwort muss mindestens 4 Zeichen lang sein."}), 400
+
+    user = User.query.filter(
+        (func.lower(User.email) == identifier) | (func.lower(User.username) == identifier)
+    ).first()
+
+    if not user:
+        return jsonify({"fehler": "Benutzerkonto nicht gefunden."}), 404
+
+    if not user.reset_token or user.reset_token != code:
+        return jsonify({"fehler": "Ungültiger Bestätigungscode."}), 400
+
+    if not user.reset_token_expires or user.reset_token_expires < datetime.utcnow():
+        return jsonify({"fehler": "Der Bestätigungscode ist abgelaufen. Bitte fordere einen neuen an."}), 400
+
+    # Neues Passwort speichern & Code invalidieren
+    user.password_hash = generate_password_hash(new_password)
+    user.reset_token = None
+    user.reset_token_expires = None
+    user.api_token = secrets.token_hex(32)
+    db.session.commit()
+
+    return jsonify({
+        "nachricht": "Passwort erfolgreich geändert! Du bist jetzt angemeldet.",
+        "token": user.api_token,
+        "user": user.to_dict()
+    }), 200
 
 @app.route('/api/logout', methods=['POST'])
 def logout():
@@ -335,12 +480,7 @@ def get_me():
         return jsonify({"fehler": "Nicht authentifiziert"}), 401
 
     return jsonify({
-        "user": {
-            "id": user.id,
-            "username": user.username,
-            "runden_count": len(user.runden),
-            "created_at": user.created_at.isoformat() if user.created_at else None
-        }
+        "user": user.to_dict()
     }), 200
 
 # --- 5. RUNDEN VERWALTUNG ---

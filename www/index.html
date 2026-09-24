@@ -1104,7 +1104,7 @@
     </main>
 
     <!-- ========================================== -->
-    <!-- MODAL: USER AUTHENTICATION (LOGIN / REGISTER) -->
+    <!-- MODAL: USER AUTHENTICATION (LOGIN / REGISTER / FORGOT / RESET) -->
     <!-- ========================================== -->
     <div id="auth-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl border border-slate-200 overflow-hidden transform transition-all">
@@ -1118,34 +1118,54 @@
             </div>
 
             <!-- Tab Switcher (Login vs Register) -->
-            <div class="flex border-b border-slate-100 bg-slate-50/50">
-                <button id="auth-tab-login" onclick="switchAuthTab('login')" class="flex-1 py-3 text-xs font-bold uppercase tracking-wider text-golf-700 border-b-2 border-golf-600 bg-white transition-all">
+            <div id="auth-tab-bar" class="flex border-b border-slate-100 bg-slate-50/50">
+                <button id="auth-tab-login" type="button" onclick="switchAuthTab('login')" class="flex-1 py-3 text-xs font-bold uppercase tracking-wider text-golf-700 border-b-2 border-golf-600 bg-white transition-all">
                     Anmelden
                 </button>
-                <button id="auth-tab-register" onclick="switchAuthTab('register')" class="flex-1 py-3 text-xs font-bold uppercase tracking-wider text-slate-500 hover:text-slate-800 transition-all">
+                <button id="auth-tab-register" type="button" onclick="switchAuthTab('register')" class="flex-1 py-3 text-xs font-bold uppercase tracking-wider text-slate-500 hover:text-slate-800 transition-all">
                     Konto registrieren
                 </button>
             </div>
 
             <!-- Form -->
             <form id="auth-form" onsubmit="handleAuthSubmit(event)" class="p-6 space-y-4">
+                <!-- Error & Success Messages -->
                 <div id="auth-error" class="hidden p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold"></div>
+                <div id="auth-info" class="hidden p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold"></div>
 
-                <div class="space-y-1">
-                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600">Benutzername</label>
-                    <input type="text" id="auth-username" required placeholder="z.B. benni_golf" minlength="3" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-golf-200 focus:border-golf-500 transition-all">
+                <!-- 1. LOGIN FIELDS -->
+                <div id="auth-login-fields" class="space-y-4">
+                    <div class="space-y-1">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600">E-Mail oder Benutzername</label>
+                        <input type="text" id="auth-login-identifier" placeholder="z.B. name@golf.de oder benni_golf" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-golf-200 focus:border-golf-500 transition-all">
+                    </div>
+                    <div class="space-y-1">
+                        <div class="flex items-center justify-between">
+                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-600">Passwort</label>
+                            <button type="button" onclick="switchAuthTab('forgot')" class="text-xs text-golf-600 hover:text-golf-800 font-semibold hover:underline">Passwort vergessen?</button>
+                        </div>
+                        <input type="password" id="auth-login-password" placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-golf-200 focus:border-golf-500 transition-all">
+                    </div>
                 </div>
 
-                <div class="space-y-1">
-                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600">Passwort</label>
-                    <input type="password" id="auth-password" required placeholder="••••••••" minlength="4" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-golf-200 focus:border-golf-500 transition-all">
-                </div>
-
-                <!-- Registration Extras -->
-                <div id="auth-register-extras" class="hidden space-y-3 pt-1">
+                <!-- 2. REGISTER FIELDS -->
+                <div id="auth-register-fields" class="hidden space-y-3">
+                    <div class="space-y-1">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600">Benutzername</label>
+                        <input type="text" id="auth-reg-username" placeholder="z.B. benni_golf" minlength="3" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-golf-200 focus:border-golf-500 transition-all">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600">E-Mail-Adresse</label>
+                        <input type="email" id="auth-reg-email" placeholder="name@beispiel.de" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-golf-200 focus:border-golf-500 transition-all">
+                        <span class="text-[11px] text-slate-400">Wird für den Login und zum Zurücksetzen des Passworts verwendet.</span>
+                    </div>
+                    <div class="space-y-1">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600">Passwort</label>
+                        <input type="password" id="auth-reg-password" placeholder="••••••••" minlength="4" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-golf-200 focus:border-golf-500 transition-all">
+                    </div>
                     <div class="space-y-1">
                         <label class="block text-xs font-bold uppercase tracking-wider text-slate-600">Passwort wiederholen</label>
-                        <input type="password" id="auth-password-confirm" placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-golf-200 focus:border-golf-500 transition-all">
+                        <input type="password" id="auth-reg-password-confirm" placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-golf-200 focus:border-golf-500 transition-all">
                     </div>
                     <label class="flex items-center gap-2 cursor-pointer text-xs text-slate-600 pt-1">
                         <input type="checkbox" id="auth-migrate-local" class="rounded text-golf-600 focus:ring-golf-500">
@@ -1153,11 +1173,53 @@
                     </label>
                 </div>
 
-                <div class="pt-4 flex items-center justify-end gap-3 border-t border-slate-100">
-                    <button type="button" onclick="closeAuthModal()" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors">Abbrechen</button>
-                    <button type="submit" id="auth-submit-btn" class="px-5 py-2.5 rounded-xl bg-golf-600 hover:bg-golf-700 text-white text-xs font-bold shadow-md shadow-golf-600/20 transition-all">
-                        Anmelden
-                    </button>
+                <!-- 3. FORGOT PASSWORD FIELDS -->
+                <div id="auth-forgot-fields" class="hidden space-y-4">
+                    <div class="text-xs text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-200 leading-relaxed">
+                        Gib deine registrierte <strong>E-Mail-Adresse</strong> oder deinen <strong>Benutzernamen</strong> ein. Wir erstellen einen 6-stelligen Bestätigungscode zum Zurücksetzen deines Passworts.
+                    </div>
+                    <div class="space-y-1">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600">E-Mail oder Benutzername</label>
+                        <input type="text" id="auth-forgot-identifier" placeholder="z.B. name@golf.de oder benni_golf" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-golf-200 focus:border-golf-500 transition-all">
+                    </div>
+                </div>
+
+                <!-- 4. RESET PASSWORD FIELDS -->
+                <div id="auth-reset-fields" class="hidden space-y-3">
+                    <div class="text-xs text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-200 leading-relaxed">
+                        Gib deinen <strong>6-stelligen Code</strong> ein und lege dein neues Passwort fest.
+                    </div>
+                    <div class="space-y-1">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600">E-Mail oder Benutzername</label>
+                        <input type="text" id="auth-reset-identifier" placeholder="name@beispiel.de" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm bg-slate-50 text-slate-700">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600">6-stelliger Bestätigungscode</label>
+                        <input type="text" id="auth-reset-code" placeholder="123456" maxlength="6" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-center text-lg font-mono font-bold tracking-widest text-golf-800 focus:ring-2 focus:ring-golf-200 focus:border-golf-500">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600">Neues Passwort</label>
+                        <input type="password" id="auth-reset-password" placeholder="••••••••" minlength="4" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-golf-200 focus:border-golf-500 transition-all">
+                    </div>
+                    <div class="space-y-1">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600">Neues Passwort wiederholen</label>
+                        <input type="password" id="auth-reset-password-confirm" placeholder="••••••••" minlength="4" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-golf-200 focus:border-golf-500 transition-all">
+                    </div>
+                </div>
+
+                <!-- Footer / Action Buttons -->
+                <div class="pt-4 flex items-center justify-between gap-3 border-t border-slate-100">
+                    <div id="auth-back-container" class="hidden">
+                        <button type="button" onclick="switchAuthTab('login')" class="text-xs font-semibold text-golf-600 hover:text-golf-800 flex items-center gap-1">
+                            &larr; Zurück zum Login
+                        </button>
+                    </div>
+                    <div class="flex items-center gap-3 ml-auto">
+                        <button type="button" onclick="closeAuthModal()" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors">Abbrechen</button>
+                        <button type="submit" id="auth-submit-btn" class="px-5 py-2.5 rounded-xl bg-golf-600 hover:bg-golf-700 text-white text-xs font-bold shadow-md shadow-golf-600/20 transition-all">
+                            Anmelden
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -1687,6 +1749,9 @@
                 loggedOutView.classList.add('hidden');
                 document.getElementById('auth-username-display').innerText = currentUser.username;
                 document.getElementById('auth-avatar').innerText = currentUser.username.substring(0, 1).toUpperCase();
+                if(currentUser.email) {
+                    document.getElementById('auth-username-display').title = currentUser.email;
+                }
             } else {
                 loggedInView.classList.add('hidden');
                 loggedOutView.classList.remove('hidden');
@@ -1695,7 +1760,6 @@
 
         function openAuthModal(tab = 'login') {
             switchAuthTab(tab);
-            document.getElementById('auth-error').classList.add('hidden');
             document.getElementById('auth-modal').classList.remove('hidden');
         }
 
@@ -1705,51 +1769,127 @@
 
         function switchAuthTab(tab) {
             currentAuthTab = tab;
+            const tabBar = document.getElementById('auth-tab-bar');
             const tabLogin = document.getElementById('auth-tab-login');
             const tabRegister = document.getElementById('auth-tab-register');
-            const extras = document.getElementById('auth-register-extras');
-            const submitBtn = document.getElementById('auth-submit-btn');
             const title = document.getElementById('auth-modal-title');
             const errBox = document.getElementById('auth-error');
+            const infoBox = document.getElementById('auth-info');
+            const submitBtn = document.getElementById('auth-submit-btn');
+            const backContainer = document.getElementById('auth-back-container');
+
+            const loginFields = document.getElementById('auth-login-fields');
+            const registerFields = document.getElementById('auth-register-fields');
+            const forgotFields = document.getElementById('auth-forgot-fields');
+            const resetFields = document.getElementById('auth-reset-fields');
+
             errBox.classList.add('hidden');
+            if(tab !== 'reset') {
+                infoBox.classList.add('hidden');
+            }
+
+            // Hide all field sections
+            loginFields.classList.add('hidden');
+            registerFields.classList.add('hidden');
+            forgotFields.classList.add('hidden');
+            resetFields.classList.add('hidden');
 
             if(tab === 'login') {
+                tabBar.classList.remove('hidden');
                 tabLogin.className = "flex-1 py-3 text-xs font-bold uppercase tracking-wider text-golf-700 border-b-2 border-golf-600 bg-white transition-all";
                 tabRegister.className = "flex-1 py-3 text-xs font-bold uppercase tracking-wider text-slate-500 hover:text-slate-800 transition-all";
-                extras.classList.add('hidden');
+                loginFields.classList.remove('hidden');
+                backContainer.classList.add('hidden');
                 submitBtn.innerText = "Anmelden";
                 title.innerText = "Im Benutzerkonto anmelden";
-            } else {
+                setTimeout(() => document.getElementById('auth-login-identifier')?.focus(), 50);
+            } else if(tab === 'register') {
+                tabBar.classList.remove('hidden');
                 tabRegister.className = "flex-1 py-3 text-xs font-bold uppercase tracking-wider text-golf-700 border-b-2 border-golf-600 bg-white transition-all";
                 tabLogin.className = "flex-1 py-3 text-xs font-bold uppercase tracking-wider text-slate-500 hover:text-slate-800 transition-all";
-                extras.classList.remove('hidden');
+                registerFields.classList.remove('hidden');
+                backContainer.classList.add('hidden');
                 submitBtn.innerText = "Konto erstellen";
                 title.innerText = "Neues Benutzerkonto registrieren";
+                setTimeout(() => document.getElementById('auth-reg-username')?.focus(), 50);
+            } else if(tab === 'forgot') {
+                tabBar.classList.add('hidden');
+                forgotFields.classList.remove('hidden');
+                backContainer.classList.remove('hidden');
+                submitBtn.innerText = "Code anfordern";
+                title.innerText = "Passwort vergessen";
+                const prevIdent = document.getElementById('auth-login-identifier')?.value.trim();
+                if(prevIdent) {
+                    document.getElementById('auth-forgot-identifier').value = prevIdent;
+                }
+                setTimeout(() => document.getElementById('auth-forgot-identifier')?.focus(), 50);
+            } else if(tab === 'reset') {
+                tabBar.classList.add('hidden');
+                resetFields.classList.remove('hidden');
+                backContainer.classList.remove('hidden');
+                submitBtn.innerText = "Passwort speichern & anmelden";
+                title.innerText = "Neues Passwort festlegen";
+                setTimeout(() => document.getElementById('auth-reset-code')?.focus(), 50);
             }
         }
 
         async function handleAuthSubmit(e) {
             e.preventDefault();
-            const username = document.getElementById('auth-username').value.trim();
-            const password = document.getElementById('auth-password').value.trim();
             const errBox = document.getElementById('auth-error');
+            const infoBox = document.getElementById('auth-info');
             errBox.classList.add('hidden');
 
-            if(!username || !password) {
-                errBox.innerText = "Bitte Benutzername und Passwort ausfüllen.";
-                errBox.classList.remove('hidden');
-                return;
-            }
+            if(currentAuthTab === 'login') {
+                const identifier = document.getElementById('auth-login-identifier').value.trim();
+                const password = document.getElementById('auth-login-password').value.trim();
 
-            if(currentAuthTab === 'register') {
-                const passConfirm = document.getElementById('auth-password-confirm').value.trim();
+                if(!identifier || !password) {
+                    errBox.innerText = "Bitte E-Mail/Benutzername und Passwort eingeben.";
+                    errBox.classList.remove('hidden');
+                    return;
+                }
+
+                const res = await apiFetch('/api/login', 'POST', { identifier, password });
+                if(res.ok) {
+                    authToken = res.data.token;
+                    currentUser = res.data.user;
+                    localStorage.setItem('golf_auth', JSON.stringify({ token: authToken, user: currentUser }));
+
+                    closeAuthModal();
+                    await loadData();
+                    showToast(`Willkommen zurück, ${currentUser.username}!`, "👤");
+                } else {
+                    errBox.innerText = res.data?.fehler || "Falsche Anmeldedaten oder Passwort.";
+                    errBox.classList.remove('hidden');
+                }
+            } else if(currentAuthTab === 'register') {
+                const username = document.getElementById('auth-reg-username').value.trim();
+                const email = document.getElementById('auth-reg-email').value.trim();
+                const password = document.getElementById('auth-reg-password').value.trim();
+                const passConfirm = document.getElementById('auth-reg-password-confirm').value.trim();
+
+                if(!username || username.length < 3) {
+                    errBox.innerText = "Benutzername muss mindestens 3 Zeichen lang sein.";
+                    errBox.classList.remove('hidden');
+                    return;
+                }
+                if(!email || !email.includes('@') || !email.includes('.')) {
+                    errBox.innerText = "Bitte eine gültige E-Mail-Adresse angeben.";
+                    errBox.classList.remove('hidden');
+                    return;
+                }
+                if(!password || password.length < 4) {
+                    errBox.innerText = "Passwort muss mindestens 4 Zeichen lang sein.";
+                    errBox.classList.remove('hidden');
+                    return;
+                }
                 if(password !== passConfirm) {
                     errBox.innerText = "Die Passwörter stimmen nicht überein.";
                     errBox.classList.remove('hidden');
                     return;
                 }
 
-                const res = await apiFetch('/api/register', 'POST', { username, password });
+                const res = await apiFetch('/api/register', 'POST', { username, email, password });
                 if(res.ok) {
                     authToken = res.data.token;
                     currentUser = res.data.user;
@@ -1769,9 +1909,73 @@
                     errBox.innerText = res.data?.fehler || "Registrierung fehlgeschlagen. Bitte versuche es erneut.";
                     errBox.classList.remove('hidden');
                 }
-            } else {
-                // Login
-                const res = await apiFetch('/api/login', 'POST', { username, password });
+            } else if(currentAuthTab === 'forgot') {
+                const identifier = document.getElementById('auth-forgot-identifier').value.trim();
+                if(!identifier) {
+                    errBox.innerText = "Bitte gib deine E-Mail-Adresse oder deinen Benutzernamen ein.";
+                    errBox.classList.remove('hidden');
+                    return;
+                }
+
+                const submitBtn = document.getElementById('auth-submit-btn');
+                const origBtnText = submitBtn.innerText;
+                submitBtn.disabled = true;
+                submitBtn.innerText = "Code wird generiert...";
+
+                try {
+                    const res = await apiFetch('/api/forgot-password', 'POST', { email: identifier });
+                    if(res.ok) {
+                        const code = res.data.code;
+                        const userEmailOrName = res.data.email || identifier;
+                        document.getElementById('auth-reset-identifier').value = userEmailOrName;
+                        if(code) {
+                            document.getElementById('auth-reset-code').value = code;
+                        }
+
+                        if(res.data.email_gesendet) {
+                            infoBox.innerHTML = `Ein Bestätigungscode wurde an <strong>${userEmailOrName}</strong> gesendet.<br><span class="text-xs text-emerald-900 font-mono font-bold">Code: ${code}</span> (30 Min. gültig)`;
+                        } else {
+                            infoBox.innerHTML = `Dein 6-stelliger Bestätigungscode lautet:<br><span class="inline-block my-1 text-base font-mono font-bold tracking-widest text-golf-800 bg-golf-50 px-2 py-0.5 rounded border border-golf-200">${code}</span><br><span class="text-[11px] text-slate-500 font-normal">Gültig für 30 Minuten. Gib jetzt dein neues Passwort ein.</span>`;
+                        }
+                        infoBox.classList.remove('hidden');
+
+                        switchAuthTab('reset');
+                    } else {
+                        errBox.innerText = res.data?.fehler || "Anfrage fehlgeschlagen. Überprüfe deine Eingabe.";
+                        errBox.classList.remove('hidden');
+                    }
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = origBtnText;
+                }
+            } else if(currentAuthTab === 'reset') {
+                const identifier = document.getElementById('auth-reset-identifier').value.trim();
+                const code = document.getElementById('auth-reset-code').value.trim();
+                const newPassword = document.getElementById('auth-reset-password').value.trim();
+                const passConfirm = document.getElementById('auth-reset-password-confirm').value.trim();
+
+                if(!identifier || !code || !newPassword) {
+                    errBox.innerText = "Bitte fülle alle Pflichtfelder aus (Benutzer/E-Mail, Code und neues Passwort).";
+                    errBox.classList.remove('hidden');
+                    return;
+                }
+                if(newPassword.length < 4) {
+                    errBox.innerText = "Das Passwort muss mindestens 4 Zeichen lang sein.";
+                    errBox.classList.remove('hidden');
+                    return;
+                }
+                if(newPassword !== passConfirm) {
+                    errBox.innerText = "Die neuen Passwörter stimmen nicht überein.";
+                    errBox.classList.remove('hidden');
+                    return;
+                }
+
+                const res = await apiFetch('/api/reset-password', 'POST', {
+                    email: identifier,
+                    code: code,
+                    new_password: newPassword
+                });
+
                 if(res.ok) {
                     authToken = res.data.token;
                     currentUser = res.data.user;
@@ -1779,9 +1983,9 @@
 
                     closeAuthModal();
                     await loadData();
-                    showToast(`Willkommen zurück, ${currentUser.username}!`, "👤");
+                    showToast("Passwort erfolgreich geändert! Du bist jetzt angemeldet. 🏌️‍♂️", "🔑");
                 } else {
-                    errBox.innerText = res.data?.fehler || "Falscher Benutzername oder Passwort.";
+                    errBox.innerText = res.data?.fehler || "Passwort-Zurücksetzen fehlgeschlagen.";
                     errBox.classList.remove('hidden');
                 }
             }
