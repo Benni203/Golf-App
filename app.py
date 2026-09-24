@@ -183,39 +183,60 @@ KATALOG_TURNIERE = [
     {"club_name": "GC St. Leon-Rot (St. Leon)", "name": "St. Leon Open Championship", "datum": "25.10.2026", "loecher": 18, "spielform": "Zählspiel", "vorgabewirksam": True}
 ]
 
-def seed_database_if_empty():
-    """Initialisiert die Datenbank mit dem Katalog an Golfclubs und Turnieren."""
-    if Club.query.count() == 0:
-        for c_data in KATALOG_CLUBS:
-            club = Club(
-                name=c_data["name"],
-                tee=c_data.get("tee", "gelb"),
-                region=c_data.get("region", "Schleswig-Holstein / Hamburg"),
-                city=c_data.get("city", ""),
-                par18=c_data.get("par18") or None,
-                cr18=c_data.get("cr18") or None,
-                sr18=c_data.get("sr18") or None,
-                par9=c_data.get("par9") or None,
-                cr9=c_data.get("cr9") or None,
-                sr9=c_data.get("sr9") or None,
-                user_id=None
-            )
-            db.session.add(club)
-
-    if Turnier.query.count() == 0:
-        for t_data in KATALOG_TURNIERE:
-            turnier = Turnier(
-                club_name=t_data["club_name"],
-                name=t_data["name"],
-                datum=t_data["datum"],
-                loecher=t_data["loecher"],
-                spielform=t_data["spielform"],
-                vorgabewirksam=t_data["vorgabewirksam"],
-                user_id=None
-            )
-            db.session.add(turnier)
-
+def migrate_and_seed_database():
+    """Stellt sicher, dass alle Tabellenspalten existieren und initialisiert Katalog-Clubs & Turniere."""
+    # 1. Sicherstellen, dass neue Spalten (region, city) in bestehenden SQLite-Tabellen existieren
     try:
+        with db.engine.connect() as conn:
+            cursor = conn.connection.cursor()
+            cursor.execute("PRAGMA table_info(clubs)")
+            cols = [row[1] for row in cursor.fetchall()]
+            if cols and 'region' not in cols:
+                cursor.execute("ALTER TABLE clubs ADD COLUMN region VARCHAR(100) DEFAULT 'Schleswig-Holstein / Hamburg'")
+            if cols and 'city' not in cols:
+                cursor.execute("ALTER TABLE clubs ADD COLUMN city VARCHAR(100) DEFAULT ''")
+            conn.connection.commit()
+    except Exception as e:
+        print(f"Hinweis zur Tabellenmigration: {e}")
+
+    # 2. Tabellen erstellen, falls noch nicht existent
+    db.create_all()
+
+    # 3. System-Clubs aktualisieren / seeden
+    try:
+        system_clubs_count = Club.query.filter_by(user_id=None).count()
+        if system_clubs_count < len(KATALOG_CLUBS):
+            # Alte Systemclubs bereinigen, damit der neue 38-Club-Katalog sauber eingespielt wird
+            Club.query.filter_by(user_id=None).delete()
+            for c_data in KATALOG_CLUBS:
+                club = Club(
+                    name=c_data["name"],
+                    tee=c_data.get("tee", "gelb"),
+                    region=c_data.get("region", "Schleswig-Holstein / Hamburg"),
+                    city=c_data.get("city", ""),
+                    par18=c_data.get("par18") or None,
+                    cr18=c_data.get("cr18") or None,
+                    sr18=c_data.get("sr18") or None,
+                    par9=c_data.get("par9") or None,
+                    cr9=c_data.get("cr9") or None,
+                    sr9=c_data.get("sr9") or None,
+                    user_id=None
+                )
+                db.session.add(club)
+
+        if Turnier.query.count() == 0:
+            for t_data in KATALOG_TURNIERE:
+                turnier = Turnier(
+                    club_name=t_data["club_name"],
+                    name=t_data["name"],
+                    datum=t_data["datum"],
+                    loecher=t_data["loecher"],
+                    spielform=t_data["spielform"],
+                    vorgabewirksam=t_data["vorgabewirksam"],
+                    user_id=None
+                )
+                db.session.add(turnier)
+
         db.session.commit()
     except Exception as e:
         db.session.rollback()
@@ -223,8 +244,7 @@ def seed_database_if_empty():
 
 # Tabellen erstellen & Seeden
 with app.app_context():
-    db.create_all()
-    seed_database_if_empty()
+    migrate_and_seed_database()
 
 # --- 3. AUTHENTIFIZIERUNG HELPER ---
 
