@@ -210,6 +210,42 @@
         <!-- TAB 1: DASHBOARD -->
         <!-- ========================================== -->
         <section id="tab-dashboard" class="tab-pane active space-y-8">
+            <!-- Guest Notice Banner (Visible only when not logged in) -->
+            <div id="dash-auth-prompt" class="rounded-2xl p-5 sm:p-6 bg-gradient-to-r from-slate-900 via-golf-950 to-slate-900 text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-golf-800/40">
+                <div class="space-y-1">
+                    <div class="flex items-center gap-2">
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-400/20 text-amber-300 border border-amber-400/30">🔒 Gast-Modus</span>
+                        <span class="text-xs text-golf-300 font-medium">Keine persönlichen Daten geladen</span>
+                    </div>
+                    <h3 class="text-base sm:text-lg font-bold text-white">Persönliches Handicap & Rundenhistorie verwalten</h3>
+                    <p class="text-xs text-slate-300 max-w-2xl leading-relaxed">
+                        Melde dich mit deinem Benutzerkonto an oder registriere dich kostenlos, um deine eigenen Golfergebnisse einzusehen, Runden zu erfassen und dein offizielles WHS Handicap zu berechnen.
+                    </p>
+                </div>
+                <div class="flex items-center gap-2.5 shrink-0">
+                    <button onclick="openAuthModal('login')" class="px-4 py-2 rounded-xl bg-golf-600 hover:bg-golf-500 font-bold text-xs sm:text-sm text-white shadow-md transition-all">
+                        Anmelden
+                    </button>
+                    <button onclick="openAuthModal('register')" class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 font-bold text-xs sm:text-sm text-white transition-all">
+                        Konto erstellen
+                    </button>
+                </div>
+            </div>
+
+            <!-- Logged-in User Welcome (Visible when logged in and 0 rounds) -->
+            <div id="dash-user-welcome" class="hidden rounded-2xl p-5 bg-golf-50 border border-golf-200 text-golf-950 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
+                <div>
+                    <h4 class="font-bold text-sm flex items-center gap-2">
+                        <span>👋 Willkommen in deinem Golf-Account!</span>
+                    </h4>
+                    <p class="text-xs text-slate-600 mt-0.5">Erfasse deine erste Runde, importiere dein DGV Stammblatt oder lade deine bisherigen Runden.</p>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                    <button onclick="switchTab('record')" class="px-3.5 py-1.5 rounded-xl bg-golf-600 hover:bg-golf-700 text-white font-bold text-xs shadow-xs transition-all">+ Runde erfassen</button>
+                    <button onclick="importHistoricalRoundsToAccount()" class="px-3.5 py-1.5 rounded-xl bg-white hover:bg-slate-100 border border-golf-200 text-golf-800 font-bold text-xs transition-all">📥 20 Runden importieren</button>
+                </div>
+            </div>
+
             <!-- Hero Stats Grid -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                 <!-- Handicap Index Card -->
@@ -1013,6 +1049,16 @@
                     </div>
 
                     <div class="pt-4 border-t border-slate-100">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-golf-700 mb-2">Historische Runden</h4>
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <p class="text-xs text-slate-500">20 historische Runden (u.a. Sachsenwaldbecher, BSV Finale) in deinen Account laden.</p>
+                            <button onclick="importHistoricalRoundsToAccount()" class="px-3.5 py-2 rounded-xl bg-golf-50 hover:bg-golf-100 border border-golf-200 text-golf-800 font-semibold text-xs transition-colors whitespace-nowrap">
+                                📥 20 Runden importieren
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-100">
                         <h4 class="text-xs font-bold uppercase tracking-wider text-rose-600 mb-2">Gefahrenzone</h4>
                         <div class="flex items-center justify-between gap-4">
                             <p class="text-xs text-slate-500">Setzt alle Daten auf die DGV-Startwerte zurück.</p>
@@ -1102,7 +1148,7 @@
                         <input type="password" id="auth-password-confirm" placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-golf-200 focus:border-golf-500 transition-all">
                     </div>
                     <label class="flex items-center gap-2 cursor-pointer text-xs text-slate-600 pt-1">
-                        <input type="checkbox" id="auth-migrate-local" checked class="rounded text-golf-600 focus:ring-golf-500">
+                        <input type="checkbox" id="auth-migrate-local" class="rounded text-golf-600 focus:ring-golf-500">
                         <span>Meine bisherigen lokalen Runden in mein neues Konto übernehmen</span>
                     </label>
                 </div>
@@ -1444,7 +1490,8 @@
             {"min_hcp": 53.8, "max_hcp": 53.9, "wert": 26.0}, {"min_hcp": 54.0, "max_hcp": 54.0, "wert": 26.1}
         ];
 
-        const defaultRounds = [
+        // Historische Referenz-Runden (können vom Benutzer im eingeloggten Zustand in seinen Account importiert werden)
+        const sampleHistoricalRounds = [
             {"datum": "26.04.2026", "club_name": "SACHSENWALDBECHER", "loecher": 18, "brutto": 100, "sd": 23.8},
             {"datum": "04.11.2025", "club_name": "RPR: Moldzio, Dr. Th...", "loecher": 18, "brutto": 92, "sd": 17.0},
             {"datum": "17.10.2025", "club_name": "GolfHouse Freitagswe...", "loecher": 18, "brutto": 96, "sd": 20.9},
@@ -1467,13 +1514,16 @@
             {"datum": "02.08.2025", "club_name": "MP 5 AK 50 Herren E...", "loecher": 18, "brutto": 93, "sd": 20.6}
         ];
 
+        // Standardmäßig keine Runden für anonyme Besucher (Datenschutz & Multi-User)
+        const defaultRounds = [];
+
         // --- APP STATE ---
         let clubs = [];
         let turniere = [];
         let sdErgaenzung = [];
         let runden = [];
-        let aktuellesHCP = 20.6;
-        let previousHCP = 20.6;
+        let aktuellesHCP = null;
+        let previousHCP = null;
         let chartInstance = null;
         let currentChartFilter = 'last20';
         let entryMode = 'quick'; // 'quick' or 'holes'
@@ -1522,6 +1572,9 @@
             // Check active check-in
             activeCheckIn = JSON.parse(localStorage.getItem('golf_checkin') || 'null');
 
+            // Bereinige alte, nicht zugeordnete Runden aus dem LocalStorage
+            localStorage.removeItem('golf_runden');
+
             // Check auth state in localStorage
             const savedAuth = JSON.parse(localStorage.getItem('golf_auth') || 'null');
             if(savedAuth && savedAuth.token && savedAuth.user) {
@@ -1534,7 +1587,7 @@
                 if(resRunden.ok && Array.isArray(resRunden.data)) {
                     runden = resRunden.data;
                 } else {
-                    runden = JSON.parse(localStorage.getItem('golf_runden')) || defaultRounds;
+                    runden = JSON.parse(localStorage.getItem(`golf_runden_${currentUser.id}`)) || [];
                 }
 
                 const resClubs = await apiFetch('/api/clubs');
@@ -1555,7 +1608,7 @@
                 authToken = null;
                 renderAuthHeader();
 
-                // If saved clubs is empty or older version with few clubs, populate with full defaultClubs
+                // Öffentliches Golfclub- und Turnierverzeichnis für Gäste
                 const localClubs = JSON.parse(localStorage.getItem('golf_clubs'));
                 if(localClubs && Array.isArray(localClubs) && localClubs.length >= 25) {
                     clubs = localClubs;
@@ -1570,7 +1623,10 @@
                     turniere = defaultTurniere;
                 }
 
-                runden = JSON.parse(localStorage.getItem('golf_runden')) || defaultRounds;
+                // WICHTIG: Wenn unangemeldet, NIEMALS persönliche Runden oder fremdes HCP anzeigen!
+                runden = [];
+                aktuellesHCP = null;
+                previousHCP = null;
             }
 
             sdErgaenzung = JSON.parse(localStorage.getItem('golf_sd')) || defaultSdErgaenzung;
@@ -1580,12 +1636,32 @@
         function saveData() {
             localStorage.setItem('golf_clubs', JSON.stringify(clubs));
             localStorage.setItem('golf_turniere', JSON.stringify(turniere));
-            localStorage.setItem('golf_runden', JSON.stringify(runden));
+            if(currentUser && currentUser.id) {
+                localStorage.setItem(`golf_runden_${currentUser.id}`, JSON.stringify(runden));
+            }
+            localStorage.removeItem('golf_runden');
             localStorage.setItem('golf_sd', JSON.stringify(sdErgaenzung));
             if(activeCheckIn) {
                 localStorage.setItem('golf_checkin', JSON.stringify(activeCheckIn));
             } else {
                 localStorage.removeItem('golf_checkin');
+            }
+        }
+
+        // Importiert die 20 historischen Runden in das angemeldete Benutzerkonto
+        async function importHistoricalRoundsToAccount() {
+            if(!currentUser || !authToken) {
+                openAuthModal('login');
+                return;
+            }
+            if(confirm("Möchtest du die 20 historischen Runden (u.a. Sachsenwaldbecher, RPR, BSV Finale) in dein Benutzerkonto importieren?")) {
+                const res = await apiFetch('/api/runden/batch', 'POST', { runden: sampleHistoricalRounds });
+                if(res.ok) {
+                    await loadData();
+                    showToast("20 Runden erfolgreich in deinen Account importiert!", "⛳");
+                } else {
+                    showToast("Fehler beim Importieren: " + (res.data?.fehler || "Unbekannt"), "⚠️");
+                }
             }
         }
 
@@ -1789,14 +1865,14 @@
 
         // --- WHS HANDICAP INDEX RECALCULATION ---
         function updateHCP() {
-            runden.sort((a,b) => parseDateDe(a.datum) - parseDateDe(b.datum));
-            runden.forEach(r => r.isBest = false);
-
-            if(runden.length === 0) {
-                aktuellesHCP = 26.0;
-                previousHCP = 26.0;
+            if(!currentUser || runden.length === 0) {
+                aktuellesHCP = null;
+                previousHCP = null;
                 return;
             }
+
+            runden.sort((a,b) => parseDateDe(a.datum) - parseDateDe(b.datum));
+            runden.forEach(r => r.isBest = false);
 
             const letzte20 = runden.slice(-20);
             let anzahlZuWerten = 8;
@@ -1818,7 +1894,7 @@
             });
 
             const sumSD = beste.reduce((acc, r) => acc + parseFloat(r.sd), 0);
-            previousHCP = aktuellesHCP;
+            previousHCP = aktuellesHCP !== null ? aktuellesHCP : Math.round((sumSD / beste.length) * 10) / 10;
             aktuellesHCP = Math.round((sumSD / beste.length) * 10) / 10;
         }
 
@@ -1840,11 +1916,22 @@
         }
 
         function renderHeader() {
-            document.getElementById('header-hcp').innerText = aktuellesHCP.toFixed(1);
-            document.getElementById('dash-hcp').innerText = aktuellesHCP.toFixed(1);
+            const hcpDisplay = (currentUser && aktuellesHCP !== null) ? aktuellesHCP.toFixed(1) : '--';
+            document.getElementById('header-hcp').innerText = hcpDisplay;
+            document.getElementById('dash-hcp').innerText = hcpDisplay;
 
             const trendEl = document.getElementById('header-hcp-trend');
-            trendEl.innerText = currentUser ? 'CLOUD' : 'LOKAL';
+            if(currentUser) {
+                trendEl.innerText = 'ONLINE';
+                trendEl.className = "text-[10px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-100/90 px-2 py-0.5 rounded-full border border-emerald-300";
+                trendEl.onclick = null;
+                trendEl.title = `Angemeldet als ${currentUser.username}`;
+            } else {
+                trendEl.innerText = 'GAST';
+                trendEl.className = "text-[10px] font-bold uppercase tracking-wider text-slate-600 bg-slate-200/90 px-2 py-0.5 rounded-full border border-slate-300 cursor-pointer hover:bg-slate-300 transition-colors";
+                trendEl.title = "Klicke hier zum Anmelden";
+                trendEl.onclick = () => openAuthModal('login');
+            }
 
             const checkinPill = document.getElementById('header-checkin-pill');
             const checkinName = document.getElementById('header-checkin-name');
@@ -1859,13 +1946,45 @@
         }
 
         function renderDashboard() {
-            document.getElementById('dash-rounds-count').innerText = runden.length;
+            const authPrompt = document.getElementById('dash-auth-prompt');
+            const userWelcome = document.getElementById('dash-user-welcome');
+            
+            if(authPrompt) {
+                if(currentUser) {
+                    authPrompt.classList.add('hidden');
+                } else {
+                    authPrompt.classList.remove('hidden');
+                }
+            }
+
+            if(userWelcome) {
+                if(currentUser && runden.length === 0) {
+                    userWelcome.classList.remove('hidden');
+                } else {
+                    userWelcome.classList.add('hidden');
+                }
+            }
+
+            const hcpDisplay = (currentUser && aktuellesHCP !== null) ? aktuellesHCP.toFixed(1) : '--';
+            document.getElementById('dash-hcp').innerText = hcpDisplay;
+            
+            const dashHcpSub = document.getElementById('dash-hcp-sub');
+            const dashHcpDesc = document.getElementById('dash-hcp-desc');
+            if(currentUser) {
+                dashHcpSub.innerText = 'WHS Index';
+                dashHcpDesc.innerText = aktuellesHCP !== null ? 'Berechnet aus den besten Runden der letzten 20' : 'Noch keine Runden erfasst';
+            } else {
+                dashHcpSub.innerText = 'Gast-Modus';
+                dashHcpDesc.innerText = 'Melde dich an, um dein Handicap zu sehen';
+            }
+
+            document.getElementById('dash-rounds-count').innerText = currentUser ? runden.length : '--';
 
             const r18 = runden.filter(r => r.loecher == 18).length;
             const r9 = runden.filter(r => r.loecher == 9).length;
-            document.getElementById('dash-rounds-18-9-sub').innerText = `${r18}x 18L / ${r9}x 9L`;
+            document.getElementById('dash-rounds-18-9-sub').innerText = currentUser ? `${r18}x 18L / ${r9}x 9L` : 'Keine Runden';
 
-            if(runden.length > 0) {
+            if(currentUser && runden.length > 0) {
                 const minSD = Math.min(...runden.map(r => parseFloat(r.sd)));
                 const bestSDRound = runden.find(r => parseFloat(r.sd) === minSD);
                 document.getElementById('dash-best-sd').innerText = minSD.toFixed(1);
@@ -1883,57 +2002,79 @@
                 }
             } else {
                 document.getElementById('dash-best-sd').innerText = '--';
+                document.getElementById('dash-best-sd-club').innerText = currentUser ? 'Noch keine Runden' : 'Nicht angemeldet';
                 document.getElementById('dash-best-gross').innerText = '--';
+                document.getElementById('dash-best-gross-date').innerText = currentUser ? 'Noch keine Runden' : 'Nicht angemeldet';
             }
-
-            const letzte20 = runden.slice(-20);
-            const countingRounds = letzte20.filter(r => r.isBest).sort((a,b) => parseFloat(a.sd) - parseFloat(b.sd));
-            document.getElementById('whs-counting-count').innerText = countingRounds.length;
 
             const container = document.getElementById('counting-rounds-container');
             container.innerHTML = '';
 
-            if(countingRounds.length === 0) {
-                container.innerHTML = `<div class="col-span-full py-4 text-center text-xs text-slate-400">Noch keine gewerteten Runden vorhanden.</div>`;
-            } else {
-                countingRounds.forEach((r, idx) => {
-                    const card = document.createElement('div');
-                    card.className = "rounded-xl p-3 bg-gradient-to-b from-sand-50 to-white border border-sand-200 shadow-xs text-center space-y-1 relative group hover:border-sand-400 transition-all";
-                    card.innerHTML = `
-                        <div class="text-[10px] font-bold text-sand-700 flex items-center justify-center gap-0.5">
-                            <span>★ #${idx + 1}</span>
+            if(!currentUser) {
+                document.getElementById('whs-counting-count').innerText = '0';
+                document.getElementById('whs-formula-text').innerText = 'Anmeldung erforderlich';
+                container.innerHTML = `
+                    <div class="col-span-full py-8 text-center text-xs text-slate-500 bg-slate-50/60 rounded-xl border border-dashed border-slate-200 space-y-2">
+                        <div>🔒 <strong>Geschützter Bereich:</strong> Melde dich an, um deine gewerteten WHS-Runden zu sehen.</div>
+                        <div>
+                            <button onclick="openAuthModal('login')" class="px-3.5 py-1.5 rounded-lg bg-golf-600 text-white font-bold text-xs hover:bg-golf-700 transition-colors">
+                                Jetzt anmelden
+                            </button>
                         </div>
-                        <div class="text-xl font-black text-slate-900 font-mono">${parseFloat(r.sd).toFixed(1)}</div>
-                        <div class="text-[10px] text-slate-500 font-medium truncate" title="${r.club_name}">${r.club_name.substring(0, 12)}</div>
-                        <div class="text-[9px] text-slate-400">${r.datum}</div>
-                    `;
-                    container.appendChild(card);
-                });
+                    </div>
+                `;
+            } else {
+                const letzte20 = runden.slice(-20);
+                const countingRounds = letzte20.filter(r => r.isBest).sort((a,b) => parseFloat(a.sd) - parseFloat(b.sd));
+                document.getElementById('whs-counting-count').innerText = countingRounds.length;
 
-                const sum = countingRounds.reduce((acc, r) => acc + parseFloat(r.sd), 0);
-                document.getElementById('whs-formula-text').innerText = `Ø (${sum.toFixed(1)} / ${countingRounds.length}) = ${aktuellesHCP.toFixed(1)}`;
+                if(countingRounds.length === 0) {
+                    document.getElementById('whs-formula-text').innerText = 'Mindestens 1 Runde erforderlich';
+                    container.innerHTML = `<div class="col-span-full py-6 text-center text-xs text-slate-400">Noch keine Runden im Account vorhanden. Erfasse jetzt deine erste Runde!</div>`;
+                } else {
+                    countingRounds.forEach((r, idx) => {
+                        const card = document.createElement('div');
+                        card.className = "rounded-xl p-3 bg-gradient-to-b from-sand-50 to-white border border-sand-200 shadow-xs text-center space-y-1 relative group hover:border-sand-400 transition-all";
+                        card.innerHTML = `
+                            <div class="text-[10px] font-bold text-sand-700 flex items-center justify-center gap-0.5">
+                                <span>★ #${idx + 1}</span>
+                            </div>
+                            <div class="text-xl font-black text-slate-900 font-mono">${parseFloat(r.sd).toFixed(1)}</div>
+                            <div class="text-[10px] text-slate-500 font-medium truncate" title="${r.club_name}">${r.club_name.substring(0, 12)}</div>
+                            <div class="text-[9px] text-slate-400">${r.datum}</div>
+                        `;
+                        container.appendChild(card);
+                    });
+
+                    const sum = countingRounds.reduce((acc, r) => acc + parseFloat(r.sd), 0);
+                    document.getElementById('whs-formula-text').innerText = `Ø (${sum.toFixed(1)} / ${countingRounds.length}) = ${aktuellesHCP !== null ? aktuellesHCP.toFixed(1) : '--'}`;
+                }
             }
 
             const recentBody = document.getElementById('dash-recent-table-body');
             recentBody.innerHTML = '';
-            const recent5 = [...runden].reverse().slice(0, 5);
-
-            if(recent5.length === 0) {
-                recentBody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-xs text-slate-400">Keine Runden vorhanden. Erfasse jetzt deine erste Runde!</td></tr>`;
+            
+            if(!currentUser) {
+                recentBody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-xs text-slate-500">🔒 Spielergebnisse sind nur für angemeldete Benutzer sichtbar. <button onclick="openAuthModal('login')" class="text-golf-600 font-bold underline hover:text-golf-800 ml-1">Anmelden</button></td></tr>`;
             } else {
-                recent5.forEach(r => {
-                    const tr = document.createElement('tr');
-                    tr.className = "hover:bg-slate-50/80 transition-colors";
-                    const isCounting = r.isBest ? '<span class="text-sand-600 font-bold ml-1">★</span>' : '';
-                    tr.innerHTML = `
-                        <td class="py-2.5 px-3 font-medium text-slate-700 whitespace-nowrap">${r.datum}</td>
-                        <td class="py-2.5 px-3 font-semibold text-slate-900 truncate max-w-[180px]">${r.club_name}</td>
-                        <td class="py-2.5 px-3 text-center text-slate-600"><span class="px-2 py-0.5 rounded-md bg-slate-100 text-xs font-bold">${r.loecher}L</span></td>
-                        <td class="py-2.5 px-3 text-center font-mono font-bold text-slate-800">${r.brutto}</td>
-                        <td class="py-2.5 px-3 text-right font-mono font-black ${r.isBest ? 'text-golf-700' : 'text-slate-700'}">${parseFloat(r.sd).toFixed(1)} ${isCounting}</td>
-                    `;
-                    recentBody.appendChild(tr);
-                });
+                const recent5 = [...runden].reverse().slice(0, 5);
+                if(recent5.length === 0) {
+                    recentBody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-xs text-slate-400">Keine Runden vorhanden. Erfasse jetzt deine erste Runde!</td></tr>`;
+                } else {
+                    recent5.forEach(r => {
+                        const tr = document.createElement('tr');
+                        tr.className = "hover:bg-slate-50/80 transition-colors";
+                        const isCounting = r.isBest ? '<span class="text-sand-600 font-bold ml-1">★</span>' : '';
+                        tr.innerHTML = `
+                            <td class="py-2.5 px-3 font-medium text-slate-700 whitespace-nowrap">${r.datum}</td>
+                            <td class="py-2.5 px-3 font-semibold text-slate-900 truncate max-w-[180px]">${r.club_name}</td>
+                            <td class="py-2.5 px-3 text-center text-slate-600"><span class="px-2 py-0.5 rounded-md bg-slate-100 text-xs font-bold">${r.loecher}L</span></td>
+                            <td class="py-2.5 px-3 text-center font-mono font-bold text-slate-800">${r.brutto}</td>
+                            <td class="py-2.5 px-3 text-right font-mono font-black ${r.isBest ? 'text-golf-700' : 'text-slate-700'}">${parseFloat(r.sd).toFixed(1)} ${isCounting}</td>
+                        `;
+                        recentBody.appendChild(tr);
+                    });
+                }
             }
         }
 
@@ -2033,7 +2174,24 @@
         // --- HISTORY FILTERING & RENDERING ---
         function renderFilteredHistory() {
             const tbody = document.getElementById('table-history-body');
+            if(!tbody) return;
             tbody.innerHTML = '';
+
+            if(!currentUser) {
+                document.getElementById('history-total-count').innerText = '-- Runden';
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="py-12 text-center text-slate-500 text-xs">
+                            <div class="text-sm font-bold text-slate-700 mb-1">🔒 Keine persönlichen Runden geladen</div>
+                            <div class="text-slate-400 max-w-md mx-auto mb-4">Deine Rundenhistorie ist geschützt und wird erst nach der Anmeldung in deinem Benutzerkonto angezeigt.</div>
+                            <button onclick="openAuthModal('login')" class="px-4 py-2 rounded-xl bg-golf-600 text-white font-bold text-xs shadow-sm hover:bg-golf-700 transition-all">
+                                Jetzt anmelden
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
 
             const searchTerm = (document.getElementById('history-search')?.value || '').toLowerCase().trim();
             const filterValue = document.getElementById('history-filter-select')?.value || 'recent';
@@ -2066,7 +2224,7 @@
             document.getElementById('history-total-count').innerText = `${displayList.length} Runden`;
 
             if(displayList.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-400 text-xs">Keine Runden gefunden.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-400 text-xs">Keine Runden im Account gefunden. Erfasse jetzt deine erste Runde!</td></tr>`;
                 return;
             }
 
@@ -2608,6 +2766,15 @@
             const ctx = document.getElementById('handicapChart');
             if(!ctx) return;
 
+            if(chartInstance) {
+                chartInstance.destroy();
+                chartInstance = null;
+            }
+
+            if(!currentUser || runden.length === 0) {
+                return;
+            }
+
             let chronRounds = [...runden].sort((a,b) => parseDateDe(a.datum) - parseDateDe(b.datum));
 
             if(currentChartFilter === 'last10') chronRounds = chronRounds.slice(-10);
@@ -2623,10 +2790,6 @@
                 const best = [...subRounds].sort((a,b) => parseFloat(a.sd) - parseFloat(b.sd)).slice(0, count);
                 const sum = best.reduce((acc, r) => acc + parseFloat(r.sd), 0);
                 hcpData.push(Math.round((sum / best.length) * 10) / 10);
-            }
-
-            if(chartInstance) {
-                chartInstance.destroy();
             }
 
             chartInstance = new Chart(ctx, {
@@ -2783,7 +2946,7 @@
                 srPill.innerText = sr || '--';
                 parPill.innerText = par || '--';
 
-                if(cr && sr && par) {
+                if(aktuellesHCP !== null && cr && sr && par) {
                     const ch = calculateCourseHandicap(aktuellesHCP, sr, cr, par, loecher);
                     chPill.innerText = `${ch} Vorgabeschläge`;
                 } else {
@@ -2798,7 +2961,7 @@
 
             if(loecher == 9) {
                 nineHoleCard.classList.remove('hidden');
-                document.getElementById('nine-hole-sd-ergaenzung').innerText = `+${findSDErgaenzung(aktuellesHCP)}`;
+                document.getElementById('nine-hole-sd-ergaenzung').innerText = aktuellesHCP !== null ? `+${findSDErgaenzung(aktuellesHCP)}` : '+12.0 (DGV)';
             } else {
                 nineHoleCard.classList.add('hidden');
             }
@@ -2816,7 +2979,7 @@
             const top8TextEl = document.getElementById('preview-top8-text');
 
             if(club && brutto && !isNaN(brutto) && brutto >= 25) {
-                const sd = calculateSD(club, loecher, brutto, aktuellesHCP);
+                const sd = calculateSD(club, loecher, brutto, aktuellesHCP || 26.0);
                 if(sd !== null) {
                     sdPreviewEl.innerText = sd.toFixed(1);
                     explainerEl.innerText = `SD = (113 / ${loecher == 18 ? club.sr18 : club.sr9}) × (${brutto} - ${loecher == 18 ? club.cr18 : club.cr9})${loecher == 9 ? ` + ${findSDErgaenzung(aktuellesHCP)} (DGV Ergänzung)` : ''}`;
@@ -2827,11 +2990,16 @@
                     const sorted = [...letzte20].sort((a,b) => parseFloat(a.sd) - parseFloat(b.sd));
                     const best = sorted.slice(0, count);
                     const newHcp = Math.round((best.reduce((a,b) => a + parseFloat(b.sd), 0) / best.length) * 10) / 10;
-                    const delta = Math.round((newHcp - aktuellesHCP) * 10) / 10;
+                    const delta = aktuellesHCP !== null ? Math.round((newHcp - aktuellesHCP) * 10) / 10 : null;
 
                     newHcpEl.innerText = newHcp.toFixed(1);
 
-                    if(delta < 0) {
+                    if(delta === null) {
+                        hcpDeltaEl.className = "text-xs font-bold px-2.5 py-0.5 rounded-full bg-golf-100 text-golf-800";
+                        hcpDeltaEl.innerText = "Erste Runde";
+                        top8BadgeEl.className = "p-3 rounded-xl bg-golf-50 border border-golf-200 text-xs text-golf-900 flex items-center gap-2";
+                        top8TextEl.innerText = "🎯 Deine erste gewertete Runde etabliert dein offizielles Handicap!";
+                    } else if(delta < 0) {
                         hcpDeltaEl.className = "text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800";
                         hcpDeltaEl.innerText = `${delta.toFixed(1)} ↘`;
                         top8BadgeEl.className = "p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 flex items-center gap-2";
@@ -2970,6 +3138,14 @@
         // --- SAVE ROUND HANDLER ---
         async function handleSaveRound(e) {
             e.preventDefault();
+
+            if(!currentUser || !authToken) {
+                if(confirm("Du bist aktuell nicht angemeldet. Möchtest du dich jetzt anmelden oder ein kostenloses Konto erstellen, um deine Runden dauerhaft in deinem Profil zu speichern?")) {
+                    openAuthModal('login');
+                }
+                return;
+            }
+
             const dateInput = document.getElementById('rec-datum').value;
             if(!dateInput) {
                 alert("Bitte wähle ein Datum aus.");
@@ -2985,7 +3161,7 @@
             const selectedTurnier = document.getElementById('rec-turnier')?.value;
 
             const club = clubs.find(c => c.name === clubName);
-            const sd = calculateSD(club, loecher, brutto, aktuellesHCP);
+            const sd = calculateSD(club, loecher, brutto, aktuellesHCP || 26.0);
 
             if(sd === null) {
                 alert(`Der Club "${clubName}" hat keine vollständigen CR/Slope-Werte für ${loecher} Löcher.`);
@@ -3095,6 +3271,22 @@
             const feedbackBox = document.getElementById('sim-feedback-box');
             const dropoffEl = document.getElementById('sim-dropoff-text');
 
+            if(aktuellesHCP === null || !currentUser) {
+                document.getElementById('sim-curr-hcp').innerText = '--';
+                if(resultHcpEl) resultHcpEl.innerText = '--';
+                if(resultDeltaEl) resultDeltaEl.innerText = '--';
+                if(resultSdEl) resultSdEl.innerText = '--';
+                if(chEl) chEl.innerText = '--';
+                if(crEl) crEl.innerText = '--';
+                if(srEl) srEl.innerText = '--';
+                if(feedbackBox) {
+                    feedbackBox.className = "p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700";
+                    feedbackBox.innerHTML = `🔒 Bitte melde dich an oder erfasse Runden, um dein persönliches Handicap zu simulieren. <button onclick="openAuthModal('login')" class="text-golf-600 font-bold underline ml-1">Anmelden</button>`;
+                }
+                if(dropoffEl) dropoffEl.innerText = "Keine Runden vorhanden.";
+                return;
+            }
+
             document.getElementById('sim-curr-hcp').innerText = aktuellesHCP.toFixed(1);
 
             if(!club) return;
@@ -3128,17 +3320,17 @@
                 resultHcpEl.innerText = simHcp.toFixed(1);
 
                 if(delta < 0) {
-                    resultDeltaEl.className = "text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800";
+                    resultDeltaEl.className = "text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800";
                     resultDeltaEl.innerText = `${delta.toFixed(1)} ↘`;
                     feedbackBox.className = "p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 font-semibold";
                     feedbackBox.innerText = `🎯 Mit ${brutto} Schlägen (SD ${sd.toFixed(1)}) verbesserst du dein Handicap um ${Math.abs(delta).toFixed(1)} Schläge!`;
                 } else if(delta > 0) {
-                    resultDeltaEl.className = "text-xs font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800";
+                    resultDeltaEl.className = "text-xs font-bold px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-800";
                     resultDeltaEl.innerText = `+${delta.toFixed(1)} ↗`;
                     feedbackBox.className = "p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-900 font-semibold";
                     feedbackBox.innerText = `⚠️ Mit ${brutto} Schlägen verschlechtert sich dein Handicap leicht um +${delta.toFixed(1)}.`;
                 } else {
-                    resultDeltaEl.className = "text-xs font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700";
+                    resultDeltaEl.className = "text-xs font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700";
                     resultDeltaEl.innerText = `±0.0`;
                     feedbackBox.className = "p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 font-medium";
                     feedbackBox.innerText = `Dein Handicap Index bleibt unverändert bei ${aktuellesHCP.toFixed(1)}.`;
@@ -3162,8 +3354,16 @@
         function runCourseHcpCalc() {
             const clubName = document.getElementById('calc-club')?.value;
             const loecher = parseInt(document.getElementById('calc-holes')?.value || '18', 10);
-            let hcpVal = parseFloat(document.getElementById('calc-hcp')?.value);
-            if(isNaN(hcpVal)) hcpVal = aktuellesHCP;
+            let hcpInput = document.getElementById('calc-hcp');
+            let hcpVal = parseFloat(hcpInput?.value);
+            if(isNaN(hcpVal)) {
+                if(aktuellesHCP !== null) {
+                    hcpVal = aktuellesHCP;
+                    if(hcpInput) hcpInput.value = aktuellesHCP.toFixed(1);
+                } else {
+                    hcpVal = 54.0;
+                }
+            }
 
             const club = clubs.find(c => c.name === clubName);
 
@@ -3175,7 +3375,7 @@
             let sr = !isNaN(srOverride) ? srOverride : (club ? (loecher == 18 ? club.sr18 : club.sr9) : 113.0);
             let par = !isNaN(parOverride) ? parOverride : (club ? (loecher == 18 ? club.par18 : club.par9) : 72.0);
 
-            if(cr && sr && par) {
+            if(cr && sr && par && !isNaN(hcpVal)) {
                 const ch = calculateCourseHandicap(hcpVal, sr, cr, par, loecher);
                 document.getElementById('calc-result-ch').innerText = ch;
                 document.getElementById('calc-formula-display').innerText = `CH = ${hcpVal.toFixed(1)} × (${sr} / 113) + (${cr} - ${par}) = ${ch}`;
@@ -3388,15 +3588,19 @@
         }
 
         async function confirmPDFImport() {
+            if(!currentUser || !authToken) {
+                alert("Bitte melde dich an oder erstelle ein Konto, um Runden in dein Benutzerkonto zu importieren.");
+                openAuthModal('login');
+                return;
+            }
+
             const toImport = detectedPdfRounds.filter(r => r.selected);
             if(toImport.length === 0) {
                 alert("Keine Runden ausgewählt.");
                 return;
             }
 
-            if(currentUser && authToken) {
-                await apiFetch('/api/runden/batch', 'POST', { runden: toImport });
-            }
+            await apiFetch('/api/runden/batch', 'POST', { runden: toImport });
 
             toImport.forEach(r => {
                 runden.push({
