@@ -2,14 +2,16 @@
 <html lang="de" class="h-full bg-slate-50">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>BirdieTrack – Golf WHS Handicap Tracker & Rechner</title>
     <!-- PWA Web Manifest & Mobile Icons -->
     <link rel="manifest" href="/manifest.webmanifest">
     <meta name="theme-color" content="#0d5c3a">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="BirdieTrack">
+    <meta name="format-detection" content="telephone=no">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -60,8 +62,37 @@
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
     </script>
     <style>
+        :root {
+            --sat: env(safe-area-inset-top, 0px);
+            --sab: env(safe-area-inset-bottom, 0px);
+            --sal: env(safe-area-inset-left, 0px);
+            --sar: env(safe-area-inset-right, 0px);
+        }
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
+            padding-top: var(--sat);
+            padding-left: var(--sal);
+            padding-right: var(--sar);
+            padding-bottom: calc(var(--sab) + 4.75rem); /* Buffer for mobile bottom navigation */
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            -webkit-font-smoothing: antialiased;
+        }
+        @media (min-width: 768px) {
+            body {
+                padding-bottom: var(--sab);
+            }
+        }
+        /* Prevent iOS Safari 16px input focus auto-zooming */
+        @media screen and (max-width: 767px) {
+            input, select, textarea {
+                font-size: 16px !important;
+            }
+        }
+        /* Mobile touch scrolling */
+        .touch-scroll {
+            -webkit-overflow-scrolling: touch;
+            overscroll-behavior-y: contain;
         }
         /* Custom scrollbar */
         ::-webkit-scrollbar {
@@ -85,7 +116,7 @@
         .score-double { background: #fee2e2; color: #b91c1c; border: 2px solid #ef4444; }
     </style>
 </head>
-<body class="h-full flex flex-col bg-slate-50 text-slate-800 antialiased selection:bg-golf-500 selection:text-white">
+<body class="h-full flex flex-col bg-slate-50 text-slate-800 antialiased selection:bg-golf-500 selection:text-white pb-safe">
 
     <!-- TOP NAVIGATION / BRANDING HEADER -->
     <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm transition-all">
@@ -238,7 +269,33 @@
         <!-- ========================================== -->
         <!-- TAB 1: DASHBOARD -->
         <!-- ========================================== -->
-        <section id="tab-dashboard" class="tab-pane active space-y-8">
+        <section id="tab-dashboard" class="tab-pane active space-y-6 sm:space-y-8">
+            <!-- Mobile App Install Prompt (PWA Smart Banner) -->
+            <div id="mobile-pwa-install-banner" class="hidden rounded-2xl p-4 bg-gradient-to-r from-emerald-950 via-slate-900 to-golf-950 text-white border border-emerald-500/40 shadow-xl flex items-center justify-between gap-3 animate-fade-in">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-golf-700 to-golf-500 flex items-center justify-center text-xl shadow-md border border-white/20 shrink-0">
+                        ⛳
+                    </div>
+                    <div>
+                        <div class="text-xs font-bold text-emerald-300 flex items-center gap-1.5">
+                            <span>BirdieTrack als Smartphone-App</span>
+                            <span class="text-[9px] px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-200 border border-emerald-400/30 font-mono font-bold">PWA</span>
+                        </div>
+                        <p class="text-[11px] text-slate-300 mt-0.5 leading-snug" id="pwa-install-text">
+                            Für Vollbild-Nutzung & Offline-Scorekarten direkt zum Home-Bildschirm hinzufügen.
+                        </p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                    <button type="button" onclick="triggerPwaInstall()" id="btn-pwa-install" class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-golf-500 hover:from-emerald-400 hover:to-golf-400 text-slate-950 font-black text-xs shadow-md transition-all active:scale-95 whitespace-nowrap">
+                        App laden 📲
+                    </button>
+                    <button type="button" onclick="dismissPwaBanner()" class="w-8 h-8 rounded-xl bg-white/10 hover:bg-white/20 text-white text-base flex items-center justify-center font-bold transition-colors">
+                        &times;
+                    </button>
+                </div>
+            </div>
+
             <!-- Guest Notice Banner (Visible only when not logged in) -->
             <div id="dash-auth-prompt" class="rounded-2xl p-5 sm:p-6 bg-gradient-to-r from-slate-900 via-golf-950 to-slate-900 text-white shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-golf-800/40">
                 <div class="space-y-1">
@@ -1200,8 +1257,8 @@
     <!-- ========================================== -->
     <!-- MODAL: USER AUTHENTICATION (LOGIN / REGISTER / FORGOT / RESET) -->
     <!-- ========================================== -->
-    <div id="auth-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl border border-slate-200 overflow-hidden transform transition-all">
+    <div id="auth-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto hidden">
+        <div class="bg-white rounded-t-3xl sm:rounded-2xl w-full max-w-md shadow-2xl border border-slate-200 overflow-hidden transform transition-all my-0 sm:my-auto max-h-[94dvh] sm:max-h-[90vh] flex flex-col">
             <!-- Modal Header -->
             <div class="flex items-center justify-between p-6 border-b border-slate-100">
                 <div class="flex items-center gap-2">
@@ -1322,8 +1379,8 @@
     <!-- ========================================== -->
     <!-- MODAL: ADD / EDIT GOLF CLUB -->
     <!-- ========================================== -->
-    <div id="club-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl border border-slate-200 overflow-hidden transform transition-all">
+    <div id="club-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto hidden">
+        <div class="bg-white rounded-t-3xl sm:rounded-2xl w-full max-w-lg shadow-2xl border border-slate-200 overflow-hidden transform transition-all my-0 sm:my-auto max-h-[94dvh] sm:max-h-[90vh] flex flex-col">
             <div class="flex items-center justify-between p-6 border-b border-slate-100">
                 <h3 id="club-modal-title" class="text-lg font-bold text-slate-900">Golfclub bearbeiten</h3>
                 <button type="button" onclick="closeClubModal()" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center font-bold text-lg">&times;</button>
@@ -1411,8 +1468,8 @@
     <!-- ========================================== -->
     <!-- MODAL: ADD / EDIT TOURNAMENT -->
     <!-- ========================================== -->
-    <div id="turnier-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-2xl w-full max-w-lg shadow-2xl border border-slate-200 overflow-hidden transform transition-all">
+    <div id="turnier-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto hidden">
+        <div class="bg-white rounded-t-3xl sm:rounded-2xl w-full max-w-lg shadow-2xl border border-slate-200 overflow-hidden transform transition-all my-0 sm:my-auto max-h-[94dvh] sm:max-h-[90vh] flex flex-col">
             <div class="flex items-center justify-between p-6 border-b border-slate-100">
                 <div class="flex items-center gap-2">
                     <div class="w-8 h-8 rounded-lg bg-sand-500 text-white flex items-center justify-center font-bold text-sm">🏆</div>
@@ -1476,8 +1533,8 @@
     </div>
 
     <!-- MODAL: DIGITAL TOURNAMENT SCORECARD & PC CADDIE EXPORT -->
-    <div id="scorecard-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 overflow-y-auto hidden">
-        <div class="bg-white rounded-2xl max-w-4xl w-full shadow-2xl border border-slate-200 overflow-hidden my-auto max-h-[92vh] flex flex-col">
+    <div id="scorecard-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto hidden">
+        <div class="bg-white rounded-t-3xl sm:rounded-2xl max-w-4xl w-full shadow-2xl border border-slate-200 overflow-hidden my-0 sm:my-auto max-h-[94dvh] sm:max-h-[92vh] flex flex-col">
             <!-- Modal Header -->
             <div class="p-4 sm:p-5 border-b border-slate-200 bg-gradient-to-r from-golf-900 via-golf-950 to-slate-900 text-white flex items-center justify-between shrink-0">
                 <div class="flex items-center gap-3">
@@ -1626,7 +1683,7 @@
                         <table class="w-full text-left text-xs font-medium">
                             <thead id="sc-holes-table-head" class="bg-slate-100 text-slate-600 font-bold uppercase tracking-wider text-[10px]">
                                 <tr>
-                                    <th class="py-2.5 px-2 text-center w-12">Loch</th>
+                                    <th class="sticky left-0 bg-slate-100 z-20 py-2.5 px-2 text-center w-12 font-bold shadow-[1px_0_0_0_#cbd5e1]">Loch</th>
                                     <th class="py-2.5 px-2 text-center w-12">Par</th>
                                     <th class="py-2.5 px-2 text-center w-14" title="Stroke Index / Vorgaben-Schlüssel">SI</th>
                                     <th class="py-2.5 px-2 text-center w-14" title="Vorgabestriche">Striche</th>
@@ -1640,7 +1697,7 @@
                             </tbody>
                             <tfoot id="sc-holes-table-foot" class="bg-slate-50 border-t-2 border-slate-200 font-bold text-xs">
                                 <tr>
-                                    <td class="py-3 px-2 text-center font-sans font-black">GESAMT</td>
+                                    <td class="sticky left-0 bg-slate-50 z-20 py-3 px-2 text-center font-sans font-black shadow-[1px_0_0_0_#cbd5e1]">GESAMT</td>
                                     <td id="sc-total-par" class="py-3 px-2 text-center text-slate-700 font-mono">72</td>
                                     <td class="py-3 px-2 text-center text-slate-400 font-mono">-</td>
                                     <td id="sc-total-striche" class="py-3 px-2 text-center text-slate-700 font-mono">0</td>
@@ -1729,8 +1786,8 @@
     </div>
 
     <!-- MODAL: TOURNAMENT DETAILS & REGISTRATION -->
-    <div id="tournament-details-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto hidden">
-        <div class="bg-white rounded-2xl max-w-xl w-full shadow-2xl border border-slate-200 overflow-hidden my-auto max-h-[90vh] flex flex-col">
+    <div id="tournament-details-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto hidden">
+        <div class="bg-white rounded-t-3xl sm:rounded-2xl max-w-xl w-full shadow-2xl border border-slate-200 overflow-hidden my-0 sm:my-auto max-h-[94dvh] sm:max-h-[90vh] flex flex-col">
             <div class="p-4 sm:p-5 border-b border-slate-200 bg-gradient-to-r from-amber-600 via-amber-700 to-slate-900 text-white flex items-center justify-between shrink-0">
                 <div class="flex items-center gap-3">
                     <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center text-lg">🏆</div>
@@ -1771,8 +1828,8 @@
     </div>
 
     <!-- MODAL: ADMIN AREA (BENUTZERVERWALTUNG & SYSTEM) -->
-    <div id="admin-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto hidden">
-        <div class="bg-white rounded-2xl max-w-3xl w-full shadow-2xl border border-slate-200 overflow-hidden my-auto max-h-[90vh] flex flex-col">
+    <div id="admin-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto hidden">
+        <div class="bg-white rounded-t-3xl sm:rounded-2xl max-w-3xl w-full shadow-2xl border border-slate-200 overflow-hidden my-0 sm:my-auto max-h-[94dvh] sm:max-h-[90vh] flex flex-col">
             <div class="p-4 sm:p-5 border-b border-slate-200 bg-gradient-to-r from-purple-900 via-indigo-950 to-slate-900 text-white flex items-center justify-between shrink-0">
                 <div class="flex items-center gap-3">
                     <div class="w-9 h-9 rounded-xl bg-purple-500/20 border border-purple-400/30 flex items-center justify-center text-lg">🛡️</div>
@@ -1813,8 +1870,8 @@
     </div>
 
     <!-- MODAL: GOLFFREUNDE & LEADERBOARD -->
-    <div id="friends-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto hidden">
-        <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden my-auto max-h-[90vh] flex flex-col">
+    <div id="friends-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto hidden">
+        <div class="bg-white rounded-t-3xl sm:rounded-2xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden my-0 sm:my-auto max-h-[94dvh] sm:max-h-[90vh] flex flex-col">
             <div class="p-4 sm:p-5 border-b border-slate-200 bg-gradient-to-r from-golf-900 via-emerald-950 to-slate-900 text-white flex items-center justify-between shrink-0">
                 <div class="flex items-center gap-3">
                     <div class="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-lg">🏆</div>
@@ -1883,8 +1940,8 @@
     </div>
 
     <!-- MODAL: OFFIZIELLES DGV STAMMBLATT -->
-    <div id="stammblatt-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto hidden">
-        <div class="bg-white rounded-2xl max-w-3xl w-full shadow-2xl border border-slate-200 overflow-hidden my-auto max-h-[95vh] flex flex-col">
+    <div id="stammblatt-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto hidden">
+        <div class="bg-white rounded-t-3xl sm:rounded-2xl max-w-3xl w-full shadow-2xl border border-slate-200 overflow-hidden my-0 sm:my-auto max-h-[95vh] flex flex-col">
             <div class="p-4 sm:p-5 border-b border-slate-200 bg-gradient-to-r from-slate-900 to-golf-950 text-white flex items-center justify-between shrink-0 print:hidden">
                 <div class="flex items-center gap-3">
                     <div class="w-9 h-9 rounded-xl bg-golf-500/20 border border-golf-400/30 flex items-center justify-center text-lg">📜</div>
@@ -1962,8 +2019,8 @@
     </div>
 
     <!-- MODAL: GOLF LIVE WETTER -->
-    <div id="weather-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto hidden">
-        <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden my-auto flex flex-col">
+    <div id="weather-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto hidden">
+        <div class="bg-white rounded-t-3xl sm:rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden my-0 sm:my-auto flex flex-col">
             <div class="p-4 border-b border-slate-200 bg-gradient-to-r from-sky-600 to-blue-800 text-white flex items-center justify-between">
                 <div class="flex items-center gap-2.5">
                     <div class="text-2xl" id="wm-icon">🌤️</div>
@@ -1993,8 +2050,8 @@
     </div>
 
     <!-- MODAL: MEIN PROFIL & DATENSCHUTZ (DSGVO) -->
-    <div id="profile-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto hidden">
-        <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden my-auto flex flex-col">
+    <div id="profile-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto hidden">
+        <div class="bg-white rounded-t-3xl sm:rounded-2xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden my-0 sm:my-auto max-h-[94dvh] sm:max-h-[90vh] flex flex-col">
             <div class="p-4 sm:p-5 border-b border-slate-200 bg-gradient-to-r from-slate-900 via-golf-950 to-slate-900 text-white flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl bg-golf-600/30 border border-golf-400/30 flex items-center justify-center text-xl">
@@ -2095,8 +2152,8 @@
     </div>
 
     <!-- MODAL: DATENSCHUTZERKLÄRUNG (DSGVO) -->
-    <div id="privacy-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto hidden">
-        <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden my-auto max-h-[90vh] flex flex-col">
+    <div id="privacy-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto hidden">
+        <div class="bg-white rounded-t-3xl sm:rounded-2xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden my-0 sm:my-auto max-h-[94dvh] sm:max-h-[90vh] flex flex-col">
             <div class="p-4 border-b border-slate-200 bg-slate-900 text-white flex items-center justify-between">
                 <h3 class="text-base font-bold">📄 Datenschutzerklärung (DSGVO)</h3>
                 <button type="button" onclick="closePrivacyModal()" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center font-bold text-lg">&times;</button>
@@ -2118,8 +2175,8 @@
     </div>
 
     <!-- MODAL: IMPRESSUM -->
-    <div id="imprint-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto hidden">
-        <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden my-auto flex flex-col">
+    <div id="imprint-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto hidden">
+        <div class="bg-white rounded-t-3xl sm:rounded-2xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden my-0 sm:my-auto flex flex-col">
             <div class="p-4 border-b border-slate-200 bg-slate-900 text-white flex items-center justify-between">
                 <h3 class="text-base font-bold">⚖️ Impressum</h3>
                 <button type="button" onclick="closeImprintModal()" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center font-bold text-lg">&times;</button>
@@ -2136,8 +2193,45 @@
         </div>
     </div>
 
+    <!-- MOBILE BOTTOM NAVIGATION (Native iOS & Android App Bar) -->
+    <nav id="mobile-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-lg border-t border-slate-200/90 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] pb-[env(safe-area-inset-bottom,0px)]">
+        <div class="grid grid-cols-5 items-center h-16 px-1">
+            <!-- 1. Dashboard -->
+            <button type="button" onclick="switchTab('dashboard')" class="mobile-nav-btn active flex flex-col items-center justify-center h-full text-golf-700 font-bold transition-all select-none" data-tab="dashboard">
+                <span class="text-xl">📊</span>
+                <span class="text-[10px] tracking-tight mt-0.5">Übersicht</span>
+            </button>
+
+            <!-- 2. Clubs & Turniere -->
+            <button type="button" onclick="switchTab('clubs')" class="mobile-nav-btn flex flex-col items-center justify-center h-full text-slate-400 hover:text-slate-800 font-medium transition-all select-none" data-tab="clubs">
+                <span class="text-xl">⛳</span>
+                <span class="text-[10px] tracking-tight mt-0.5">Clubs</span>
+            </button>
+
+            <!-- 3. Primary Center Action: Scorekarte -->
+            <button type="button" onclick="openScorecardModal()" class="flex flex-col items-center justify-center -mt-5 group select-none" title="Scorekarte öffnen">
+                <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-600 via-amber-500 to-amber-400 text-white flex items-center justify-center text-xl shadow-lg shadow-amber-500/35 border-2 border-white transform group-active:scale-90 transition-transform">
+                    🏆
+                </div>
+                <span class="text-[10px] font-bold text-amber-900 tracking-tight mt-1">Scoren</span>
+            </button>
+
+            <!-- 4. Runde erfassen -->
+            <button type="button" onclick="switchTab('record')" class="mobile-nav-btn flex flex-col items-center justify-center h-full text-slate-400 hover:text-slate-800 font-medium transition-all select-none" data-tab="record">
+                <span class="text-xl">➕</span>
+                <span class="text-[10px] tracking-tight mt-0.5">Runde</span>
+            </button>
+
+            <!-- 5. Profil / Mehr -->
+            <button type="button" onclick="openMobileMoreMenu()" class="mobile-nav-btn flex flex-col items-center justify-center h-full text-slate-400 hover:text-slate-800 font-medium transition-all select-none" title="Mein Profil & Mehr">
+                <span class="text-xl">👤</span>
+                <span class="text-[10px] tracking-tight mt-0.5">Profil</span>
+            </button>
+        </div>
+    </nav>
+
     <!-- TOAST NOTIFICATION CONTAINER -->
-    <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+    <div id="toast" class="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
         <div class="bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-xl border border-slate-700 flex items-center gap-3 text-sm font-medium">
             <span id="toast-icon">✨</span>
             <span id="toast-msg">Erfolgreich gespeichert!</span>
@@ -5104,7 +5198,7 @@
                 if (!showProStats) {
                     thead.innerHTML = `
                         <tr>
-                            <th class="py-2.5 px-2 text-center w-12">Loch</th>
+                            <th class="sticky left-0 bg-slate-100 z-20 py-2.5 px-2 text-center w-12 font-bold shadow-[1px_0_0_0_#cbd5e1]">Loch</th>
                             <th class="py-2.5 px-2 text-center w-12">Par</th>
                             <th class="py-2.5 px-2 text-center w-14" title="Stroke Index / Vorgaben-Schlüssel">SI</th>
                             <th class="py-2.5 px-2 text-center w-14" title="Vorgabestriche">Striche</th>
@@ -5116,7 +5210,7 @@
                 } else {
                     thead.innerHTML = `
                         <tr>
-                            <th class="py-2.5 px-2 text-center w-10">Loch</th>
+                            <th class="sticky left-0 bg-slate-100 z-20 py-2.5 px-2 text-center w-10 font-bold shadow-[1px_0_0_0_#cbd5e1]">Loch</th>
                             <th class="py-2.5 px-2 text-center w-10">Par</th>
                             <th class="py-2.5 px-2 text-center w-12" title="Stroke Index">SI</th>
                             <th class="py-2.5 px-2 text-center w-12" title="Vorgabestriche">Striche</th>
@@ -5174,15 +5268,15 @@
                 
                 if (!showProStats) {
                     tr.innerHTML = `
-                        <td class="py-2 px-2 text-center font-bold text-slate-800">${holeNr}</td>
+                        <td class="sticky left-0 bg-white z-10 py-2 px-2 text-center font-bold text-slate-800 shadow-[1px_0_0_0_#e2e8f0]">${holeNr}</td>
                         <td class="py-2 px-2 text-center text-slate-600">${par}</td>
                         <td class="py-2 px-2 text-center text-slate-400">${si}</td>
                         <td class="py-2 px-2 text-center font-bold text-golf-700">${striche > 0 ? '+'.repeat(Math.min(3, striche)) + (striche > 3 ? striche : '') : '-'}</td>
                         <td class="py-2 px-3 text-center">
                             <div class="inline-flex items-center gap-1 bg-white border border-slate-200 rounded-lg p-0.5 shadow-xs">
-                                <button type="button" onclick="updateScorecardHole(${i}, -1)" class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-black text-xs flex items-center justify-center select-none active:scale-90">-</button>
-                                <input type="number" id="sc-stroke-${i}" onchange="onScorecardStrokeInput(${i}, this.value)" value="${initialStrokes}" min="1" max="15" class="w-9 text-center font-black text-xs text-slate-900 focus:outline-none border-none p-0">
-                                <button type="button" onclick="updateScorecardHole(${i}, 1)" class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-black text-xs flex items-center justify-center select-none active:scale-90">+</button>
+                                <button type="button" onclick="updateScorecardHole(${i}, -1)" class="w-7 h-7 sm:w-6 sm:h-6 rounded bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 font-black text-xs flex items-center justify-center select-none active:scale-90 touch-manipulation">-</button>
+                                <input type="number" id="sc-stroke-${i}" onchange="onScorecardStrokeInput(${i}, this.value)" value="${initialStrokes}" min="1" max="15" class="w-9 text-center font-black text-sm sm:text-xs text-slate-900 focus:outline-none border-none p-0">
+                                <button type="button" onclick="updateScorecardHole(${i}, 1)" class="w-7 h-7 sm:w-6 sm:h-6 rounded bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 font-black text-xs flex items-center justify-center select-none active:scale-90 touch-manipulation">+</button>
                             </div>
                         </td>
                         <td class="py-2 px-2 text-center font-bold text-golf-800" id="sc-netto-${i}">${netto}</td>
@@ -5190,29 +5284,29 @@
                     `;
                 } else {
                     tr.innerHTML = `
-                        <td class="py-2 px-2 text-center font-bold text-slate-800">${holeNr}</td>
+                        <td class="sticky left-0 bg-white z-10 py-2 px-2 text-center font-bold text-slate-800 shadow-[1px_0_0_0_#e2e8f0]">${holeNr}</td>
                         <td class="py-2 px-2 text-center text-slate-600">${par}</td>
                         <td class="py-2 px-2 text-center text-slate-400">${si}</td>
                         <td class="py-2 px-2 text-center font-bold text-golf-700">${striche > 0 ? '+'.repeat(Math.min(3, striche)) + (striche > 3 ? striche : '') : '-'}</td>
                         <td class="py-2 px-2 text-center">
                             <div class="inline-flex items-center gap-0.5 bg-white border border-slate-200 rounded-lg p-0.5 shadow-xs">
-                                <button type="button" onclick="updateScorecardHole(${i}, -1)" class="w-5 h-5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-black text-xs flex items-center justify-center select-none active:scale-90">-</button>
-                                <input type="number" id="sc-stroke-${i}" onchange="onScorecardStrokeInput(${i}, this.value)" value="${initialStrokes}" min="1" max="15" class="w-7 text-center font-black text-xs text-slate-900 focus:outline-none border-none p-0">
-                                <button type="button" onclick="updateScorecardHole(${i}, 1)" class="w-5 h-5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-black text-xs flex items-center justify-center select-none active:scale-90">+</button>
+                                <button type="button" onclick="updateScorecardHole(${i}, -1)" class="w-6 h-6 sm:w-5 sm:h-5 rounded bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 font-black text-xs flex items-center justify-center select-none active:scale-90 touch-manipulation">-</button>
+                                <input type="number" id="sc-stroke-${i}" onchange="onScorecardStrokeInput(${i}, this.value)" value="${initialStrokes}" min="1" max="15" class="w-8 text-center font-black text-sm sm:text-xs text-slate-900 focus:outline-none border-none p-0">
+                                <button type="button" onclick="updateScorecardHole(${i}, 1)" class="w-6 h-6 sm:w-5 sm:h-5 rounded bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 font-black text-xs flex items-center justify-center select-none active:scale-90 touch-manipulation">+</button>
                             </div>
                         </td>
                         <td class="py-2 px-2 text-center font-bold text-golf-800" id="sc-netto-${i}">${netto}</td>
                         <td class="py-2 px-2 text-center font-bold text-amber-800" id="sc-stbf-${i}">${stbf}</td>
                         <td class="py-2 px-2 text-center">
                             <div class="inline-flex items-center gap-0.5 bg-white border border-slate-200 rounded-lg p-0.5 shadow-xs">
-                                <button type="button" onclick="updateScorecardPutts(${i}, -1)" class="w-5 h-5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[10px] flex items-center justify-center select-none active:scale-90">-</button>
+                                <button type="button" onclick="updateScorecardPutts(${i}, -1)" class="w-6 h-6 sm:w-5 sm:h-5 rounded bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 font-bold text-xs flex items-center justify-center select-none active:scale-90 touch-manipulation">-</button>
                                 <input type="number" id="sc-putt-${i}" onchange="onScorecardPuttInput(${i}, this.value)" value="${putts}" min="0" max="6" class="w-6 text-center font-bold text-xs text-slate-900 border-none p-0 focus:outline-none">
-                                <button type="button" onclick="updateScorecardPutts(${i}, 1)" class="w-5 h-5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[10px] flex items-center justify-center select-none active:scale-90">+</button>
+                                <button type="button" onclick="updateScorecardPutts(${i}, 1)" class="w-6 h-6 sm:w-5 sm:h-5 rounded bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 font-bold text-xs flex items-center justify-center select-none active:scale-90 touch-manipulation">+</button>
                             </div>
                         </td>
                         <td class="py-2 px-2 text-center">
                             ${par >= 4 ? `
-                                <select id="sc-fir-${i}" onchange="onScorecardFirChange(${i}, this.value)" class="text-[10px] font-bold rounded-lg border border-slate-200 py-1 px-1 bg-white text-emerald-800">
+                                <select id="sc-fir-${i}" onchange="onScorecardFirChange(${i}, this.value)" class="text-[11px] sm:text-[10px] font-bold rounded-lg border border-slate-200 py-1 px-1 bg-white text-emerald-800 touch-manipulation">
                                     <option value="hit" ${fir === 'hit' ? 'selected' : ''}>🎯 Fairway</option>
                                     <option value="left" ${fir === 'left' ? 'selected' : ''}>⬅️ Links</option>
                                     <option value="right" ${fir === 'right' ? 'selected' : ''}>➡️ Rechts</option>
@@ -5220,7 +5314,7 @@
                             ` : `<span class="text-slate-300 text-[10px]">-</span>`}
                         </td>
                         <td class="py-2 px-2 text-center">
-                            <button type="button" onclick="toggleScorecardGir(${i})" id="sc-gir-btn-${i}" class="px-2 py-0.5 rounded-lg text-[10px] font-bold ${gir ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-slate-100 text-slate-400 border border-slate-200'}">
+                            <button type="button" onclick="toggleScorecardGir(${i})" id="sc-gir-btn-${i}" class="px-2 py-1 sm:py-0.5 rounded-lg text-[11px] sm:text-[10px] font-bold touch-manipulation active:scale-95 ${gir ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-slate-100 text-slate-400 border border-slate-200'}">
                                 ${gir ? '✅ GIR' : '❌ Miss'}
                             </button>
                         </td>
@@ -5233,7 +5327,7 @@
                 if (!showProStats) {
                     tfoot.innerHTML = `
                         <tr>
-                            <td class="py-3 px-2 text-center font-sans font-black">GESAMT</td>
+                            <td class="sticky left-0 bg-slate-50 z-20 py-3 px-2 text-center font-sans font-black shadow-[1px_0_0_0_#cbd5e1]">GESAMT</td>
                             <td id="sc-total-par" class="py-3 px-2 text-center text-slate-700 font-mono">${totalPar}</td>
                             <td class="py-3 px-2 text-center text-slate-400 font-mono">-</td>
                             <td id="sc-total-striche" class="py-3 px-2 text-center text-slate-700 font-mono">${totalStriche}</td>
@@ -5245,7 +5339,7 @@
                 } else {
                     tfoot.innerHTML = `
                         <tr>
-                            <td class="py-3 px-2 text-center font-sans font-black">GESAMT</td>
+                            <td class="sticky left-0 bg-slate-50 z-20 py-3 px-2 text-center font-sans font-black shadow-[1px_0_0_0_#cbd5e1]">GESAMT</td>
                             <td id="sc-total-par" class="py-3 px-2 text-center text-slate-700 font-mono">${totalPar}</td>
                             <td class="py-3 px-2 text-center text-slate-400 font-mono">-</td>
                             <td id="sc-total-striche" class="py-3 px-2 text-center text-slate-700 font-mono">${totalStriche}</td>
@@ -6273,11 +6367,22 @@
         // --- NAVIGATION TABS ---
         function switchTab(tabId) {
             document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
+            
+            // Desktop Tabs
             document.querySelectorAll('.nav-tab').forEach(el => {
                 if(el.dataset.tab === tabId) {
                     el.className = "nav-tab active flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap bg-golf-600 text-white shadow-xs";
                 } else {
                     el.className = "nav-tab flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap text-slate-600 hover:text-slate-900 hover:bg-slate-100";
+                }
+            });
+
+            // Mobile Bottom Navigation Bar Tabs
+            document.querySelectorAll('.mobile-nav-btn').forEach(el => {
+                if(el.dataset.tab === tabId) {
+                    el.className = "mobile-nav-btn active flex flex-col items-center justify-center h-full text-golf-700 font-bold transition-all select-none scale-105";
+                } else if(el.dataset.tab) {
+                    el.className = "mobile-nav-btn flex flex-col items-center justify-center h-full text-slate-400 hover:text-slate-700 font-medium transition-all select-none";
                 }
             });
 
@@ -6287,6 +6392,64 @@
             if(tabId === 'dashboard') {
                 renderChart();
             }
+
+            // Smoothly scroll to top on mobile tab switch
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function openMobileMoreMenu() {
+            if(!currentUser) {
+                openAuthModal('login');
+            } else {
+                openProfileModal();
+            }
+        }
+
+        // --- PWA INSTALLATION PROMPT ---
+        let deferredInstallPrompt = null;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredInstallPrompt = e;
+            const banner = document.getElementById('mobile-pwa-install-banner');
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+            if (banner && !isStandalone && !localStorage.getItem('birdietrack_dismiss_pwa_banner')) {
+                banner.classList.remove('hidden');
+            }
+        });
+
+        function isIosDevice() {
+            return /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
+        }
+
+        function triggerPwaInstall() {
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+            if (isStandalone) {
+                showToast("BirdieTrack ist bereits als App installiert! ⛳", "📱");
+                return;
+            }
+
+            if (deferredInstallPrompt) {
+                deferredInstallPrompt.prompt();
+                deferredInstallPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        showToast("BirdieTrack wird auf deinem Gerät installiert! 🎉", "📱");
+                        const banner = document.getElementById('mobile-pwa-install-banner');
+                        if (banner) banner.classList.add('hidden');
+                    }
+                    deferredInstallPrompt = null;
+                });
+            } else if (isIosDevice()) {
+                alert("📲 So installierst du BirdieTrack auf deinem iPhone / iPad:\n\n1. Tippe unten in Safari auf das Teilen-Symbol (Viereck mit Pfeil nach oben ⎋)\n2. Scrolle im Menü etwas nach unten\n3. Wähle 'Zum Home-Bildschirm' ➕\n4. Tippe oben rechts auf 'Hinzufügen'\n\nFertig! Die App startet direkt im Vollbild ohne Browserleiste!");
+            } else {
+                alert("📲 So installierst du BirdieTrack als App:\n\nTippe in deinem mobilen Browser auf das Drei-Punkte-Menü (⋮) oben rechts und wähle 'App installieren' oder 'Zum Startbildschirm hinzufügen'.");
+            }
+        }
+
+        function dismissPwaBanner() {
+            const banner = document.getElementById('mobile-pwa-install-banner');
+            if (banner) banner.classList.add('hidden');
+            localStorage.setItem('birdietrack_dismiss_pwa_banner', 'true');
         }
 
         // --- TOAST NOTIFICATIONS ---
@@ -6339,6 +6502,14 @@
             if(!navigator.onLine) {
                 const banner = document.getElementById('offline-banner');
                 if(banner) banner.classList.remove('hidden');
+            }
+
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+            if (isIosDevice() && !isStandalone && !localStorage.getItem('birdietrack_dismiss_pwa_banner')) {
+                const banner = document.getElementById('mobile-pwa-install-banner');
+                const textEl = document.getElementById('pwa-install-text');
+                if (banner) banner.classList.remove('hidden');
+                if (textEl) textEl.innerText = "Tippe auf Teilen ⎋ und 'Zum Home-Bildschirm' ➕ für das echte App-Erlebnis auf dem iPhone.";
             }
 
             loadData();
