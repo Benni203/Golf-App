@@ -1,0 +1,25 @@
+{
+  "name": "BirdieTrack - Golf Handicap & Scorecard",
+  "short_name": "BirdieTrack",
+  "description": "Digitale Scorekarte, WHS Handicap-Rechner, GPS-Rangefinder und Flight-Live-Scoring.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#072b1b",
+  "theme_color": "#0d5c3a",
+  "orientation": "portrait-primary",
+  "lang": "de-DE",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Ccircle cx='96' cy='96' r='90' fill='%230d5c3a' stroke='%2334d399' stroke-width='6'/%3E%3Cpath d='M96 38v116m0-116l48 24-48 24' fill='%23f59e0b' stroke='%23f59e0b' stroke-width='4' stroke-linejoin='round'/%3E%3Ccircle cx='96' cy='154' r='14' fill='%23ffffff'/%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Ccircle cx='256' cy='256' r='240' fill='%230d5c3a' stroke='%2334d399' stroke-width='16'/%3E%3Cpath d='M256 100v312m0-312l128 64-128 64' fill='%23f59e0b' stroke='%23f59e0b' stroke-width='10' stroke-linejoin='round'/%3E%3Ccircle cx='256' cy='412' r='36' fill='%23ffffff'/%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

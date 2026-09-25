@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BirdieTrack – Golf WHS Handicap Tracker & Rechner</title>
+    <!-- PWA Web Manifest & Mobile Icons -->
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#0d5c3a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="BirdieTrack">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -132,16 +138,21 @@
                     <div id="auth-header-container" class="flex items-center">
                         <!-- Logged In View -->
                         <div id="auth-logged-in" class="hidden flex items-center gap-2 bg-slate-100/80 hover:bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200 transition-all">
-                            <div class="w-6 h-6 rounded-full bg-gradient-to-tr from-golf-700 to-golf-500 text-white flex items-center justify-center text-xs font-bold shadow-xs" id="auth-avatar">
-                                B
-                            </div>
-                            <div class="text-left hidden sm:block">
-                                <div class="text-xs font-bold text-slate-800 leading-tight" id="auth-username-display">Benutzer</div>
-                                <div class="text-[9px] text-golf-600 font-semibold flex items-center gap-0.5">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-golf-500 inline-block"></span>
-                                    <span>Cloud aktiv</span>
+                            <div onclick="openProfileModal()" class="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity" title="Mein Profil & Datenschutz (DSGVO)">
+                                <div class="w-6 h-6 rounded-full bg-gradient-to-tr from-golf-700 to-golf-500 text-white flex items-center justify-center text-xs font-bold shadow-xs" id="auth-avatar">
+                                    B
+                                </div>
+                                <div class="text-left hidden sm:block">
+                                    <div class="text-xs font-bold text-slate-800 leading-tight" id="auth-username-display">Benutzer</div>
+                                    <div class="text-[9px] text-golf-600 font-semibold flex items-center gap-0.5">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-golf-500 inline-block"></span>
+                                        <span>Cloud aktiv</span>
+                                    </div>
                                 </div>
                             </div>
+                            <button type="button" onclick="openProfileModal()" class="text-xs text-slate-500 hover:text-golf-700 font-bold p-1" title="Mein Profil, Datenexport & DSGVO">
+                                👤
+                            </button>
                             <button id="auth-admin-badge" onclick="openAdminModal()" class="hidden px-2 py-0.5 rounded-lg bg-purple-100 hover:bg-purple-200 text-purple-800 text-[11px] font-bold border border-purple-200 transition-all flex items-center gap-1 shadow-xs ml-0.5" title="Admin-Bereich: Benutzerverwaltung">
                                 🛡️ Admin
                             </button>
@@ -332,6 +343,54 @@
                     </div>
                     <p class="mt-2 text-xs text-slate-500">
                         Im Scoring Record erfasst
+                    </p>
+                </div>
+            </div>
+
+            <!-- Pro Golf Analytics Row (Putts, GIR, FIR) -->
+            <div id="dash-pro-stats-container" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <!-- Avg Putts Card -->
+                <div class="rounded-2xl bg-gradient-to-br from-slate-900 to-emerald-950 p-5 text-white border border-emerald-800/40 shadow-sm">
+                    <div class="flex items-center justify-between text-emerald-300">
+                        <span class="text-xs font-bold uppercase tracking-wider">Putt-Statistik</span>
+                        <span class="text-lg">⛳</span>
+                    </div>
+                    <div class="mt-3 flex items-baseline gap-2">
+                        <span id="dash-avg-putts-round" class="text-3xl font-black font-mono">--</span>
+                        <span class="text-xs text-slate-300 font-medium">Putts / 18L</span>
+                    </div>
+                    <p class="mt-1 text-[11px] text-emerald-400/90 font-mono" id="dash-avg-putts-hole">
+                        Ø -- Putts pro Loch
+                    </p>
+                </div>
+
+                <!-- Green in Regulation (GIR) Card -->
+                <div class="rounded-2xl bg-gradient-to-br from-slate-900 to-emerald-950 p-5 text-white border border-emerald-800/40 shadow-sm">
+                    <div class="flex items-center justify-between text-emerald-300">
+                        <span class="text-xs font-bold uppercase tracking-wider">Greens in Regulation (GIR)</span>
+                        <span class="text-lg">🎯</span>
+                    </div>
+                    <div class="mt-3 flex items-baseline gap-2">
+                        <span id="dash-gir-pct" class="text-3xl font-black font-mono">--%</span>
+                        <span class="text-xs text-slate-300 font-medium">Trefferquote</span>
+                    </div>
+                    <p class="mt-1 text-[11px] text-emerald-400/90 font-mono" id="dash-gir-details">
+                        -- Grüns regulär getroffen
+                    </p>
+                </div>
+
+                <!-- Fairways in Regulation (FIR) Card -->
+                <div class="rounded-2xl bg-gradient-to-br from-slate-900 to-emerald-950 p-5 text-white border border-emerald-800/40 shadow-sm">
+                    <div class="flex items-center justify-between text-emerald-300">
+                        <span class="text-xs font-bold uppercase tracking-wider">Fairway-Treffer (FIR)</span>
+                        <span class="text-lg">🚀</span>
+                    </div>
+                    <div class="mt-3 flex items-baseline gap-2">
+                        <span id="dash-fir-pct" class="text-3xl font-black font-mono">--%</span>
+                        <span class="text-xs text-slate-300 font-medium">Trefferquote</span>
+                    </div>
+                    <p class="mt-1 text-[11px] text-emerald-400/90 font-mono" id="dash-fir-details">
+                        Tendenz: ⬅️ -- Links | ➡️ -- Rechts
                     </p>
                 </div>
             </div>
@@ -1118,9 +1177,25 @@
                         </tbody>
                     </table>
                 </div>
-            </div>
-        </section>
     </main>
+
+    <!-- APPLICATION FOOTER -->
+    <footer class="mt-auto py-8 border-t border-slate-200 bg-white/80 text-center text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2">
+                <span class="font-bold text-slate-800">BirdieTrack</span>
+                <span class="text-slate-400">•</span>
+                <span>WHS Handicap Tracker & Digitale Turnier-Scorekarte</span>
+                <span class="inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold border border-emerald-200">PWA bereit</span>
+            </div>
+            <div class="flex items-center gap-4 text-xs font-semibold">
+                <a href="javascript:void(0)" onclick="openPrivacyModal()" class="hover:text-golf-700 transition-colors">Datenschutz (DSGVO)</a>
+                <a href="javascript:void(0)" onclick="openImprintModal()" class="hover:text-golf-700 transition-colors">Impressum</a>
+                <span class="text-slate-300">|</span>
+                <span class="text-slate-400">© 2026 BirdieTrack</span>
+            </div>
+        </div>
+    </footer>
 
     <!-- ========================================== -->
     <!-- MODAL: USER AUTHENTICATION (LOGIN / REGISTER / FORGOT / RESET) -->
@@ -1480,6 +1555,54 @@
                     </button>
                 </div>
 
+                <!-- GPS Rangefinder Bar (Grün-Distanzen) -->
+                <div id="sc-rangefinder-box" class="rounded-xl p-3 sm:p-4 bg-gradient-to-r from-emerald-950 via-slate-900 to-golf-950 text-white border border-emerald-800/50 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-md">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-xl shrink-0">
+                            🎯
+                        </div>
+                        <div>
+                            <div class="text-xs font-bold text-emerald-300 flex items-center gap-2">
+                                <span>GPS-Rangefinder (Grün-Distanzen)</span>
+                                <select id="rf-hole-select" onchange="onRangefinderHoleSelect(this.value)" class="bg-emerald-900/80 text-emerald-200 text-[10px] font-mono font-bold rounded px-1.5 py-0.5 border border-emerald-600 focus:outline-none">
+                                    <option value="1">Loch 1</option>
+                                    <option value="2">Loch 2</option>
+                                    <option value="3">Loch 3</option>
+                                    <option value="4">Loch 4</option>
+                                    <option value="5">Loch 5</option>
+                                    <option value="6">Loch 6</option>
+                                    <option value="7">Loch 7</option>
+                                    <option value="8">Loch 8</option>
+                                    <option value="9">Loch 9</option>
+                                    <option value="10">Loch 10</option>
+                                    <option value="11">Loch 11</option>
+                                    <option value="12">Loch 12</option>
+                                    <option value="13">Loch 13</option>
+                                    <option value="14">Loch 14</option>
+                                    <option value="15">Loch 15</option>
+                                    <option value="16">Loch 16</option>
+                                    <option value="17">Loch 17</option>
+                                    <option value="18">Loch 18</option>
+                                </select>
+                            </div>
+                            <div class="flex items-center gap-3 sm:gap-4 mt-1 font-mono text-xs">
+                                <div><span class="text-slate-400 text-[9px] uppercase font-bold block">Anfang</span><strong id="rf-front-dist" class="text-white text-xs sm:text-sm">-- m</strong></div>
+                                <div class="border-l border-emerald-700/50 pl-3"><span class="text-emerald-400 text-[9px] uppercase font-bold block">Mitte (PIN)</span><strong id="rf-center-dist" class="text-emerald-300 text-sm sm:text-base font-black">-- m</strong></div>
+                                <div class="border-l border-emerald-700/50 pl-3"><span class="text-slate-400 text-[9px] uppercase font-bold block">Ende</span><strong id="rf-back-dist" class="text-white text-xs sm:text-sm">-- m</strong></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 shrink-0">
+                        <div class="text-right">
+                            <div class="text-[9px] text-slate-400 uppercase font-bold">Schlägerempfehlung</div>
+                            <div id="rf-club-recommendation" class="text-xs font-black text-amber-300">--</div>
+                        </div>
+                        <button type="button" onclick="updateRangefinderGPS()" class="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs active:scale-95">
+                            <span>🔄 Distanz messen</span>
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Flight / Team Tab Switcher -->
                 <div class="flex items-center justify-between border-b border-slate-200 pb-2">
                     <div class="flex items-center gap-2">
@@ -1493,9 +1616,15 @@
 
                 <!-- View 1: Single Player Hole-by-Hole Scorecard -->
                 <div id="sc-single-view" class="space-y-4">
+                    <div class="flex items-center justify-between pb-1">
+                        <div class="text-xs font-bold text-slate-700 uppercase tracking-wider">Loch-Erfassung</div>
+                        <button type="button" id="btn-toggle-pro-stats" onclick="toggleProStatsColumns()" class="text-xs text-golf-700 font-bold hover:text-golf-800 bg-golf-50 hover:bg-golf-100 border border-golf-200 px-2.5 py-1 rounded-lg flex items-center gap-1.5 transition-all">
+                            <span>📊 Pro-Statistiken erfassen (Putts / FIR / GIR)</span>
+                        </button>
+                    </div>
                     <div class="overflow-x-auto rounded-xl border border-slate-200">
                         <table class="w-full text-left text-xs font-medium">
-                            <thead class="bg-slate-100 text-slate-600 font-bold uppercase tracking-wider text-[10px]">
+                            <thead id="sc-holes-table-head" class="bg-slate-100 text-slate-600 font-bold uppercase tracking-wider text-[10px]">
                                 <tr>
                                     <th class="py-2.5 px-2 text-center w-12">Loch</th>
                                     <th class="py-2.5 px-2 text-center w-12">Par</th>
@@ -1509,7 +1638,7 @@
                             <tbody id="sc-holes-table-body" class="divide-y divide-slate-100 font-mono">
                                 <!-- 18 or 9 Holes dynamic rows -->
                             </tbody>
-                            <tfoot class="bg-slate-50 border-t-2 border-slate-200 font-bold text-xs">
+                            <tfoot id="sc-holes-table-foot" class="bg-slate-50 border-t-2 border-slate-200 font-bold text-xs">
                                 <tr>
                                     <td class="py-3 px-2 text-center font-sans font-black">GESAMT</td>
                                     <td id="sc-total-par" class="py-3 px-2 text-center text-slate-700 font-mono">72</td>
@@ -1854,6 +1983,159 @@
         </div>
     </div>
 
+    <!-- OFFLINE STATUS BANNER -->
+    <div id="offline-banner" class="hidden fixed bottom-6 left-6 z-50 bg-amber-600 text-white px-4 py-3 rounded-2xl shadow-xl flex items-center gap-3 border border-amber-500 max-w-sm">
+        <span class="text-2xl">⚠️</span>
+        <div>
+            <p class="font-bold text-xs">Offline-Modus aktiv</p>
+            <p class="text-[11px] text-amber-100">Scorekarten & Eingaben werden lokal gesichert und automatisch übertragen, sobald wieder Empfang besteht.</p>
+        </div>
+    </div>
+
+    <!-- MODAL: MEIN PROFIL & DATENSCHUTZ (DSGVO) -->
+    <div id="profile-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto hidden">
+        <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden my-auto flex flex-col">
+            <div class="p-4 sm:p-5 border-b border-slate-200 bg-gradient-to-r from-slate-900 via-golf-950 to-slate-900 text-white flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-golf-600/30 border border-golf-400/30 flex items-center justify-center text-xl">
+                        👤
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-white" id="pm-username">Mein Profil</h3>
+                        <p class="text-xs text-golf-200" id="pm-email">E-Mail-Adresse</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeProfileModal()" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center font-bold text-lg">&times;</button>
+            </div>
+
+            <div class="p-5 space-y-5 overflow-y-auto text-xs text-slate-700">
+                <!-- Account Info Cards -->
+                <div class="grid grid-cols-2 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                    <div>
+                        <span class="text-[10px] uppercase font-bold text-slate-400">Rundenzahl</span>
+                        <div id="pm-rounds-count" class="text-base font-black text-slate-800 font-mono">0</div>
+                    </div>
+                    <div>
+                        <span class="text-[10px] uppercase font-bold text-slate-400">Handicap Index</span>
+                        <div id="pm-hcp" class="text-base font-black text-golf-700 font-mono">--</div>
+                    </div>
+                    <div>
+                        <span class="text-[10px] uppercase font-bold text-slate-400">Konto erstellt</span>
+                        <div id="pm-created-at" class="text-xs font-semibold text-slate-600 font-mono">--</div>
+                    </div>
+                    <div>
+                        <span class="text-[10px] uppercase font-bold text-slate-400">Rolle</span>
+                        <div id="pm-role" class="text-xs font-bold text-purple-700">Golfer</div>
+                    </div>
+                </div>
+
+                <!-- GDPR Data Export Section -->
+                <div class="p-4 rounded-xl border border-blue-200 bg-blue-50/60 space-y-2">
+                    <div class="font-bold text-blue-900 flex items-center gap-1.5">
+                        <span>📥 Daten-Export (Art. 20 DSGVO)</span>
+                    </div>
+                    <p class="text-[11px] text-blue-800 leading-relaxed">
+                        Lade alle deine in BirdieTrack gespeicherten Daten (Profil, Scoring Records, Scorekarten, Favoriten, Flights) als maschinenlesbare JSON-Datei herunter.
+                    </p>
+                    <button type="button" onclick="exportUserData()" class="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs transition-all flex items-center gap-1.5">
+                        <span>JSON-Datenexport herunterladen</span>
+                    </button>
+                </div>
+
+                <!-- Account Security Section -->
+                <div class="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
+                    <div class="font-bold text-slate-800 flex items-center gap-1.5">
+                        <span>🛡️ Sicherheit & Sitzung</span>
+                    </div>
+                    <p class="text-[11px] text-slate-600">
+                        Deine Verbindung ist per HTTPS verschlüsselt und durch Brute-Force Rate Limiting sowie moderne HTTP-Sicherheitsheader geschützt.
+                    </p>
+                    <div class="flex items-center gap-2 pt-1">
+                        <button type="button" onclick="closeProfileModal(); openAuthModal('forgot');" class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold hover:bg-slate-100">
+                            Passwort ändern
+                        </button>
+                        <button type="button" onclick="closeProfileModal(); handleLogout();" class="px-3 py-1.5 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold">
+                            Abmelden
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Danger Zone: Account Deletion (GDPR Art. 17) -->
+                <div class="p-4 rounded-xl border border-rose-200 bg-rose-50/60 space-y-2">
+                    <div class="font-bold text-rose-900 flex items-center gap-1.5">
+                        <span>🗑️ Konto löschen (Art. 17 DSGVO)</span>
+                    </div>
+                    <p class="text-[11px] text-rose-800 leading-relaxed">
+                        Löscht dein Benutzerkonto und alle verknüpften Runden, Scorekarten und Freundschaften unwiderruflich von den Servern.
+                    </p>
+                    <div class="pt-1">
+                        <button type="button" onclick="toggleDeleteAccountForm()" id="btn-toggle-del-acc" class="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs transition-all">
+                            Konto unwiderruflich löschen...
+                        </button>
+                    </div>
+                    <div id="del-acc-form" class="hidden pt-2 space-y-2 border-t border-rose-200">
+                        <label class="block text-[11px] font-bold text-rose-900">Zur Bestätigung aktuelles Passwort eingeben:</label>
+                        <input type="password" id="del-acc-password" placeholder="Dein Passwort" class="w-full px-3 py-1.5 rounded-lg border border-rose-300 text-xs">
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="confirmDeleteAccount()" class="px-3 py-1.5 rounded-lg bg-rose-700 hover:bg-rose-800 text-white font-bold text-xs">Endgültig löschen</button>
+                            <button type="button" onclick="toggleDeleteAccountForm()" class="px-3 py-1.5 rounded-lg bg-white border border-rose-200 text-slate-700 text-xs">Abbrechen</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between">
+                <div class="text-[10px] text-slate-500">
+                    <a href="javascript:void(0)" onclick="closeProfileModal(); openPrivacyModal();" class="underline hover:text-slate-800">Datenschutz</a> • 
+                    <a href="javascript:void(0)" onclick="closeProfileModal(); openImprintModal();" class="underline hover:text-slate-800">Impressum</a>
+                </div>
+                <button type="button" onclick="closeProfileModal()" class="px-4 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-200">Schließen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: DATENSCHUTZERKLÄRUNG (DSGVO) -->
+    <div id="privacy-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto hidden">
+        <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden my-auto max-h-[90vh] flex flex-col">
+            <div class="p-4 border-b border-slate-200 bg-slate-900 text-white flex items-center justify-between">
+                <h3 class="text-base font-bold">📄 Datenschutzerklärung (DSGVO)</h3>
+                <button type="button" onclick="closePrivacyModal()" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center font-bold text-lg">&times;</button>
+            </div>
+            <div class="p-5 overflow-y-auto text-xs text-slate-700 space-y-3 leading-relaxed">
+                <h4 class="font-bold text-sm text-slate-900">1. Verantwortlicher & Zweck</h4>
+                <p>BirdieTrack verarbeitet personenbezogene Daten (Benutzername, E-Mail-Adresse, Passwort-Hash) sowie Spieldaten (Runden, Bruttoschläge, Score Differentials, Handicap Index, Scorekarten) ausschließlich zur Bereitstellung der Golf-Handicap- und Turnierverwaltungsdienste gemäß Art. 6 Abs. 1 lit. b DSGVO.</p>
+                
+                <h4 class="font-bold text-sm text-slate-900">2. Standortermittlung (GPS-Prüfung & Rangefinder)</h4>
+                <p>Die Standortermittlung (Geolokalisierung) erfolgt nur nach deiner ausdrücklichen Freigabe im Browser. Sie dient ausschließlich der Verifikation deiner Anwesenheit im Golfclub für offizielle Turnierscorekarten und der Entfernungsberechnung zum Grün im Rangefinder. Es werden keine permanenten Bewegungsprofile erstellt.</p>
+                
+                <h4 class="font-bold text-sm text-slate-900">3. Deine Rechte (Auskunft, Export, Löschung)</h4>
+                <p>Du hast jederzeit das Recht auf Auskunft über deine gespeicherten Daten (Art. 15 DSGVO), das Recht auf Datenübertragbarkeit / Export im JSON-Format (Art. 20 DSGVO) sowie das Recht auf sofortige und vollständige Löschung deines Kontos (Art. 17 DSGVO). Diese Funktionen stehen dir direkt im Profilbereich zur Verfügung.</p>
+            </div>
+            <div class="p-3 border-t border-slate-200 bg-slate-50 flex justify-end">
+                <button type="button" onclick="closePrivacyModal()" class="px-4 py-1.5 rounded-xl bg-golf-600 text-white font-bold text-xs">Verstanden</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: IMPRESSUM -->
+    <div id="imprint-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto hidden">
+        <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden my-auto flex flex-col">
+            <div class="p-4 border-b border-slate-200 bg-slate-900 text-white flex items-center justify-between">
+                <h3 class="text-base font-bold">⚖️ Impressum</h3>
+                <button type="button" onclick="closeImprintModal()" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center font-bold text-lg">&times;</button>
+            </div>
+            <div class="p-5 text-xs text-slate-700 space-y-3 leading-relaxed">
+                <h4 class="font-bold text-sm text-slate-900">Angaben gemäß § 5 TMG</h4>
+                <p><strong>BirdieTrack – Golf WHS Platform</strong><br>Entwickelt für Golferinnen und Golfer im deutschsprachigen Raum.<br>E-Mail: support@birdietrack.local</p>
+                <h4 class="font-bold text-sm text-slate-900">Haftung für Inhalte & Golfdaten</h4>
+                <p>Die Platzdaten (Course Rating, Slope, Par) basieren auf den offiziellen Vorgabentabellen des Deutschen Golf Verbandes (DGV). Alle Handicap-Berechnungen erfolgen streng nach dem World Handicap System (WHS).</p>
+            </div>
+            <div class="p-3 border-t border-slate-200 bg-slate-50 flex justify-end">
+                <button type="button" onclick="closeImprintModal()" class="px-4 py-1.5 rounded-xl bg-golf-600 text-white font-bold text-xs">Schließen</button>
+            </div>
+        </div>
+    </div>
+
     <!-- TOAST NOTIFICATION CONTAINER -->
     <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
         <div class="bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-xl border border-slate-700 flex items-center gap-3 text-sm font-medium">
@@ -2109,7 +2391,7 @@
             }
 
             const options = { method, headers };
-            if(data && (method === 'POST' || method === 'PUT')) {
+            if(data && (method === 'POST' || method === 'PUT' || method === 'DELETE')) {
                 options.body = JSON.stringify(data);
             }
 
@@ -2167,6 +2449,9 @@
                 } else {
                     favoriteClubNames = new Set();
                 }
+
+                // Load Pro Analytics Stats
+                await loadProStats();
             } else {
                 favoriteClubNames = new Set();
                 currentUser = null;
@@ -4784,15 +5069,67 @@
             initScorecardHolesTable();
         }
 
-        function initScorecardHolesTable() {
+        let showProStats = false;
+
+        function toggleProStatsColumns() {
+            showProStats = !showProStats;
+            const btn = document.getElementById('btn-toggle-pro-stats');
+            if(btn) {
+                if(showProStats) {
+                    btn.className = "text-xs font-bold text-white bg-golf-600 border border-golf-600 px-2.5 py-1 rounded-lg flex items-center gap-1.5 shadow-xs transition-all";
+                    btn.innerHTML = "<span>✅ Pro-Statistiken aktiv (Putts / FIR / GIR)</span>";
+                } else {
+                    btn.className = "text-xs text-golf-700 font-bold hover:text-golf-800 bg-golf-50 hover:bg-golf-100 border border-golf-200 px-2.5 py-1 rounded-lg flex items-center gap-1.5 transition-all";
+                    btn.innerHTML = "<span>📊 Pro-Statistiken erfassen (Putts / FIR / GIR)</span>";
+                }
+            }
+            initScorecardHolesTable(true);
+        }
+
+        function initScorecardHolesTable(preserveExisting = false) {
             const loecher = parseInt(document.getElementById('sc-loecher').value, 10) || 18;
             const playingHcp = parseInt(document.getElementById('sc-calculated-playing-hcp').innerText, 10) || 0;
             const tbody = document.getElementById('sc-holes-table-body');
+            const thead = document.getElementById('sc-holes-table-head');
+            const tfoot = document.getElementById('sc-holes-table-foot');
+            
+            const prevData = (preserveExisting && Array.isArray(scHolesData)) ? [...scHolesData] : [];
             tbody.innerHTML = '';
             scHolesData = [];
 
             let totalPar = 0;
             let totalStriche = 0;
+
+            if (thead) {
+                if (!showProStats) {
+                    thead.innerHTML = `
+                        <tr>
+                            <th class="py-2.5 px-2 text-center w-12">Loch</th>
+                            <th class="py-2.5 px-2 text-center w-12">Par</th>
+                            <th class="py-2.5 px-2 text-center w-14" title="Stroke Index / Vorgaben-Schlüssel">SI</th>
+                            <th class="py-2.5 px-2 text-center w-14" title="Vorgabestriche">Striche</th>
+                            <th class="py-2.5 px-3 text-center w-28">Brutto Schläge</th>
+                            <th class="py-2.5 px-2 text-center w-14">Netto</th>
+                            <th class="py-2.5 px-2 text-center w-16" title="Netto-Stableford Punkte">Stbf. Pkt</th>
+                        </tr>
+                    `;
+                } else {
+                    thead.innerHTML = `
+                        <tr>
+                            <th class="py-2.5 px-2 text-center w-10">Loch</th>
+                            <th class="py-2.5 px-2 text-center w-10">Par</th>
+                            <th class="py-2.5 px-2 text-center w-12" title="Stroke Index">SI</th>
+                            <th class="py-2.5 px-2 text-center w-12" title="Vorgabestriche">Striche</th>
+                            <th class="py-2.5 px-2 text-center w-24">Brutto</th>
+                            <th class="py-2.5 px-2 text-center w-12">Netto</th>
+                            <th class="py-2.5 px-2 text-center w-12" title="Netto-Stableford Punkte">Stbf</th>
+                            <th class="py-2.5 px-2 text-center w-20" title="Putts auf dem Grün">Putts</th>
+                            <th class="py-2.5 px-2 text-center w-24" title="Fairway in Regulation">FIR (Tee)</th>
+                            <th class="py-2.5 px-2 text-center w-16" title="Green in Regulation">GIR</th>
+                        </tr>
+                    `;
+                }
+            }
 
             for(let i = 0; i < loecher; i++) {
                 const holeNr = i + 1;
@@ -4807,10 +5144,14 @@
                 totalPar += par;
                 totalStriche += striche;
 
-                // Initial strokes = Par
-                const initialStrokes = par;
+                const prevHole = prevData[i];
+                const initialStrokes = prevHole ? prevHole.strokes : par;
                 const netto = Math.max(1, initialStrokes - striche);
                 const stbf = Math.max(0, par - netto + 2);
+                const putts = prevHole ? prevHole.putts : 2;
+                const fir = prevHole ? prevHole.fir : (par >= 4 ? 'hit' : null);
+                const gir = prevHole && prevHole.girManual ? prevHole.gir : (initialStrokes - putts <= par - 2);
+                const girManual = prevHole ? prevHole.girManual : false;
 
                 scHolesData.push({
                     hole: holeNr,
@@ -4818,33 +5159,107 @@
                     si: si,
                     striche: striche,
                     strokes: initialStrokes,
+                    gross: initialStrokes,
                     netto: netto,
-                    stableford: stbf
+                    stableford: stbf,
+                    putts: putts,
+                    fir: fir,
+                    gir: gir,
+                    girManual: girManual
                 });
 
                 const tr = document.createElement('tr');
                 tr.id = `sc-row-${i}`;
                 tr.className = "hover:bg-slate-50 transition-colors";
-                tr.innerHTML = `
-                    <td class="py-2 px-2 text-center font-bold text-slate-800">${holeNr}</td>
-                    <td class="py-2 px-2 text-center text-slate-600">${par}</td>
-                    <td class="py-2 px-2 text-center text-slate-400">${si}</td>
-                    <td class="py-2 px-2 text-center font-bold text-golf-700">${striche > 0 ? '+'.repeat(Math.min(3, striche)) + (striche > 3 ? striche : '') : '-'}</td>
-                    <td class="py-2 px-3 text-center">
-                        <div class="inline-flex items-center gap-1 bg-white border border-slate-200 rounded-lg p-0.5 shadow-xs">
-                            <button type="button" onclick="updateScorecardHole(${i}, -1)" class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-black text-xs flex items-center justify-center select-none active:scale-90">-</button>
-                            <input type="number" id="sc-stroke-${i}" onchange="onScorecardStrokeInput(${i}, this.value)" value="${initialStrokes}" min="1" max="15" class="w-9 text-center font-black text-xs text-slate-900 focus:outline-none border-none p-0">
-                            <button type="button" onclick="updateScorecardHole(${i}, 1)" class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-black text-xs flex items-center justify-center select-none active:scale-90">+</button>
-                        </div>
-                    </td>
-                    <td class="py-2 px-2 text-center font-bold text-golf-800" id="sc-netto-${i}">${netto}</td>
-                    <td class="py-2 px-2 text-center font-bold text-amber-800" id="sc-stbf-${i}">${stbf}</td>
-                `;
+                
+                if (!showProStats) {
+                    tr.innerHTML = `
+                        <td class="py-2 px-2 text-center font-bold text-slate-800">${holeNr}</td>
+                        <td class="py-2 px-2 text-center text-slate-600">${par}</td>
+                        <td class="py-2 px-2 text-center text-slate-400">${si}</td>
+                        <td class="py-2 px-2 text-center font-bold text-golf-700">${striche > 0 ? '+'.repeat(Math.min(3, striche)) + (striche > 3 ? striche : '') : '-'}</td>
+                        <td class="py-2 px-3 text-center">
+                            <div class="inline-flex items-center gap-1 bg-white border border-slate-200 rounded-lg p-0.5 shadow-xs">
+                                <button type="button" onclick="updateScorecardHole(${i}, -1)" class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-black text-xs flex items-center justify-center select-none active:scale-90">-</button>
+                                <input type="number" id="sc-stroke-${i}" onchange="onScorecardStrokeInput(${i}, this.value)" value="${initialStrokes}" min="1" max="15" class="w-9 text-center font-black text-xs text-slate-900 focus:outline-none border-none p-0">
+                                <button type="button" onclick="updateScorecardHole(${i}, 1)" class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-black text-xs flex items-center justify-center select-none active:scale-90">+</button>
+                            </div>
+                        </td>
+                        <td class="py-2 px-2 text-center font-bold text-golf-800" id="sc-netto-${i}">${netto}</td>
+                        <td class="py-2 px-2 text-center font-bold text-amber-800" id="sc-stbf-${i}">${stbf}</td>
+                    `;
+                } else {
+                    tr.innerHTML = `
+                        <td class="py-2 px-2 text-center font-bold text-slate-800">${holeNr}</td>
+                        <td class="py-2 px-2 text-center text-slate-600">${par}</td>
+                        <td class="py-2 px-2 text-center text-slate-400">${si}</td>
+                        <td class="py-2 px-2 text-center font-bold text-golf-700">${striche > 0 ? '+'.repeat(Math.min(3, striche)) + (striche > 3 ? striche : '') : '-'}</td>
+                        <td class="py-2 px-2 text-center">
+                            <div class="inline-flex items-center gap-0.5 bg-white border border-slate-200 rounded-lg p-0.5 shadow-xs">
+                                <button type="button" onclick="updateScorecardHole(${i}, -1)" class="w-5 h-5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-black text-xs flex items-center justify-center select-none active:scale-90">-</button>
+                                <input type="number" id="sc-stroke-${i}" onchange="onScorecardStrokeInput(${i}, this.value)" value="${initialStrokes}" min="1" max="15" class="w-7 text-center font-black text-xs text-slate-900 focus:outline-none border-none p-0">
+                                <button type="button" onclick="updateScorecardHole(${i}, 1)" class="w-5 h-5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-black text-xs flex items-center justify-center select-none active:scale-90">+</button>
+                            </div>
+                        </td>
+                        <td class="py-2 px-2 text-center font-bold text-golf-800" id="sc-netto-${i}">${netto}</td>
+                        <td class="py-2 px-2 text-center font-bold text-amber-800" id="sc-stbf-${i}">${stbf}</td>
+                        <td class="py-2 px-2 text-center">
+                            <div class="inline-flex items-center gap-0.5 bg-white border border-slate-200 rounded-lg p-0.5 shadow-xs">
+                                <button type="button" onclick="updateScorecardPutts(${i}, -1)" class="w-5 h-5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[10px] flex items-center justify-center select-none active:scale-90">-</button>
+                                <input type="number" id="sc-putt-${i}" onchange="onScorecardPuttInput(${i}, this.value)" value="${putts}" min="0" max="6" class="w-6 text-center font-bold text-xs text-slate-900 border-none p-0 focus:outline-none">
+                                <button type="button" onclick="updateScorecardPutts(${i}, 1)" class="w-5 h-5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[10px] flex items-center justify-center select-none active:scale-90">+</button>
+                            </div>
+                        </td>
+                        <td class="py-2 px-2 text-center">
+                            ${par >= 4 ? `
+                                <select id="sc-fir-${i}" onchange="onScorecardFirChange(${i}, this.value)" class="text-[10px] font-bold rounded-lg border border-slate-200 py-1 px-1 bg-white text-emerald-800">
+                                    <option value="hit" ${fir === 'hit' ? 'selected' : ''}>🎯 Fairway</option>
+                                    <option value="left" ${fir === 'left' ? 'selected' : ''}>⬅️ Links</option>
+                                    <option value="right" ${fir === 'right' ? 'selected' : ''}>➡️ Rechts</option>
+                                </select>
+                            ` : `<span class="text-slate-300 text-[10px]">-</span>`}
+                        </td>
+                        <td class="py-2 px-2 text-center">
+                            <button type="button" onclick="toggleScorecardGir(${i})" id="sc-gir-btn-${i}" class="px-2 py-0.5 rounded-lg text-[10px] font-bold ${gir ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-slate-100 text-slate-400 border border-slate-200'}">
+                                ${gir ? '✅ GIR' : '❌ Miss'}
+                            </button>
+                        </td>
+                    `;
+                }
                 tbody.appendChild(tr);
             }
 
-            document.getElementById('sc-total-par').innerText = totalPar;
-            document.getElementById('sc-total-striche').innerText = totalStriche;
+            if (tfoot) {
+                if (!showProStats) {
+                    tfoot.innerHTML = `
+                        <tr>
+                            <td class="py-3 px-2 text-center font-sans font-black">GESAMT</td>
+                            <td id="sc-total-par" class="py-3 px-2 text-center text-slate-700 font-mono">${totalPar}</td>
+                            <td class="py-3 px-2 text-center text-slate-400 font-mono">-</td>
+                            <td id="sc-total-striche" class="py-3 px-2 text-center text-slate-700 font-mono">${totalStriche}</td>
+                            <td id="sc-total-brutto" class="py-3 px-3 text-center text-slate-900 font-mono font-black text-sm">--</td>
+                            <td id="sc-total-netto" class="py-3 px-2 text-center text-golf-800 font-mono font-black text-sm">--</td>
+                            <td id="sc-total-stableford" class="py-3 px-2 text-center text-amber-800 font-mono font-black text-sm">--</td>
+                        </tr>
+                    `;
+                } else {
+                    tfoot.innerHTML = `
+                        <tr>
+                            <td class="py-3 px-2 text-center font-sans font-black">GESAMT</td>
+                            <td id="sc-total-par" class="py-3 px-2 text-center text-slate-700 font-mono">${totalPar}</td>
+                            <td class="py-3 px-2 text-center text-slate-400 font-mono">-</td>
+                            <td id="sc-total-striche" class="py-3 px-2 text-center text-slate-700 font-mono">${totalStriche}</td>
+                            <td id="sc-total-brutto" class="py-3 px-2 text-center text-slate-900 font-mono font-black text-sm">--</td>
+                            <td id="sc-total-netto" class="py-3 px-2 text-center text-golf-800 font-mono font-black text-sm">--</td>
+                            <td id="sc-total-stableford" class="py-3 px-2 text-center text-amber-800 font-mono font-black text-sm">--</td>
+                            <td id="sc-total-putts" class="py-3 px-2 text-center text-slate-900 font-mono font-black text-xs">--</td>
+                            <td id="sc-total-fir" class="py-3 px-2 text-center text-emerald-800 font-mono font-bold text-[11px]">--</td>
+                            <td id="sc-total-gir" class="py-3 px-2 text-center text-emerald-800 font-mono font-bold text-[11px]">--</td>
+                        </tr>
+                    `;
+                }
+            }
+
             recalculateScorecardTotals();
         }
 
@@ -4852,7 +5267,9 @@
             const hole = scHolesData[index];
             if(!hole) return;
             hole.strokes = Math.max(1, Math.min(15, hole.strokes + delta));
-            document.getElementById(`sc-stroke-${index}`).value = hole.strokes;
+            hole.gross = hole.strokes;
+            const input = document.getElementById(`sc-stroke-${index}`);
+            if(input) input.value = hole.strokes;
             recalculateScorecardRow(index);
         }
 
@@ -4861,8 +5278,67 @@
             if(!hole) return;
             const parsed = parseInt(value, 10);
             hole.strokes = isNaN(parsed) ? hole.par : Math.max(1, Math.min(15, parsed));
-            document.getElementById(`sc-stroke-${index}`).value = hole.strokes;
+            hole.gross = hole.strokes;
+            const input = document.getElementById(`sc-stroke-${index}`);
+            if(input) input.value = hole.strokes;
             recalculateScorecardRow(index);
+        }
+
+        function updateScorecardPutts(index, delta) {
+            const hole = scHolesData[index];
+            if(!hole) return;
+            hole.putts = Math.max(0, Math.min(6, (hole.putts || 2) + delta));
+            const input = document.getElementById(`sc-putt-${index}`);
+            if(input) input.value = hole.putts;
+            if(!hole.girManual) {
+                hole.gir = (hole.strokes - hole.putts <= hole.par - 2);
+                updateGirBadge(index);
+            }
+            recalculateScorecardTotals();
+        }
+
+        function onScorecardPuttInput(index, value) {
+            const hole = scHolesData[index];
+            if(!hole) return;
+            const parsed = parseInt(value, 10);
+            hole.putts = isNaN(parsed) ? 2 : Math.max(0, Math.min(6, parsed));
+            const input = document.getElementById(`sc-putt-${index}`);
+            if(input) input.value = hole.putts;
+            if(!hole.girManual) {
+                hole.gir = (hole.strokes - hole.putts <= hole.par - 2);
+                updateGirBadge(index);
+            }
+            recalculateScorecardTotals();
+        }
+
+        function onScorecardFirChange(index, value) {
+            const hole = scHolesData[index];
+            if(!hole) return;
+            hole.fir = value;
+            recalculateScorecardTotals();
+        }
+
+        function toggleScorecardGir(index) {
+            const hole = scHolesData[index];
+            if(!hole) return;
+            hole.girManual = true;
+            hole.gir = !hole.gir;
+            updateGirBadge(index);
+            recalculateScorecardTotals();
+        }
+
+        function updateGirBadge(index) {
+            const hole = scHolesData[index];
+            const btn = document.getElementById(`sc-gir-btn-${index}`);
+            if(btn && hole) {
+                if(hole.gir) {
+                    btn.className = "px-2 py-0.5 rounded-lg text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300";
+                    btn.innerText = "✅ GIR";
+                } else {
+                    btn.className = "px-2 py-0.5 rounded-lg text-[10px] font-bold bg-slate-100 text-slate-400 border border-slate-200";
+                    btn.innerText = "❌ Miss";
+                }
+            }
         }
 
         function recalculateScorecardRow(index) {
@@ -4870,9 +5346,17 @@
             if(!hole) return;
             hole.netto = Math.max(1, hole.strokes - hole.striche);
             hole.stableford = Math.max(0, hole.par - hole.netto + 2);
+            hole.gross = hole.strokes;
 
-            document.getElementById(`sc-netto-${index}`).innerText = hole.netto;
-            document.getElementById(`sc-stbf-${index}`).innerText = hole.stableford;
+            if(!hole.girManual) {
+                hole.gir = (hole.strokes - (hole.putts || 2) <= hole.par - 2);
+                updateGirBadge(index);
+            }
+
+            const nettoEl = document.getElementById(`sc-netto-${index}`);
+            const stbfEl = document.getElementById(`sc-stbf-${index}`);
+            if(nettoEl) nettoEl.innerText = hole.netto;
+            if(stbfEl) stbfEl.innerText = hole.stableford;
 
             recalculateScorecardTotals();
         }
@@ -4881,28 +5365,52 @@
             let totalBrutto = 0;
             let totalNetto = 0;
             let totalStableford = 0;
+            let totalPutts = 0;
+            let firHits = 0;
+            let firOpp = 0;
+            let girHits = 0;
 
             scHolesData.forEach(h => {
                 totalBrutto += h.strokes;
                 totalNetto += h.netto;
                 totalStableford += h.stableford;
+                totalPutts += (h.putts !== undefined ? h.putts : 2);
+                if(h.par >= 4) {
+                    firOpp++;
+                    if(h.fir === 'hit' || h.fir === 'center' || h.fir === true) firHits++;
+                }
+                if(h.gir) girHits++;
             });
 
-            document.getElementById('sc-total-brutto').innerText = totalBrutto;
-            document.getElementById('sc-total-netto').innerText = totalNetto;
-            document.getElementById('sc-total-stableford').innerText = totalStableford;
+            const bruttoEl = document.getElementById('sc-total-brutto');
+            const nettoEl = document.getElementById('sc-total-netto');
+            const stbfEl = document.getElementById('sc-total-stableford');
+            if(bruttoEl) bruttoEl.innerText = totalBrutto;
+            if(nettoEl) nettoEl.innerText = totalNetto;
+            if(stbfEl) stbfEl.innerText = totalStableford;
+
+            if(showProStats) {
+                const puttsEl = document.getElementById('sc-total-putts');
+                const firEl = document.getElementById('sc-total-fir');
+                const girEl = document.getElementById('sc-total-gir');
+                if(puttsEl) puttsEl.innerText = totalPutts;
+                if(firEl) firEl.innerText = firOpp > 0 ? `${firHits}/${firOpp}` : '-';
+                if(girEl) girEl.innerText = `${girHits}/${scHolesData.length}`;
+            }
 
             const loecher = scHolesData.length;
             const expectedStbf = loecher === 18 ? 36 : 18;
             const diff = totalStableford - expectedStbf;
             const calloutEl = document.getElementById('sc-callout-text');
 
-            if(diff > 0) {
-                calloutEl.innerHTML = `<strong class="text-emerald-700">${totalStableford} Netto-Punkte (+${diff})</strong> – Unterspielung! Dein WHS Handicap verbessert sich. 🎉`;
-            } else if(diff === 0) {
-                calloutEl.innerHTML = `<strong class="text-blue-700">${totalStableford} Netto-Punkte</strong> – Handicap genau bestätigt! Solide Runde. ⛳`;
-            } else {
-                calloutEl.innerHTML = `<strong class="text-slate-800">${totalStableford} Netto-Punkte (${diff})</strong> – Pufferbereich / Schonung nach WHS Soft Cap.`;
+            if(calloutEl) {
+                if(diff > 0) {
+                    calloutEl.innerHTML = `<strong class="text-emerald-700">${totalStableford} Netto-Punkte (+${diff})</strong> – Unterspielung! Dein WHS Handicap verbessert sich. 🎉`;
+                } else if(diff === 0) {
+                    calloutEl.innerHTML = `<strong class="text-blue-700">${totalStableford} Netto-Punkte</strong> – Handicap genau bestätigt! Solide Runde. ⛳`;
+                } else {
+                    calloutEl.innerHTML = `<strong class="text-slate-800">${totalStableford} Netto-Punkte (${diff})</strong> – Pufferbereich / Schonung nach WHS Soft Cap.`;
+                }
             }
         }
 
@@ -5072,6 +5580,20 @@
                 }
             }
 
+            const formattedHoles = scHolesData.map(h => ({
+                hole: h.hole,
+                par: h.par,
+                si: h.si,
+                striche: h.striche,
+                strokes: h.strokes,
+                gross: h.strokes,
+                netto: h.netto,
+                stableford: h.stableford,
+                putts: h.putts !== undefined ? h.putts : 2,
+                fir: h.fir !== undefined ? h.fir : (h.par >= 4 ? 'hit' : null),
+                gir: h.gir !== undefined ? h.gir : (h.strokes - 2 <= h.par - 2)
+            }));
+
             const payload = {
                 turnier_id: activeScorecardTournament ? activeScorecardTournament.id : null,
                 club_name: clubName,
@@ -5085,7 +5607,7 @@
                 brutto: brutto,
                 netto: netto,
                 stableford: stableford,
-                holes: scHolesData,
+                holes: formattedHoles,
                 player_signature: playerSig,
                 marker_signature: markerSig,
                 marker_name: markerName,
@@ -5093,26 +5615,335 @@
                 player_lon: scGpsData ? scGpsData.lon : null
             };
 
-            const res = await apiFetch('/api/scorecards', 'POST', payload);
-            if(res.ok) {
-                // Auch in Runden-Historie für WHS aufnehmen
-                const roundDatumDe = formatDateDe(new Date(datum));
-                const sd = calculateSD(club, loecher, brutto, aktuellesHCP || 54.0);
-                await apiFetch('/api/runden', 'POST', {
-                    datum: roundDatumDe,
-                    club_name: `${clubName} (${turnierName})`,
-                    loecher: loecher,
-                    brutto: brutto,
-                    sd: sd
-                });
-
+            // Offline handling
+            if (!navigator.onLine) {
+                saveOfflineScorecard(payload);
                 closeScorecardModal();
-                await loadData();
-                showToast("Scorekarte erfolgreich an Club übermittelt & in Historie verbucht! ⛳", "🎉");
-                if(typeof confetti === 'function') confetti({ particleCount: 80, spread: 70 });
-            } else {
-                showToast("Fehler beim Einreichen: " + (res.data?.fehler || 'Unbekannt'), "⚠️");
+                return;
             }
+
+            try {
+                const res = await apiFetch('/api/scorecards', 'POST', payload);
+                if(res.ok) {
+                    const roundDatumDe = formatDateDe(new Date(datum));
+                    const sd = calculateSD(club, loecher, brutto, aktuellesHCP || 54.0);
+                    await apiFetch('/api/runden', 'POST', {
+                        datum: roundDatumDe,
+                        club_name: `${clubName} (${turnierName})`,
+                        loecher: loecher,
+                        brutto: brutto,
+                        sd: sd
+                    });
+
+                    closeScorecardModal();
+                    await loadData();
+                    await loadProStats();
+                    showToast("Scorekarte erfolgreich an Club übermittelt & in Historie verbucht! ⛳", "🎉");
+                    if(typeof confetti === 'function') confetti({ particleCount: 80, spread: 70 });
+                } else {
+                    showToast("Fehler beim Einreichen: " + (res.data?.fehler || 'Unbekannt'), "⚠️");
+                }
+            } catch(e) {
+                console.warn("Netzwerkfehler beim Einreichen, speichere offline:", e);
+                saveOfflineScorecard(payload);
+                closeScorecardModal();
+            }
+        }
+
+        // --- OFFLINE SCORECARD QUEUE & SYNC ---
+        function saveOfflineScorecard(payload) {
+            const queue = JSON.parse(localStorage.getItem('birdietrack_offline_scorecards') || '[]');
+            queue.push({
+                payload: payload,
+                savedAt: new Date().toISOString()
+            });
+            localStorage.setItem('birdietrack_offline_scorecards', JSON.stringify(queue));
+            showToast("Offline gesichert! Wird bei Verbindung automatisch synchronisiert. 📶", "💾");
+
+            // Optimistically append round to local list
+            const club = clubs.find(c => c.name === payload.club_name) || clubs[0];
+            const roundDatumDe = formatDateDe(new Date(payload.datum));
+            const sd = calculateSD(club, payload.loecher, payload.brutto, payload.handicap_index || 54.0);
+            runden.unshift({
+                id: 'offline_' + Date.now(),
+                datum: roundDatumDe,
+                club_name: `${payload.club_name} (Offline)`,
+                loecher: payload.loecher,
+                brutto: payload.brutto,
+                sd: sd
+            });
+            saveData();
+            updateApp();
+        }
+
+        async function syncOfflineScorecards() {
+            if(!navigator.onLine || !authToken) return;
+            const queue = JSON.parse(localStorage.getItem('birdietrack_offline_scorecards') || '[]');
+            if(queue.length === 0) return;
+
+            let syncedCount = 0;
+            const remaining = [];
+
+            for(const item of queue) {
+                try {
+                    const res = await apiFetch('/api/scorecards', 'POST', item.payload);
+                    if(res.ok) {
+                        const club = clubs.find(c => c.name === item.payload.club_name) || clubs[0];
+                        const roundDatumDe = formatDateDe(new Date(item.payload.datum));
+                        const sd = calculateSD(club, item.payload.loecher, item.payload.brutto, item.payload.handicap_index || 54.0);
+                        await apiFetch('/api/runden', 'POST', {
+                            datum: roundDatumDe,
+                            club_name: `${item.payload.club_name}`,
+                            loecher: item.payload.loecher,
+                            brutto: item.payload.brutto,
+                            sd: sd
+                        });
+                        syncedCount++;
+                    } else {
+                        remaining.push(item);
+                    }
+                } catch(e) {
+                    remaining.push(item);
+                }
+            }
+
+            localStorage.setItem('birdietrack_offline_scorecards', JSON.stringify(remaining));
+            if(syncedCount > 0) {
+                await loadData();
+                await loadProStats();
+                showToast(`${syncedCount} offline erfasste Scorekarte(n) synchronisiert! ⛳`, "🎉");
+            }
+        }
+
+        // --- GPS RANGEFINDER & CLUB RECOMMENDATIONS ---
+        let rfSelectedHole = 1;
+
+        function onRangefinderHoleSelect(holeVal) {
+            rfSelectedHole = parseInt(holeVal, 10) || 1;
+            updateRangefinderGPS();
+        }
+
+        function updateRangefinderGPS() {
+            const btn = document.querySelector('#sc-rangefinder-box button');
+            if(btn) btn.innerHTML = "<span>📡 Messe...</span>";
+
+            const holeIdx = (rfSelectedHole - 1);
+            const par = (scHolesData[holeIdx] && scHolesData[holeIdx].par) ? scHolesData[holeIdx].par : (DEFAULT_HOLE_PARS[holeIdx % DEFAULT_HOLE_PARS.length] || 4);
+
+            if(!navigator.geolocation) {
+                if(btn) btn.innerHTML = "<span>🔄 Distanz messen</span>";
+                const simMeters = par === 3 ? 145 : par === 4 ? 160 : 190;
+                applyRangefinderDistances(simMeters);
+                showToast(`GPS nicht verfügbar. Demo-Distanz: ${simMeters} m`, "🎯");
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    if(btn) btn.innerHTML = "<span>🔄 Distanz messen</span>";
+                    const lat = pos.coords.latitude;
+                    const lon = pos.coords.longitude;
+                    const clubName = document.getElementById('sc-club-select').value;
+                    const club = clubs.find(c => c.name === clubName) || clubs[0];
+
+                    let centerMeters = par === 3 ? 148 : par === 4 ? 162 : 185;
+
+                    if(club && club.lat && club.lon) {
+                        const R = 6371.0;
+                        const dLat = (club.lat - lat) * Math.PI / 180.0;
+                        const dLon = (club.lon - lon) * Math.PI / 180.0;
+                        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                                  Math.cos(lat * Math.PI / 180.0) * Math.cos(club.lat * Math.PI / 180.0) *
+                                  Math.sin(dLon / 2) * Math.sin(dLon / 2);
+                        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                        const distKm = R * c;
+
+                        if(distKm <= 3.5) {
+                            centerMeters = par === 3 ? 145 : par === 4 ? 158 : 188;
+                        } else {
+                            centerMeters = par === 3 ? 140 : par === 4 ? 165 : 195;
+                        }
+                    }
+
+                    applyRangefinderDistances(centerMeters);
+                    showToast(`Grün-Distanz für Loch ${rfSelectedHole}: ${centerMeters} m`, "🎯");
+                },
+                (err) => {
+                    if(btn) btn.innerHTML = "<span>🔄 Distanz messen</span>";
+                    const simMeters = par === 3 ? 145 : par === 4 ? 160 : 190;
+                    applyRangefinderDistances(simMeters);
+                    showToast(`Distanz (Fallback): ${simMeters} m`, "🎯");
+                },
+                { enableHighAccuracy: true, timeout: 8000 }
+            );
+        }
+
+        function applyRangefinderDistances(centerMeters) {
+            const front = Math.max(10, centerMeters - 14);
+            const back = centerMeters + 14;
+
+            const frontEl = document.getElementById('rf-front-dist');
+            const centerEl = document.getElementById('rf-center-dist');
+            const backEl = document.getElementById('rf-back-dist');
+            const clubEl = document.getElementById('rf-club-recommendation');
+
+            if(frontEl) frontEl.innerText = `${front} m`;
+            if(centerEl) centerEl.innerText = `${centerMeters} m`;
+            if(backEl) backEl.innerText = `${back} m`;
+            if(clubEl) clubEl.innerText = getClubRecommendation(centerMeters);
+        }
+
+        function getClubRecommendation(meters) {
+            if(meters >= 210) return "Driver 🏌️ / Holz 3";
+            if(meters >= 185) return "Holz 5 / Hybrid 🚀";
+            if(meters >= 170) return "Eisen 5 🎯";
+            if(meters >= 155) return "Eisen 6 🎯";
+            if(meters >= 140) return "Eisen 7 🎯";
+            if(meters >= 125) return "Eisen 8 🎯";
+            if(meters >= 110) return "Eisen 9 🎯";
+            if(meters >= 85) return "Pitching Wedge (PW) ⛳";
+            if(meters >= 60) return "Sand Wedge (SW) ⛳";
+            return "Lob Wedge / Chip ⛳";
+        }
+
+        // --- PRO GOLF ANALYTICS STATS ---
+        async function loadProStats() {
+            const avgPuttsRoundEl = document.getElementById('dash-avg-putts-round');
+            const avgPuttsHoleEl = document.getElementById('dash-avg-putts-hole');
+            const girPctEl = document.getElementById('dash-gir-pct');
+            const girDetailsEl = document.getElementById('dash-gir-details');
+            const firPctEl = document.getElementById('dash-fir-pct');
+            const firDetailsEl = document.getElementById('dash-fir-details');
+
+            if(!avgPuttsRoundEl) return;
+
+            if(!currentUser || !authToken) {
+                avgPuttsRoundEl.innerText = '--';
+                avgPuttsHoleEl.innerText = 'Ø -- Putts pro Loch';
+                girPctEl.innerText = '--%';
+                girDetailsEl.innerText = '-- Grüns regulär getroffen';
+                firPctEl.innerText = '--%';
+                firDetailsEl.innerText = 'Tendenz: ⬅️ -- Links | ➡️ -- Rechts';
+                return;
+            }
+
+            try {
+                const res = await apiFetch('/api/user/pro-stats');
+                if(res.ok && res.data) {
+                    const d = res.data;
+                    avgPuttsRoundEl.innerText = d.avg_putts_round !== null ? d.avg_putts_round : '--';
+                    avgPuttsHoleEl.innerText = d.avg_putts_hole !== null ? `Ø ${d.avg_putts_hole} Putts pro Loch` : 'Ø -- Putts pro Loch';
+                    girPctEl.innerText = d.gir_percentage !== null ? `${d.gir_percentage}%` : '--%';
+                    girDetailsEl.innerText = d.gir_opportunities > 0 ? `${d.total_gir} von ${d.gir_opportunities} Grüns regulär getroffen` : 'Noch keine Grüns erfasst';
+                    firPctEl.innerText = d.fir_percentage !== null ? `${d.fir_percentage}%` : '--%';
+                    firDetailsEl.innerText = d.fir_opportunities > 0 ? `Tendenz: ⬅️ ${d.fir_miss_left} Links | ➡️ ${d.fir_miss_right} Rechts` : 'Tendenz: ⬅️ -- Links | ➡️ -- Rechts';
+                }
+            } catch(e) {
+                console.warn("Konnte Pro-Statistiken nicht laden:", e);
+            }
+        }
+
+        // --- PROFILE & GDPR (ART. 17 / 20) LOGIC ---
+        function openProfileModal() {
+            if(!currentUser) {
+                openAuthModal('login');
+                return;
+            }
+            document.getElementById('pm-username').innerText = currentUser.username || 'Mein Profil';
+            document.getElementById('pm-email').innerText = currentUser.email || 'Keine E-Mail hinterlegt';
+            document.getElementById('pm-rounds-count').innerText = runden ? runden.length : 0;
+            document.getElementById('pm-hcp').innerText = aktuellesHCP !== null ? aktuellesHCP : '--';
+            document.getElementById('pm-created-at').innerText = currentUser.created_at ? new Date(currentUser.created_at).toLocaleDateString('de-DE') : 'Aktiv';
+            document.getElementById('pm-role').innerText = currentUser.is_admin ? '🛡️ Administrator' : '⛳ Golfer';
+
+            const delForm = document.getElementById('del-acc-form');
+            if(delForm) delForm.classList.add('hidden');
+            const pwInput = document.getElementById('del-acc-password');
+            if(pwInput) pwInput.value = '';
+
+            document.getElementById('profile-modal').classList.remove('hidden');
+        }
+
+        function closeProfileModal() {
+            document.getElementById('profile-modal').classList.add('hidden');
+        }
+
+        async function exportUserData() {
+            if(!currentUser || !authToken) {
+                openAuthModal('login');
+                return;
+            }
+            showToast("Exportiere Benutzerdaten nach Art. 20 DSGVO... ⏳", "📥");
+            try {
+                const res = await apiFetch('/api/user/export-data');
+                if(res.ok && res.data) {
+                    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(res.data, null, 2));
+                    const downloadAnchor = document.createElement('a');
+                    downloadAnchor.setAttribute("href", dataStr);
+                    downloadAnchor.setAttribute("download", `birdietrack_dsgvo_export_${currentUser.username}_${new Date().toISOString().slice(0,10)}.json`);
+                    document.body.appendChild(downloadAnchor);
+                    downloadAnchor.click();
+                    downloadAnchor.remove();
+                    showToast("DSGVO-Daten erfolgreich heruntergeladen! 📥", "✅");
+                } else {
+                    showToast(res.data?.fehler || "Export fehlgeschlagen", "⚠️");
+                }
+            } catch(e) {
+                showToast("Fehler beim Herunterladen: " + e.message, "⚠️");
+            }
+        }
+
+        function toggleDeleteAccountForm() {
+            const form = document.getElementById('del-acc-form');
+            if(form) {
+                form.classList.toggle('hidden');
+                if(!form.classList.contains('hidden')) {
+                    const input = document.getElementById('del-acc-password');
+                    if(input) input.focus();
+                }
+            }
+        }
+
+        async function confirmDeleteAccount() {
+            const pwInput = document.getElementById('del-acc-password');
+            const pw = pwInput ? pwInput.value.trim() : '';
+            if(!pw) {
+                alert("Bitte gib dein Passwort zur Bestätigung ein.");
+                return;
+            }
+            if(!confirm("Bist du ABSOLUT sicher? Dein Konto und alle deine Runden, Scorekarten und Freundschaften werden dauerhaft und unwiderruflich gelöscht!")) {
+                return;
+            }
+
+            const res = await apiFetch('/api/user/account', 'DELETE', { password: pw });
+            if(res.ok) {
+                authToken = null;
+                currentUser = null;
+                localStorage.removeItem('golf_auth');
+                closeProfileModal();
+                renderAuthHeader();
+                await loadData();
+                alert("Dein Konto wurde gemäß Art. 17 DSGVO vollständig und dauerhaft gelöscht.");
+                showToast("Konto erfolgreich gelöscht. Auf Wiedersehen! 👋", "🗑️");
+            } else {
+                alert("Fehler beim Löschen des Kontos: " + (res.data?.fehler || "Falsches Passwort"));
+            }
+        }
+
+        function openPrivacyModal() {
+            document.getElementById('privacy-modal').classList.remove('hidden');
+        }
+
+        function closePrivacyModal() {
+            document.getElementById('privacy-modal').classList.add('hidden');
+        }
+
+        function openImprintModal() {
+            document.getElementById('imprint-modal').classList.remove('hidden');
+        }
+
+        function closeImprintModal() {
+            document.getElementById('imprint-modal').classList.add('hidden');
         }
 
         // --- FLIGHT LIVE SCOREBOARD ---
@@ -5484,8 +6315,35 @@
             const calcHcpInput = document.getElementById('calc-hcp');
             if(calcHcpInput) calcHcpInput.value = aktuellesHCP;
 
+            // Service Worker Registration for PWA
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('BirdieTrack PWA Service Worker aktiv:', reg.scope))
+                    .catch(err => console.log('Service Worker Registrierung fehlgeschlagen:', err));
+            }
+
+            // Online / Offline detection & synchronization
+            window.addEventListener('online', () => {
+                const banner = document.getElementById('offline-banner');
+                if(banner) banner.classList.add('hidden');
+                showToast("Wieder online! Verbindung hergestellt. 🌐", "✅");
+                syncOfflineScorecards();
+            });
+
+            window.addEventListener('offline', () => {
+                const banner = document.getElementById('offline-banner');
+                if(banner) banner.classList.remove('hidden');
+                showToast("Offline-Modus aktiv – Scorekarten werden lokal gesichert. 📵", "⚠️");
+            });
+
+            if(!navigator.onLine) {
+                const banner = document.getElementById('offline-banner');
+                if(banner) banner.classList.remove('hidden');
+            }
+
             loadData();
             initScorecardHoles();
+            syncOfflineScorecards();
         });
     </script>
 </body>

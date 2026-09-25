@@ -11,6 +11,8 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import func, or_
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_cors import CORS
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 # --- 1. SETUP UND KONFIGURATION ---
 app = Flask(__name__, static_folder='.', static_url_path='')
@@ -24,6 +26,37 @@ if db_url and db_url.startswith('postgres://'):
 app.config['SQLALCHEMY_DATABASE_URI'] = db_url or ('sqlite:///' + os.path.join(basis_ordner, 'golfapp.db'))
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'golf-app-secret-dev-key-12345')
+
+if db_url and 'postgresql' in db_url:
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        'pool_pre_ping': True,
+        'pool_recycle': 300,
+        'pool_size': 10,
+        'max_overflow': 20
+    }
+
+limiter = Limiter(
+    key_func=get_remote_address,
+    app=app,
+    default_limits=[],
+    storage_uri="memory://"
+)
+
+@app.errorhandler(429)
+def ratelimit_handler(e):
+    return jsonify({
+        "fehler": "Zu viele Anfragen. Bitte warte einen Moment, bevor du es erneut versuchst.",
+        "detail": str(e.description)
+    }), 429
+
+@app.after_request
+def add_security_headers(response):
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+    response.headers['Permissions-Policy'] = 'geolocation=(self)'
+    return response
 
 db = SQLAlchemy(app)
 
@@ -533,6 +566,7 @@ def get_current_user():
 # --- 4. API ROUTEN: AUTH ---
 
 @app.route('/api/register', methods=['POST'])
+@limiter.limit("5 per minute")
 def register():
     """Registriert einen neuen Benutzer und liefert einen Auth-Token zurück."""
     daten = request.get_json(silent=True) or {}
@@ -567,6 +601,7 @@ def register():
     }), 201
 
 @app.route('/api/login', methods=['POST'])
+@limiter.limit("10 per minute")
 def login():
     """Prüft Logindaten (E-Mail oder Benutzername) und gibt neuen/aktuellen Token zurück."""
     daten = request.get_json(silent=True) or {}
@@ -593,6 +628,7 @@ def login():
         return jsonify({"fehler": "Falsche Anmeldedaten oder Passwort."}), 401
 
 @app.route('/api/forgot-password', methods=['POST'])
+@limiter.limit("3 per minute")
 def forgot_password():
     """Generiert einen 6-stelligen Bestätigungscode zum Zurücksetzen des Passworts."""
     daten = request.get_json(silent=True) or {}
@@ -626,6 +662,7 @@ def forgot_password():
     }), 200
 
 @app.route('/api/reset-password', methods=['POST'])
+@limiter.limit("5 per minute")
 def reset_password():
     """Validiert den Bestätigungscode und setzt das Passwort neu."""
     daten = request.get_json(silent=True) or {}
@@ -683,6 +720,174 @@ def get_me():
 
     return jsonify({
         "user": user.to_dict()
+    }), 200
+
+# --- DSGVO & PRO-STATS ENDPOINTS ---
+
+@app.route('/api/user/export-data', methods=['GET'])
+def export_user_data():
+    """Art. 20 DSGVO: Vollständiger Datenexport des angemeldeten Benutzers als JSON."""
+    user = get_current_user()
+    if not user:
+        return jsonify({"fehler": "Authentifizierung erforderlich."}), 401
+
+    friendships = Friendship.query.filter(
+        (Friendship.user_id == user.id) | (Friendship.friend_id == user.id)
+    ).all()
+    friends_list = []
+    for f in friendships:
+        f_user_id = f.friend_id if f.user_id == user.id else f.user_id
+        f_user = db.session.get(User, f_user_id)
+        if f_user:
+            friends_list.append({"username": f_user.username, "status": f.status})
+
+    export = {
+        "export_metadata": {
+            "application": "BirdieTrack",
+            "export_date": datetime.utcnow().isoformat(),
+            "gdpr_basis": "Art. 20 DSGVO - Recht auf Datenübertragbarkeit",
+            "user_id": user.id,
+            "username": user.username
+        },
+        "user_profile": {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email or "",
+            "is_admin": bool(user.is_admin),
+            "created_at": user.created_at.isoformat() if user.created_at else None
+        },
+        "rounds": [r.to_dict() for r in user.runden],
+        "scorecards": [s.to_dict() for s in user.scorecards],
+        "favorite_clubs": [f.club_name for f in user.favorites],
+        "tournament_registrations": [t.to_dict() for t in user.registrations],
+        "friends": friends_list,
+        "custom_clubs": [c.to_dict() for c in user.clubs]
+    }
+    resp = Response(json.dumps(export, indent=2, ensure_ascii=False), mimetype='application/json; charset=utf-8')
+    resp.headers['Content-Disposition'] = f'attachment; filename="birdietrack_export_{user.username}.json"'
+    return resp
+
+@app.route('/api/user/account', methods=['DELETE'])
+def delete_own_account():
+    """Art. 17 DSGVO: Unwiderrufliche Selbstlöschung des Kontos nach Passwortbestätigung."""
+    user = get_current_user()
+    if not user:
+        return jsonify({"fehler": "Authentifizierung erforderlich."}), 401
+
+    daten = request.get_json(silent=True) or {}
+    password = daten.get('password', '').strip()
+    if not password:
+        return jsonify({"fehler": "Bitte gib dein aktuelles Passwort zur Bestätigung ein."}), 400
+
+    if not check_password_hash(user.password_hash, password):
+        return jsonify({"fehler": "Das eingegebene Passwort ist nicht korrekt."}), 403
+
+    user_name = user.username
+    user_id = user.id
+
+    # Bereinige verknüpfte Freundschaften und erstellte Flights
+    Friendship.query.filter((Friendship.user_id == user_id) | (Friendship.friend_id == user_id)).delete(synchronize_session=False)
+    Flight.query.filter(Flight.created_by_user_id == user_id).delete(synchronize_session=False)
+
+    db.session.delete(user)
+    db.session.commit()
+    return jsonify({"nachricht": f"Dein Konto '{user_name}' und alle deine Daten wurden dauerhaft gelöscht."}), 200
+
+@app.route('/api/user/pro-stats', methods=['GET'])
+def get_user_pro_stats():
+    """Berechnet detaillierte Profi-Statistiken (Putts, GIR, FIR) für den eingeloggten Golfer."""
+    user = get_current_user()
+    if not user:
+        return jsonify({"fehler": "Authentifizierung erforderlich."}), 401
+
+    scorecards = Scorecard.query.filter_by(user_id=user.id).order_by(Scorecard.id.desc()).all()
+
+    total_holes = 0
+    total_putts = 0
+    holes_with_putts = 0
+    total_gir = 0
+    gir_opportunities = 0
+    total_fir = 0
+    fir_opportunities = 0
+    fir_miss_left = 0
+    fir_miss_right = 0
+
+    rounds_summary = []
+
+    for sc in scorecards:
+        sc_putts = 0
+        sc_gir = 0
+        sc_fir = 0
+        try:
+            holes = json.loads(sc.holes_json or '[]')
+        except Exception:
+            holes = []
+
+        for h in holes:
+            total_holes += 1
+            p = h.get('putts')
+            if p is not None and str(p).isdigit():
+                val = int(p)
+                total_putts += val
+                sc_putts += val
+                holes_with_putts += 1
+
+            gir = h.get('gir')
+            par = int(h.get('par', 4))
+            gross = h.get('gross') or h.get('strokes')
+            if gir is True or str(gir).lower() in ('true', '1'):
+                total_gir += 1
+                sc_gir += 1
+                gir_opportunities += 1
+            elif gir is False or str(gir).lower() in ('false', '0'):
+                gir_opportunities += 1
+            elif gross is not None and str(gross).isdigit() and p is not None and str(p).isdigit():
+                shots_to_green = int(gross) - int(p)
+                gir_opportunities += 1
+                if shots_to_green <= (par - 2):
+                    total_gir += 1
+                    sc_gir += 1
+
+            fir = h.get('fir')
+            if par >= 4:
+                fir_opportunities += 1
+                if fir in ('hit', 'center', 'yes', True) or str(fir).lower() in ('hit', 'center'):
+                    total_fir += 1
+                    sc_fir += 1
+                elif fir in ('left', 'links') or str(fir).lower() in ('left', 'links'):
+                    fir_miss_left += 1
+                elif fir in ('right', 'rechts') or str(fir).lower() in ('right', 'rechts'):
+                    fir_miss_right += 1
+
+        rounds_summary.append({
+            "scorecard_id": sc.id,
+            "club_name": sc.club_name,
+            "datum": sc.datum,
+            "brutto": sc.brutto,
+            "putts": sc_putts if sc_putts > 0 else None,
+            "gir_count": sc_gir,
+            "fir_count": sc_fir
+        })
+
+    avg_putts_hole = round(total_putts / holes_with_putts, 2) if holes_with_putts > 0 else None
+    avg_putts_round = round((total_putts / holes_with_putts) * 18, 1) if holes_with_putts > 0 else None
+    gir_pct = round((total_gir / gir_opportunities) * 100, 1) if gir_opportunities > 0 else None
+    fir_pct = round((total_fir / fir_opportunities) * 100, 1) if fir_opportunities > 0 else None
+
+    return jsonify({
+        "total_scorecards": len(scorecards),
+        "total_holes_analyzed": total_holes,
+        "avg_putts_per_hole": avg_putts_hole,
+        "avg_putts_per_round": avg_putts_round,
+        "gir_percentage": gir_pct,
+        "total_gir": total_gir,
+        "gir_opportunities": gir_opportunities,
+        "fir_percentage": fir_pct,
+        "total_fir": total_fir,
+        "fir_opportunities": fir_opportunities,
+        "fir_miss_left": fir_miss_left,
+        "fir_miss_right": fir_miss_right,
+        "recent_rounds": rounds_summary[:10]
     }), 200
 
 # --- 5. RUNDEN VERWALTUNG ---
@@ -1426,6 +1631,16 @@ def export_pccaddy_csv(card_id):
     return response
 
 # --- 12. STATIC WEBPAGE SERVING ---
+
+@app.route('/sw.js')
+def service_worker():
+    """Liefert den PWA Service Worker mit JavaScript-Header aus."""
+    return send_from_directory(basis_ordner, 'sw.js', mimetype='application/javascript')
+
+@app.route('/manifest.webmanifest')
+def web_manifest():
+    """Liefert das PWA Web App Manifest mit JSON-Header aus."""
+    return send_from_directory(basis_ordner, 'manifest.webmanifest', mimetype='application/manifest+json')
 
 @app.route('/')
 def index():
