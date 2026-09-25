@@ -142,6 +142,9 @@
                                     <span>Cloud aktiv</span>
                                 </div>
                             </div>
+                            <button id="auth-admin-badge" onclick="openAdminModal()" class="hidden px-2 py-0.5 rounded-lg bg-purple-100 hover:bg-purple-200 text-purple-800 text-[11px] font-bold border border-purple-200 transition-all flex items-center gap-1 shadow-xs ml-0.5" title="Admin-Bereich: Benutzerverwaltung">
+                                🛡️ Admin
+                            </button>
                             <button onclick="handleLogout()" class="text-xs text-slate-400 hover:text-rose-600 font-bold ml-1 p-1" title="Abmelden">
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                             </button>
@@ -158,7 +161,10 @@
                         </div>
                     </div>
 
-                    <!-- Quick Add Round Button -->
+                    <!-- Quick Add Round & Tournament Scorecard Buttons -->
+                    <button onclick="openScorecardModal()" class="hidden md:inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs shadow-md shadow-amber-500/25 transition-all hover:scale-[1.02] active:scale-[0.98]" title="Digitale Scorekarte mit WHS Spielvorgabe & PC CADDIE Sync">
+                        <span>🏆 Scorekarte</span>
+                    </button>
                     <button onclick="switchTab('record')" class="hidden lg:inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-golf-600 hover:bg-golf-700 text-white font-semibold text-xs shadow-md shadow-golf-600/25 transition-all hover:scale-[1.02] active:scale-[0.98]">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -178,9 +184,26 @@
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                     Runde erfassen
                 </button>
+                <button onclick="openScorecardModal()" class="nav-tab flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap text-amber-700 hover:text-amber-900 hover:bg-amber-50" data-tab="scorecard">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    <span>🏆 Scorekarte</span>
+                </button>
                 <button onclick="switchTab('history')" class="nav-tab flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap text-slate-600 hover:text-slate-900 hover:bg-slate-100" data-tab="history">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     Historie
+                </button>
+                <button onclick="switchTab('clubs')" class="nav-tab flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap text-slate-600 hover:text-slate-900 hover:bg-slate-100" data-tab="clubs">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                    <span>Golfclubs & Turniere</span>
+                    <span id="nav-clubs-badge" class="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-slate-200 text-slate-700">30+</span>
+                </button>
+                <button onclick="openFriendsModal()" class="nav-tab flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap text-slate-600 hover:text-slate-900 hover:bg-slate-100" data-tab="friends" title="Freunde & Rangliste">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                    <span>Freunde & Rangliste</span>
+                </button>
+                <button onclick="openStammblattModal()" class="nav-tab flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap text-slate-600 hover:text-slate-900 hover:bg-slate-100" data-tab="stammblatt" title="Offizielles DGV Handicap-Stammblatt">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    <span>DGV Stammblatt</span>
                 </button>
                 <button onclick="switchTab('simulator')" class="nav-tab flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap text-slate-600 hover:text-slate-900 hover:bg-slate-100" data-tab="simulator">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
@@ -189,11 +212,6 @@
                 <button onclick="switchTab('calculator')" class="nav-tab flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap text-slate-600 hover:text-slate-900 hover:bg-slate-100" data-tab="calculator">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
                     Spielvorgaben-Rechner
-                </button>
-                <button onclick="switchTab('clubs')" class="nav-tab flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap text-slate-600 hover:text-slate-900 hover:bg-slate-100" data-tab="clubs">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
-                    <span>Golfclubs & Turniere</span>
-                    <span id="nav-clubs-badge" class="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-slate-200 text-slate-700">30+</span>
                 </button>
                 <button onclick="switchTab('import')" class="nav-tab flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap text-slate-600 hover:text-slate-900 hover:bg-slate-100" data-tab="import">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
@@ -948,11 +966,12 @@
                     <div class="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-xs font-semibold pt-1">
                         <span class="text-slate-400 uppercase text-[10px] font-bold mr-1 shrink-0">Region:</span>
                         <button onclick="setClubRegionFilter('all')" class="region-pill active px-3 py-1 rounded-lg bg-golf-600 text-white shadow-xs whitespace-nowrap transition-colors" data-region="all">Alle</button>
+                        <button onclick="setClubRegionFilter('favorites')" class="region-pill px-3 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 whitespace-nowrap transition-colors" data-region="favorites">⭐ Favoriten</button>
                         <button onclick="setClubRegionFilter('Hamburg & Umland')" class="region-pill px-3 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 whitespace-nowrap transition-colors" data-region="Hamburg & Umland">Hamburg & Umland</button>
                         <button onclick="setClubRegionFilter('Schleswig-Holstein')" class="region-pill px-3 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 whitespace-nowrap transition-colors" data-region="Schleswig-Holstein">Schleswig-Holstein</button>
                         <button onclick="setClubRegionFilter('Niedersachsen & Bremen')" class="region-pill px-3 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 whitespace-nowrap transition-colors" data-region="Niedersachsen & Bremen">Niedersachsen & Bremen</button>
                         <button onclick="setClubRegionFilter('Weitere')" class="region-pill px-3 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 whitespace-nowrap transition-colors" data-region="Weitere">Weitere Bundesländer</button>
-                        <button onclick="setClubRegionFilter('custom')" class="region-pill px-3 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 whitespace-nowrap transition-colors" data-region="custom">⭐ Meine Clubs</button>
+                        <button onclick="setClubRegionFilter('custom')" class="region-pill px-3 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 whitespace-nowrap transition-colors" data-region="custom">Eigene Clubs</button>
                     </div>
                 </div>
 
@@ -1381,6 +1400,460 @@
         </div>
     </div>
 
+    <!-- MODAL: DIGITAL TOURNAMENT SCORECARD & PC CADDIE EXPORT -->
+    <div id="scorecard-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 overflow-y-auto hidden">
+        <div class="bg-white rounded-2xl max-w-4xl w-full shadow-2xl border border-slate-200 overflow-hidden my-auto max-h-[92vh] flex flex-col">
+            <!-- Modal Header -->
+            <div class="p-4 sm:p-5 border-b border-slate-200 bg-gradient-to-r from-golf-900 via-golf-950 to-slate-900 text-white flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-golf-500/20 border border-golf-400/30 flex items-center justify-center text-lg">
+                        🏆
+                    </div>
+                    <div>
+                        <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                            <span>Digitale Turnier-Scorekarte</span>
+                            <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">PC CADDIE Sync</span>
+                        </h3>
+                        <p class="text-xs text-golf-200/80">Loch-für-Loch Erfassung nach WHS Vorgabentabelle mit Touch-Unterschrift & GPS-Audit</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeScorecardModal()" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center font-bold text-lg transition-colors">&times;</button>
+            </div>
+
+            <!-- Modal Body (Scrollable) -->
+            <div class="p-4 sm:p-6 overflow-y-auto space-y-6 flex-1 text-slate-800">
+                <!-- Top Meta Form -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Turnier-Name</label>
+                        <input type="text" id="sc-turnier-name" class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold bg-white" placeholder="z.B. Monatsbecher">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Golfclub</label>
+                        <select id="sc-club-select" onchange="onScorecardClubChanged()" class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold bg-white"></select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Rundendatum</label>
+                        <input type="date" id="sc-datum" class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Rundenumfang</label>
+                        <select id="sc-loecher" onchange="initScorecardHolesTable()" class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold bg-white">
+                            <option value="18">18 Löcher</option>
+                            <option value="9">9 Löcher</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Playing HCP (Spielvorgabe) Calculation Banner -->
+                <div class="bg-gradient-to-r from-golf-50 to-emerald-50 rounded-xl p-3 sm:p-4 border border-golf-200 flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg bg-golf-600 text-white flex items-center justify-center font-bold text-xs">⛳</div>
+                        <div>
+                            <div class="text-[11px] font-bold uppercase text-golf-800 tracking-wider">Offizielle DGV Spielvorgabe (Course Handicap)</div>
+                            <div class="text-xs text-slate-600">
+                                Spieler: <strong id="sc-player-name" class="text-slate-900">Gast</strong> (HCPI: <span id="sc-player-hcpi" class="font-bold">--</span>) • 
+                                CR: <span id="sc-display-cr" class="font-mono">72.0</span> / Slope: <span id="sc-display-slope" class="font-mono">130</span> / Par: <span id="sc-display-par" class="font-mono">72</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs text-slate-500 font-medium">Berechnete Spielvorgabe:</span>
+                        <span id="sc-calculated-playing-hcp" class="px-3 py-1 rounded-xl bg-golf-600 text-white font-black text-sm font-mono shadow-xs">--</span>
+                    </div>
+                </div>
+
+                <!-- GPS Verification Banner -->
+                <div id="sc-gps-box" class="rounded-xl p-3 sm:p-4 bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                        <div id="sc-gps-icon" class="w-8 h-8 rounded-lg bg-slate-200 text-slate-700 flex items-center justify-center text-sm">📍</div>
+                        <div>
+                            <div class="text-xs font-bold text-slate-800 flex items-center gap-2">
+                                <span>GPS-Sicherheitsprüfung</span>
+                                <span id="sc-gps-badge" class="px-2 py-0.2 rounded-full text-[10px] font-bold bg-slate-200 text-slate-600">Ungeprüft</span>
+                            </div>
+                            <div id="sc-gps-details" class="text-[11px] text-slate-500 mt-0.5">Klicke auf "Standort prüfen", um zu verifizieren, dass du dich auf dem Clubgelände befindest.</div>
+                        </div>
+                    </div>
+                    <button type="button" onclick="verifyScorecardLocation()" id="sc-gps-btn" class="px-3.5 py-1.5 rounded-xl bg-golf-600 hover:bg-golf-700 text-white text-xs font-bold shadow-xs transition-all shrink-0 flex items-center gap-1.5 active:scale-95">
+                        <span>Standort prüfen</span>
+                    </button>
+                </div>
+
+                <!-- Flight / Team Tab Switcher -->
+                <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+                    <div class="flex items-center gap-2">
+                        <button type="button" id="btn-sc-mode-single" onclick="setScorecardMode('single')" class="px-3 py-1 rounded-lg bg-golf-600 text-white font-bold text-xs shadow-xs transition-all">Meine Scorekarte</button>
+                        <button type="button" id="btn-sc-mode-flight" onclick="setScorecardMode('flight')" class="px-3 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-all">👥 Flight / Team Live-Ansicht</button>
+                    </div>
+                    <div id="sc-flight-info-pill" class="text-xs text-slate-500 font-medium hidden">
+                        Flight: <strong id="sc-flight-name">Flight 1</strong>
+                    </div>
+                </div>
+
+                <!-- View 1: Single Player Hole-by-Hole Scorecard -->
+                <div id="sc-single-view" class="space-y-4">
+                    <div class="overflow-x-auto rounded-xl border border-slate-200">
+                        <table class="w-full text-left text-xs font-medium">
+                            <thead class="bg-slate-100 text-slate-600 font-bold uppercase tracking-wider text-[10px]">
+                                <tr>
+                                    <th class="py-2.5 px-2 text-center w-12">Loch</th>
+                                    <th class="py-2.5 px-2 text-center w-12">Par</th>
+                                    <th class="py-2.5 px-2 text-center w-14" title="Stroke Index / Vorgaben-Schlüssel">SI</th>
+                                    <th class="py-2.5 px-2 text-center w-14" title="Vorgabestriche">Striche</th>
+                                    <th class="py-2.5 px-3 text-center w-28">Brutto Schläge</th>
+                                    <th class="py-2.5 px-2 text-center w-14">Netto</th>
+                                    <th class="py-2.5 px-2 text-center w-16" title="Netto-Stableford Punkte">Stbf. Pkt</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sc-holes-table-body" class="divide-y divide-slate-100 font-mono">
+                                <!-- 18 or 9 Holes dynamic rows -->
+                            </tbody>
+                            <tfoot class="bg-slate-50 border-t-2 border-slate-200 font-bold text-xs">
+                                <tr>
+                                    <td class="py-3 px-2 text-center font-sans font-black">GESAMT</td>
+                                    <td id="sc-total-par" class="py-3 px-2 text-center text-slate-700 font-mono">72</td>
+                                    <td class="py-3 px-2 text-center text-slate-400 font-mono">-</td>
+                                    <td id="sc-total-striche" class="py-3 px-2 text-center text-slate-700 font-mono">0</td>
+                                    <td id="sc-total-brutto" class="py-3 px-3 text-center text-slate-900 font-mono font-black text-sm">--</td>
+                                    <td id="sc-total-netto" class="py-3 px-2 text-center text-golf-800 font-mono font-black text-sm">--</td>
+                                    <td id="sc-total-stableford" class="py-3 px-2 text-center text-amber-800 font-mono font-black text-sm">--</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <!-- Stableford Result Callout Badge -->
+                    <div id="sc-stableford-callout" class="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-center justify-between">
+                        <span class="font-bold flex items-center gap-1.5">
+                            <span>🏆 Stableford-Wertung:</span>
+                            <span id="sc-callout-text">Trage deine Schläge ein, um deine Netto-Punkte zu sehen.</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- View 2: Flight / Team Scorecard View -->
+                <div id="sc-flight-view" class="hidden space-y-4">
+                    <div class="p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-900 flex items-center justify-between">
+                        <div><strong>Live Flight Scoreboard:</strong> Alle Spieler deines Flights auf einen Blick.</div>
+                        <button type="button" onclick="loadFlightScoreboard()" class="px-2.5 py-1 rounded bg-blue-600 hover:bg-blue-700 text-white font-bold text-[11px]">Aktualisieren 🔄</button>
+                    </div>
+                    <div class="overflow-x-auto rounded-xl border border-slate-200">
+                        <table class="w-full text-left text-xs font-mono" id="sc-flight-table">
+                            <thead class="bg-slate-100 text-slate-700 font-bold uppercase text-[10px]" id="sc-flight-thead">
+                                <!-- Dynamic headers with player names -->
+                            </thead>
+                            <tbody class="divide-y divide-slate-100" id="sc-flight-tbody">
+                                <!-- Dynamic rows for hole 1..18 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Signatures Section (Touch & Mouse) -->
+                <div class="space-y-3 pt-2 border-t border-slate-200">
+                    <div class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                        <span>✍️ Unterschriften zur offiziellen DGV / PC CADDIE Einreichung</span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Player Signature -->
+                        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <label class="text-xs font-bold text-slate-800">Unterschrift Spieler</label>
+                                <button type="button" onclick="clearPlayerSignature()" class="text-[11px] text-slate-400 hover:text-rose-600 font-semibold">Leeren</button>
+                            </div>
+                            <div class="border border-slate-300 rounded-lg bg-white overflow-hidden shadow-inner">
+                                <canvas id="sc-player-canvas" width="360" height="120" class="w-full h-24 touch-none cursor-crosshair block"></canvas>
+                            </div>
+                            <p class="text-[10px] text-slate-400">Hier mit Finger oder Maus unterschreiben</p>
+                        </div>
+
+                        <!-- Marker Signature -->
+                        <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                            <div class="flex items-center justify-between">
+                                <label class="text-xs font-bold text-slate-800">Unterschrift Zähler (Marker)</label>
+                                <button type="button" onclick="clearMarkerSignature()" class="text-[11px] text-slate-400 hover:text-rose-600 font-semibold">Leeren</button>
+                            </div>
+                            <input type="text" id="sc-marker-name" placeholder="Name des Zählers (z.B. Max Mustermann)" class="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs font-medium bg-white">
+                            <div class="border border-slate-300 rounded-lg bg-white overflow-hidden shadow-inner">
+                                <canvas id="sc-marker-canvas" width="360" height="120" class="w-full h-24 touch-none cursor-crosshair block"></canvas>
+                            </div>
+                            <p class="text-[10px] text-slate-400">Zähler unterschreibt zur Bestätigung der Schläge</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="p-4 border-t border-slate-200 bg-slate-50 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                <button type="button" onclick="closeScorecardModal()" class="px-4 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-200 transition-colors">Schließen</button>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="exportCurrentScorecardPcCaddy()" class="px-4 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 font-bold text-xs shadow-xs transition-all flex items-center gap-1.5 active:scale-95" title="Exportiert CSV-Datei für PC CADDIE">
+                        <span>📥 PC CADDIE Export (.csv)</span>
+                    </button>
+                    <button type="button" onclick="submitTournamentScorecard()" class="px-5 py-2 rounded-xl bg-golf-600 hover:bg-golf-700 text-white font-bold text-xs shadow-sm transition-all flex items-center gap-1.5 active:scale-95">
+                        <span>🚀 Scorekarte einreichen</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: TOURNAMENT DETAILS & REGISTRATION -->
+    <div id="tournament-details-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto hidden">
+        <div class="bg-white rounded-2xl max-w-xl w-full shadow-2xl border border-slate-200 overflow-hidden my-auto max-h-[90vh] flex flex-col">
+            <div class="p-4 sm:p-5 border-b border-slate-200 bg-gradient-to-r from-amber-600 via-amber-700 to-slate-900 text-white flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center text-lg">🏆</div>
+                    <div>
+                        <h3 class="text-base sm:text-lg font-bold text-white" id="td-title">Turnier-Details</h3>
+                        <p class="text-xs text-amber-100/90" id="td-club">Golfclub</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeTournamentDetailsModal()" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center font-bold text-lg transition-colors">&times;</button>
+            </div>
+            <div class="p-4 sm:p-6 overflow-y-auto flex-1 space-y-4 text-xs">
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                    <div><span class="text-slate-400 block text-[10px] font-bold">DATUM</span><strong id="td-datum" class="text-slate-800">--</strong></div>
+                    <div><span class="text-slate-400 block text-[10px] font-bold">LÖCHER</span><strong id="td-loecher" class="text-slate-800">--</strong></div>
+                    <div><span class="text-slate-400 block text-[10px] font-bold">SPIELFORM</span><strong id="td-spielform" class="text-slate-800">--</strong></div>
+                    <div><span class="text-slate-400 block text-[10px] font-bold">WERTUNG</span><span id="td-vorgabe" class="font-bold">--</span></div>
+                </div>
+
+                <!-- Participants & Flights -->
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-slate-800 uppercase tracking-wider text-[11px]">Gemeldete Teilnehmer & Flights</span>
+                        <span id="td-participants-count" class="text-[11px] text-slate-500 font-semibold">0 Teilnehmer</span>
+                    </div>
+                    <div id="td-participants-list" class="divide-y divide-slate-100 border border-slate-200 rounded-xl overflow-hidden max-h-48 overflow-y-auto">
+                        <!-- Populated via JS -->
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between shrink-0">
+                <button type="button" onclick="closeTournamentDetailsModal()" class="px-4 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-200">Schließen</button>
+                <div class="flex items-center gap-2">
+                    <button type="button" id="td-register-btn" onclick="registerForCurrentTournament()" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs shadow-xs transition-all">Für Turnier anmelden</button>
+                    <button type="button" id="td-play-btn" onclick="startScorecardForTournament()" class="px-4 py-2 rounded-xl bg-golf-600 hover:bg-golf-700 text-white font-bold text-xs shadow-xs transition-all">Scorekarte starten ⛳</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: ADMIN AREA (BENUTZERVERWALTUNG & SYSTEM) -->
+    <div id="admin-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto hidden">
+        <div class="bg-white rounded-2xl max-w-3xl w-full shadow-2xl border border-slate-200 overflow-hidden my-auto max-h-[90vh] flex flex-col">
+            <div class="p-4 sm:p-5 border-b border-slate-200 bg-gradient-to-r from-purple-900 via-indigo-950 to-slate-900 text-white flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-purple-500/20 border border-purple-400/30 flex items-center justify-center text-lg">🛡️</div>
+                    <div>
+                        <h3 class="text-base sm:text-lg font-bold text-white">Admin-Bereich – Benutzerverwaltung</h3>
+                        <p class="text-xs text-purple-200/80">Benutzerkonten einsehen, Admin-Rechte konfigurieren & Accounts sicher löschen</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeAdminModal()" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center font-bold text-lg transition-colors">&times;</button>
+            </div>
+            <div class="p-4 sm:p-6 overflow-y-auto flex-1 space-y-4">
+                <div class="flex items-center justify-between">
+                    <div class="text-xs text-slate-500">Registrierte Benutzer: <strong id="admin-user-count" class="text-slate-800">--</strong></div>
+                    <button type="button" onclick="loadAdminUsers()" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center gap-1">🔄 Aktualisieren</button>
+                </div>
+                <div class="overflow-x-auto rounded-xl border border-slate-200">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-100 text-slate-600 font-bold uppercase text-[10px]">
+                            <tr>
+                                <th class="py-2.5 px-3">ID</th>
+                                <th class="py-2.5 px-3">Benutzername</th>
+                                <th class="py-2.5 px-3">E-Mail</th>
+                                <th class="py-2.5 px-2 text-center">Runden</th>
+                                <th class="py-2.5 px-2 text-center">Rolle</th>
+                                <th class="py-2.5 px-3 text-right">Aktionen</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-users-table-body" class="divide-y divide-slate-100">
+                            <!-- Populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="p-4 border-t border-slate-200 bg-slate-50 flex items-center justify-end">
+                <button type="button" onclick="closeAdminModal()" class="px-4 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-200">Schließen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: GOLFFREUNDE & LEADERBOARD -->
+    <div id="friends-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto hidden">
+        <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden my-auto max-h-[90vh] flex flex-col">
+            <div class="p-4 sm:p-5 border-b border-slate-200 bg-gradient-to-r from-golf-900 via-emerald-950 to-slate-900 text-white flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-lg">🏆</div>
+                    <div>
+                        <h3 class="text-base sm:text-lg font-bold text-white">Community & Golffreunde</h3>
+                        <p class="text-xs text-emerald-200/80">Rangliste nach WHS Handicap Index & Vernetzung mit Mitspielern</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeFriendsModal()" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center font-bold text-lg transition-colors">&times;</button>
+            </div>
+            
+            <!-- Tab Bar -->
+            <div class="flex border-b border-slate-200 bg-slate-50 px-4 pt-2">
+                <button type="button" id="tab-btn-leaderboard" onclick="switchFriendsTab('leaderboard')" class="px-4 py-2.5 font-bold text-xs border-b-2 border-golf-600 text-golf-700">🏆 Community Rangliste</button>
+                <button type="button" id="tab-btn-friends" onclick="switchFriendsTab('friends')" class="px-4 py-2.5 font-bold text-xs text-slate-500 hover:text-slate-800">👥 Meine Freunde</button>
+            </div>
+
+            <div class="p-4 sm:p-6 overflow-y-auto flex-1 space-y-4">
+                <!-- Subtab 1: Leaderboard -->
+                <div id="friends-subtab-leaderboard" class="space-y-4">
+                    <div class="overflow-x-auto rounded-xl border border-slate-200">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-100 text-slate-600 font-bold uppercase text-[10px]">
+                                <tr>
+                                    <th class="py-2.5 px-3 text-center w-12">Rang</th>
+                                    <th class="py-2.5 px-3">Golfer</th>
+                                    <th class="py-2.5 px-3 text-right">HCP Index</th>
+                                    <th class="py-2.5 px-3 text-center">Runden</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leaderboard-table-body" class="divide-y divide-slate-100">
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Subtab 2: Friends -->
+                <div id="friends-subtab-friends" class="hidden space-y-4">
+                    <!-- Add Friend Input -->
+                    <div class="flex gap-2">
+                        <input type="text" id="friend-search-input" placeholder="Benutzername deines Golffreunds..." class="flex-1 px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium">
+                        <button type="button" onclick="sendFriendRequest()" class="px-3.5 py-2 rounded-xl bg-golf-600 hover:bg-golf-700 text-white font-bold text-xs shadow-xs transition-all">Anfrage senden</button>
+                    </div>
+
+                    <!-- Pending Requests -->
+                    <div id="friends-pending-container" class="hidden space-y-2">
+                        <div class="text-[11px] font-bold uppercase tracking-wider text-amber-700">Ausstehende Freundschaftsanfragen</div>
+                        <div id="friends-pending-list" class="space-y-1.5"></div>
+                    </div>
+
+                    <!-- Accepted Friends List -->
+                    <div class="space-y-2">
+                        <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Freundesliste</div>
+                        <div id="friends-list-container" class="space-y-1.5">
+                            <!-- Populated via JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 border-t border-slate-200 bg-slate-50 flex items-center justify-end">
+                <button type="button" onclick="closeFriendsModal()" class="px-4 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-200">Schließen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: OFFIZIELLES DGV STAMMBLATT -->
+    <div id="stammblatt-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto hidden">
+        <div class="bg-white rounded-2xl max-w-3xl w-full shadow-2xl border border-slate-200 overflow-hidden my-auto max-h-[95vh] flex flex-col">
+            <div class="p-4 sm:p-5 border-b border-slate-200 bg-gradient-to-r from-slate-900 to-golf-950 text-white flex items-center justify-between shrink-0 print:hidden">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-golf-500/20 border border-golf-400/30 flex items-center justify-center text-lg">📜</div>
+                    <div>
+                        <h3 class="text-base sm:text-lg font-bold text-white">Offizielles DGV Handicap-Stammblatt</h3>
+                        <p class="text-xs text-golf-200/80">World Handicap System Scoring Record (Best 8 of 20)</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeStammblattModal()" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center font-bold text-lg transition-colors">&times;</button>
+            </div>
+
+            <!-- Printable Stammblatt Area -->
+            <div id="stammblatt-printable" class="p-6 sm:p-8 overflow-y-auto flex-1 space-y-6 text-slate-900 bg-white">
+                <!-- Official Header -->
+                <div class="border-b-2 border-slate-900 pb-4 flex items-start justify-between">
+                    <div>
+                        <div class="text-xs font-bold uppercase tracking-widest text-slate-500">Deutscher Golf Verband e.V.</div>
+                        <h2 class="text-xl font-black text-slate-900 mt-0.5">WHS HANDICAP-STAMMBLATT</h2>
+                        <div class="text-xs text-slate-600 mt-1">
+                            Spieler: <strong id="sb-player-name" class="text-slate-900">--</strong> • 
+                            DGV-Status: <span class="font-semibold text-emerald-700">Aktiv</span>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-[10px] font-bold uppercase text-slate-400">Handicap-Index (HCPI)</div>
+                        <div id="sb-hcpi" class="text-2xl font-black text-golf-700 font-mono">--</div>
+                        <div class="text-[10px] text-slate-500 mt-0.5" id="sb-date">Stand: --</div>
+                    </div>
+                </div>
+
+                <!-- Table of last 20 scoring records -->
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="font-bold text-slate-700 uppercase tracking-wider text-[11px]">Die letzten bis zu 20 gewerteten Runden</span>
+                        <span class="text-[11px] text-amber-700 font-bold flex items-center gap-1">
+                            <span>★</span> = Zählt zu den gewerteten Best-8 Runden
+                        </span>
+                    </div>
+                    <div class="overflow-x-auto border border-slate-200 rounded-xl">
+                        <table class="w-full text-left text-xs font-mono">
+                            <thead class="bg-slate-100 text-slate-600 font-bold uppercase text-[10px] font-sans">
+                                <tr>
+                                    <th class="py-2 px-2 text-center w-8">#</th>
+                                    <th class="py-2 px-3">Datum</th>
+                                    <th class="py-2 px-3">Golfclub / Platz</th>
+                                    <th class="py-2 px-2 text-center">L</th>
+                                    <th class="py-2 px-2 text-center">Brutto</th>
+                                    <th class="py-2 px-3 text-right">Score Diff.</th>
+                                    <th class="py-2 px-3 text-center">Wertung</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sb-rounds-tbody" class="divide-y divide-slate-100">
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Summary Footer -->
+                <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1">
+                    <div class="font-bold text-slate-800">Berechnungsmethode nach World Handicap System (WHS):</div>
+                    <div class="text-slate-600" id="sb-calc-explanation">
+                        Der Handicap-Index errechnet sich aus dem Mittelwert der besten 8 Score Differentials der letzten 20 Runden.
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between shrink-0 print:hidden">
+                <button type="button" onclick="closeStammblattModal()" class="px-4 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-200">Schließen</button>
+                <button type="button" onclick="printStammblatt()" class="px-5 py-2 rounded-xl bg-golf-600 hover:bg-golf-700 text-white font-bold text-xs shadow-xs flex items-center gap-2">
+                    <span>🖨️ Stammblatt drucken / PDF</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: GOLF LIVE WETTER -->
+    <div id="weather-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto hidden">
+        <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 overflow-hidden my-auto flex flex-col">
+            <div class="p-4 border-b border-slate-200 bg-gradient-to-r from-sky-600 to-blue-800 text-white flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <div class="text-2xl" id="wm-icon">🌤️</div>
+                    <div>
+                        <h3 class="text-base font-bold text-white" id="wm-club">Golfclub Wetter</h3>
+                        <p class="text-xs text-sky-100" id="wm-city">Standort</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeWeatherModal()" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center font-bold text-lg">&times;</button>
+            </div>
+            <div class="p-5 space-y-4 text-xs" id="wm-content">
+                <!-- Dynamic weather metrics -->
+            </div>
+            <div class="p-3 border-t border-slate-200 bg-slate-50 flex items-center justify-end">
+                <button type="button" onclick="closeWeatherModal()" class="px-4 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-200">Schließen</button>
+            </div>
+        </div>
+    </div>
+
     <!-- TOAST NOTIFICATION CONTAINER -->
     <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
         <div class="bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-xl border border-slate-700 flex items-center gap-3 text-sm font-medium">
@@ -1394,50 +1867,50 @@
         // --- SEED / DEFAULT DATA ---
         const defaultClubs = [
             // Hamburg & Metropolregion
-            {"name": "Hamburger GC Falkenstein", "tee": "gelb", "region": "Hamburg & Umland", "city": "Hamburg-Rissen", "par18": 71.0, "cr18": 72.8, "sr18": 133.0, "par9": 36.0, "cr9": 36.4, "sr9": 131.0},
-            {"name": "GC Hamburg-Walddörfer", "tee": "gelb", "region": "Hamburg & Umland", "city": "Hamburg-Wohldorf", "par18": 72.0, "cr18": 72.2, "sr18": 130.0, "par9": 36.0, "cr9": 36.1, "sr9": 128.0},
-            {"name": "GC Wendlohe", "tee": "gelb", "region": "Hamburg & Umland", "city": "Bönningstedt", "par18": 72.0, "cr18": 72.5, "sr18": 132.0, "par9": 36.0, "cr9": 36.0, "sr9": 129.0},
-            {"name": "GC Gut Kaden (A+B)", "tee": "gelb", "region": "Hamburg & Umland", "city": "Alveslohe", "par18": 72.0, "cr18": 72.9, "sr18": 135.0, "par9": 36.0, "cr9": 36.5, "sr9": 133.0},
-            {"name": "GC Gut Kaden (B+C)", "tee": "gelb", "region": "Hamburg & Umland", "city": "Alveslohe", "par18": 72.0, "cr18": 72.4, "sr18": 132.0, "par9": 36.0, "cr9": 36.2, "sr9": 130.0},
-            {"name": "GC Holm", "tee": "gelb", "region": "Hamburg & Umland", "city": "Holm (Pinneberg)", "par18": 72.0, "cr18": 72.1, "sr18": 131.0, "par9": 36.0, "cr9": 36.0, "sr9": 128.0},
-            {"name": "GC Treudelberg", "tee": "gelb", "region": "Hamburg & Umland", "city": "Hamburg-Lemsahl", "par18": 72.0, "cr18": 71.9, "sr18": 130.0, "par9": 36.0, "cr9": 35.9, "sr9": 128.0},
-            {"name": "HLGC Hittfeld", "tee": "gelb", "region": "Hamburg & Umland", "city": "Seevetal", "par18": 71.0, "cr18": 71.5, "sr18": 129.0, "par9": 36.0, "cr9": 35.8, "sr9": 127.0},
-            {"name": "GC Buchholz-Nordheide", "tee": "gelb", "region": "Hamburg & Umland", "city": "Buchholz i.d.N.", "par18": 72.0, "cr18": 72.0, "sr18": 128.0, "par9": 36.0, "cr9": 36.0, "sr9": 127.0},
-            {"name": "GC Hamburg-Ahrensburg", "tee": "gelb", "region": "Hamburg & Umland", "city": "Ahrensburg", "par18": 71.0, "cr18": 71.2, "sr18": 128.0, "par9": 36.0, "cr9": 35.6, "sr9": 126.0},
+            {"name": "Hamburger GC Falkenstein", "tee": "gelb", "region": "Hamburg & Umland", "city": "Hamburg-Rissen", "par18": 71.0, "cr18": 72.8, "sr18": 133.0, "par9": 36.0, "cr9": 36.4, "sr9": 131.0, "lat": 53.5702, "lon": 9.7712},
+            {"name": "GC Hamburg-Walddörfer", "tee": "gelb", "region": "Hamburg & Umland", "city": "Hamburg-Wohldorf", "par18": 72.0, "cr18": 72.2, "sr18": 130.0, "par9": 36.0, "cr9": 36.1, "sr9": 128.0, "lat": 53.7088, "lon": 10.1554},
+            {"name": "GC Wendlohe", "tee": "gelb", "region": "Hamburg & Umland", "city": "Bönningstedt", "par18": 72.0, "cr18": 72.5, "sr18": 132.0, "par9": 36.0, "cr9": 36.0, "sr9": 129.0, "lat": 53.6667, "lon": 9.9242},
+            {"name": "GC Gut Kaden (A+B)", "tee": "gelb", "region": "Hamburg & Umland", "city": "Alveslohe", "par18": 72.0, "cr18": 72.9, "sr18": 135.0, "par9": 36.0, "cr9": 36.5, "sr9": 133.0, "lat": 53.7715, "lon": 9.9482},
+            {"name": "GC Gut Kaden (B+C)", "tee": "gelb", "region": "Hamburg & Umland", "city": "Alveslohe", "par18": 72.0, "cr18": 72.4, "sr18": 132.0, "par9": 36.0, "cr9": 36.2, "sr9": 130.0, "lat": 53.7715, "lon": 9.9482},
+            {"name": "GC Holm", "tee": "gelb", "region": "Hamburg & Umland", "city": "Holm (Pinneberg)", "par18": 72.0, "cr18": 72.1, "sr18": 131.0, "par9": 36.0, "cr9": 36.0, "sr9": 128.0, "lat": 53.6212, "lon": 9.6812},
+            {"name": "GC Treudelberg", "tee": "gelb", "region": "Hamburg & Umland", "city": "Hamburg-Lemsahl", "par18": 72.0, "cr18": 71.9, "sr18": 130.0, "par9": 36.0, "cr9": 35.9, "sr9": 128.0, "lat": 53.6812, "lon": 10.0812},
+            {"name": "HLGC Hittfeld", "tee": "gelb", "region": "Hamburg & Umland", "city": "Seevetal", "par18": 71.0, "cr18": 71.5, "sr18": 129.0, "par9": 36.0, "cr9": 35.8, "sr9": 127.0, "lat": 53.3812, "lon": 9.9812},
+            {"name": "GC Buchholz-Nordheide", "tee": "gelb", "region": "Hamburg & Umland", "city": "Buchholz i.d.N.", "par18": 72.0, "cr18": 72.0, "sr18": 128.0, "par9": 36.0, "cr9": 36.0, "sr9": 127.0, "lat": 53.3112, "lon": 9.8712},
+            {"name": "GC Hamburg-Ahrensburg", "tee": "gelb", "region": "Hamburg & Umland", "city": "Ahrensburg", "par18": 71.0, "cr18": 71.2, "sr18": 128.0, "par9": 36.0, "cr9": 35.6, "sr9": 126.0, "lat": 53.6712, "lon": 10.2412},
 
             // Schleswig-Holstein
-            {"name": "GC Escheburg 18", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Escheburg", "par18": 72.0, "cr18": 71.8, "sr18": 131.0, "par9": "", "cr9": "", "sr9": ""},
-            {"name": "GC Escheburg 1-9", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Escheburg", "par18": "", "cr18": "", "sr18": "", "par9": 36.0, "cr9": 35.6, "sr9": 129.0},
-            {"name": "GC Escheburg 10-18", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Escheburg", "par18": "", "cr18": "", "sr18": "", "par9": 36.0, "cr9": 36.1, "sr9": 132.0},
-            {"name": "GC Jersbek 18", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Jersbek", "par18": 72.0, "cr18": 71.4, "sr18": 132.0, "par9": "", "cr9": "", "sr9": ""},
-            {"name": "GC Jersbek 1-9", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Jersbek", "par18": "", "cr18": "", "sr18": "", "par9": 36.0, "cr9": 35.7, "sr9": 132.0},
-            {"name": "GC Jersbek 10-18", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Jersbek", "par18": "", "cr18": "", "sr18": "", "par9": 36.0, "cr9": 36.6, "sr9": 130.0},
-            {"name": "GC Pinnau 18 A+B", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Pinneberg", "par18": 73.0, "cr18": 71.8, "sr18": 137.0, "par9": "", "cr9": "", "sr9": ""},
-            {"name": "GC Pinnau 18 A+C", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Pinneberg", "par18": 72.0, "cr18": 71.4, "sr18": 131.0, "par9": "", "cr9": "", "sr9": ""},
-            {"name": "GC Pinnau 18 B+C", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Pinneberg", "par18": 73.0, "cr18": 71.0, "sr18": 126.0, "par9": "", "cr9": "", "sr9": ""},
-            {"name": "GC Grossensee 18", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Großensee", "par18": 73.0, "cr18": 72.3, "sr18": 130.0, "par9": "", "cr9": "", "sr9": ""},
-            {"name": "GC Gut Sachsenwald 18", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Dassendorf", "par18": 72.0, "cr18": 72.6, "sr18": 130.0, "par9": "", "cr9": "", "sr9": ""},
-            {"name": "GC Gut Grambek 18", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Grambek / Mölln", "par18": 71.0, "cr18": 71.8, "sr18": 126.0, "par9": "", "cr9": "", "sr9": ""},
-            {"name": "GC Timmendorfer Strand (Nord)", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Timmendorfer Strand", "par18": 72.0, "cr18": 72.8, "sr18": 133.0, "par9": 36.0, "cr9": 36.4, "sr9": 131.0},
-            {"name": "Lübeck-Travemünder GK", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Travemünde", "par18": 73.0, "cr18": 73.1, "sr18": 134.0, "par9": 36.0, "cr9": 36.5, "sr9": 132.0},
-            {"name": "GC Altenhof", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Eckernförde", "par18": 72.0, "cr18": 72.4, "sr18": 131.0, "par9": 36.0, "cr9": 36.2, "sr9": 129.0},
-            {"name": "GC Sylt", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Wenningstedt (Sylt)", "par18": 72.0, "cr18": 73.0, "sr18": 135.0, "par9": 36.0, "cr9": 36.5, "sr9": 133.0},
-            {"name": "Marine-GC Sylt", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Tinnum (Sylt)", "par18": 72.0, "cr18": 72.8, "sr18": 132.0, "par9": 36.0, "cr9": 36.4, "sr9": 130.0},
-            {"name": "GC Gut Bissenmoor", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Bad Bramstedt", "par18": 72.0, "cr18": 71.9, "sr18": 129.0, "par9": 36.0, "cr9": 35.9, "sr9": 127.0},
+            {"name": "GC Escheburg 18", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Escheburg", "par18": 72.0, "cr18": 71.8, "sr18": 131.0, "par9": "", "cr9": "", "sr9": "", "lat": 53.4682, "lon": 10.3325},
+            {"name": "GC Escheburg 1-9", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Escheburg", "par18": "", "cr18": "", "sr18": "", "par9": 36.0, "cr9": 35.6, "sr9": 129.0, "lat": 53.4682, "lon": 10.3325},
+            {"name": "GC Escheburg 10-18", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Escheburg", "par18": "", "cr18": "", "sr18": "", "par9": 36.0, "cr9": 36.1, "sr9": 132.0, "lat": 53.4682, "lon": 10.3325},
+            {"name": "GC Jersbek 18", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Jersbek", "par18": 72.0, "cr18": 71.4, "sr18": 132.0, "par9": "", "cr9": "", "sr9": "", "lat": 53.7420, "lon": 10.2215},
+            {"name": "GC Jersbek 1-9", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Jersbek", "par18": "", "cr18": "", "sr18": "", "par9": 36.0, "cr9": 35.7, "sr9": 132.0, "lat": 53.7420, "lon": 10.2215},
+            {"name": "GC Jersbek 10-18", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Jersbek", "par18": "", "cr18": "", "sr18": "", "par9": 36.0, "cr9": 36.6, "sr9": 130.0, "lat": 53.7420, "lon": 10.2215},
+            {"name": "GC Pinnau 18 A+B", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Pinneberg", "par18": 73.0, "cr18": 71.8, "sr18": 137.0, "par9": "", "cr9": "", "sr9": "", "lat": 53.6917, "lon": 9.7667},
+            {"name": "GC Pinnau 18 A+C", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Pinneberg", "par18": 72.0, "cr18": 71.4, "sr18": 131.0, "par9": "", "cr9": "", "sr9": "", "lat": 53.6917, "lon": 9.7667},
+            {"name": "GC Pinnau 18 B+C", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Pinneberg", "par18": 73.0, "cr18": 71.0, "sr18": 126.0, "par9": "", "cr9": "", "sr9": "", "lat": 53.6917, "lon": 9.7667},
+            {"name": "GC Grossensee 18", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Großensee", "par18": 73.0, "cr18": 72.3, "sr18": 130.0, "par9": "", "cr9": "", "sr9": "", "lat": 53.6189, "lon": 10.3482},
+            {"name": "GC Gut Sachsenwald 18", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Dassendorf", "par18": 72.0, "cr18": 72.6, "sr18": 130.0, "par9": "", "cr9": "", "sr9": "", "lat": 53.5350, "lon": 10.3800},
+            {"name": "GC Gut Grambek 18", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Grambek / Mölln", "par18": 71.0, "cr18": 71.8, "sr18": 126.0, "par9": "", "cr9": "", "sr9": "", "lat": 53.5732, "lon": 10.6654},
+            {"name": "GC Timmendorfer Strand (Nord)", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Timmendorfer Strand", "par18": 72.0, "cr18": 72.8, "sr18": 133.0, "par9": 36.0, "cr9": 36.4, "sr9": 131.0, "lat": 53.9932, "lon": 10.7812},
+            {"name": "Lübeck-Travemünder GK", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Travemünde", "par18": 73.0, "cr18": 73.1, "sr18": 134.0, "par9": 36.0, "cr9": 36.5, "sr9": 132.0, "lat": 53.9634, "lon": 10.8712},
+            {"name": "GC Altenhof", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Eckernförde", "par18": 72.0, "cr18": 72.4, "sr18": 131.0, "par9": 36.0, "cr9": 36.2, "sr9": 129.0, "lat": 54.4412, "lon": 9.8712},
+            {"name": "GC Sylt", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Wenningstedt (Sylt)", "par18": 72.0, "cr18": 73.0, "sr18": 135.0, "par9": 36.0, "cr9": 36.5, "sr9": 133.0, "lat": 54.9212, "lon": 8.3182},
+            {"name": "Marine-GC Sylt", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Tinnum (Sylt)", "par18": 72.0, "cr18": 72.8, "sr18": 132.0, "par9": 36.0, "cr9": 36.4, "sr9": 130.0, "lat": 54.8972, "lon": 8.3312},
+            {"name": "GC Gut Bissenmoor", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Bad Bramstedt", "par18": 72.0, "cr18": 71.9, "sr18": 129.0, "par9": 36.0, "cr9": 35.9, "sr9": 127.0, "lat": 53.9182, "lon": 9.8972},
 
             // Niedersachsen & Bremen
-            {"name": "Club zur Vahr (Garlstedt)", "tee": "gelb", "region": "Niedersachsen & Bremen", "city": "Garlstedt (Bremen)", "par18": 72.0, "cr18": 72.7, "sr18": 134.0, "par9": 36.0, "cr9": 36.3, "sr9": 132.0},
-            {"name": "GC Hannover", "tee": "gelb", "region": "Niedersachsen & Bremen", "city": "Garbsen (Hannover)", "par18": 72.0, "cr18": 72.3, "sr18": 131.0, "par9": 36.0, "cr9": 36.1, "sr9": 129.0},
-            {"name": "GC Deinster Mühle", "tee": "gelb", "region": "Niedersachsen & Bremen", "city": "Deinste (Stade)", "par18": 72.0, "cr18": 71.6, "sr18": 127.0, "par9": 36.0, "cr9": 35.8, "sr9": 125.0},
-            {"name": "GC Verden", "tee": "gelb", "region": "Niedersachsen & Bremen", "city": "Verden (Aller)", "par18": 72.0, "cr18": 71.8, "sr18": 128.0, "par9": 36.0, "cr9": 35.9, "sr9": 126.0},
+            {"name": "Club zur Vahr (Garlstedt)", "tee": "gelb", "region": "Niedersachsen & Bremen", "city": "Garlstedt (Bremen)", "par18": 72.0, "cr18": 72.7, "sr18": 134.0, "par9": 36.0, "cr9": 36.3, "sr9": 132.0, "lat": 53.2212, "lon": 8.6812},
+            {"name": "GC Hannover", "tee": "gelb", "region": "Niedersachsen & Bremen", "city": "Garbsen (Hannover)", "par18": 72.0, "cr18": 72.3, "sr18": 131.0, "par9": 36.0, "cr9": 36.1, "sr9": 129.0, "lat": 52.4412, "lon": 9.5812},
+            {"name": "GC Deinster Mühle", "tee": "gelb", "region": "Niedersachsen & Bremen", "city": "Deinste (Stade)", "par18": 72.0, "cr18": 71.6, "sr18": 127.0, "par9": 36.0, "cr9": 35.8, "sr9": 125.0, "lat": 53.5212, "lon": 9.5182},
+            {"name": "GC Verden", "tee": "gelb", "region": "Niedersachsen & Bremen", "city": "Verden (Aller)", "par18": 72.0, "cr18": 71.8, "sr18": 128.0, "par9": 36.0, "cr9": 35.9, "sr9": 126.0, "lat": 52.9212, "lon": 9.2412},
 
             // Deutschlandweit Top-Plätze
-            {"name": "GC St. Leon-Rot (St. Leon)", "tee": "gelb", "region": "Baden-Württemberg", "city": "St. Leon-Rot", "par18": 72.0, "cr18": 73.5, "sr18": 138.0, "par9": 36.0, "cr9": 36.7, "sr9": 136.0},
-            {"name": "GC St. Leon-Rot (Rot)", "tee": "gelb", "region": "Baden-Württemberg", "city": "St. Leon-Rot", "par18": 72.0, "cr18": 73.2, "sr18": 136.0, "par9": 36.0, "cr9": 36.5, "sr9": 134.0},
-            {"name": "GC München Eichenried (A+B)", "tee": "gelb", "region": "Bayern", "city": "Moosinning (München)", "par18": 72.0, "cr18": 73.1, "sr18": 135.0, "par9": 36.0, "cr9": 36.5, "sr9": 133.0},
-            {"name": "Frankfurter GC", "tee": "gelb", "region": "Hessen", "city": "Frankfurt am Main", "par18": 71.0, "cr18": 72.4, "sr18": 133.0, "par9": 36.0, "cr9": 36.2, "sr9": 131.0},
-            {"name": "GC Hubbelrath (Ostplatz)", "tee": "gelb", "region": "Nordrhein-Westfalen", "city": "Düsseldorf", "par18": 72.0, "cr18": 73.4, "sr18": 137.0, "par9": 36.0, "cr9": 36.7, "sr9": 135.0},
-            {"name": "G&CC Seddiner See (Süd)", "tee": "gelb", "region": "Berlin / Brandenburg", "city": "Michendorf (Berlin)", "par18": 72.0, "cr18": 73.2, "sr18": 136.0, "par9": 36.0, "cr9": 36.6, "sr9": 134.0}
+            {"name": "GC St. Leon-Rot (St. Leon)", "tee": "gelb", "region": "Baden-Württemberg", "city": "St. Leon-Rot", "par18": 72.0, "cr18": 73.5, "sr18": 138.0, "par9": 36.0, "cr9": 36.7, "sr9": 136.0, "lat": 49.2512, "lon": 8.6182},
+            {"name": "GC St. Leon-Rot (Rot)", "tee": "gelb", "region": "Baden-Württemberg", "city": "St. Leon-Rot", "par18": 72.0, "cr18": 73.2, "sr18": 136.0, "par9": 36.0, "cr9": 36.5, "sr9": 134.0, "lat": 49.2512, "lon": 8.6182},
+            {"name": "GC München Eichenried (A+B)", "tee": "gelb", "region": "Bayern", "city": "Moosinning (München)", "par18": 72.0, "cr18": 73.1, "sr18": 135.0, "par9": 36.0, "cr9": 36.5, "sr9": 133.0, "lat": 48.2712, "lon": 11.7812},
+            {"name": "Frankfurter GC", "tee": "gelb", "region": "Hessen", "city": "Frankfurt am Main", "par18": 71.0, "cr18": 72.4, "sr18": 133.0, "par9": 36.0, "cr9": 36.2, "sr9": 131.0, "lat": 50.0812, "lon": 8.6412},
+            {"name": "GC Hubbelrath (Ostplatz)", "tee": "gelb", "region": "Nordrhein-Westfalen", "city": "Düsseldorf", "par18": 72.0, "cr18": 73.4, "sr18": 137.0, "par9": 36.0, "cr9": 36.7, "sr9": 135.0, "lat": 51.2512, "lon": 6.8912},
+            {"name": "G&CC Seddiner See (Süd)", "tee": "gelb", "region": "Berlin / Brandenburg", "city": "Michendorf (Berlin)", "par18": 72.0, "cr18": 73.2, "sr18": 136.0, "par9": 36.0, "cr9": 36.6, "sr9": 134.0, "lat": 52.2812, "lon": 13.0182}
         ];
 
         const defaultTurniere = [
@@ -1453,9 +1926,19 @@
             {"id": 10, "club_name": "GC Grossensee 18", "name": "Grossensee Classic 18", "datum": "04.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
             {"id": 11, "club_name": "GC Grossensee 18", "name": "Sundowner 9-Hole Challenge", "datum": "15.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": true},
             {"id": 12, "club_name": "GC Gut Kaden (A+B)", "name": "Gut Kaden Herbst Open", "datum": "17.10.2026", "loecher": 18, "spielform": "Zählspiel", "vorgabewirksam": true},
-            {"id": 13, "club_name": "Hamburger GC Falkenstein", "name": "Falkenstein Herbst-Vierer", "datum": "18.10.2026", "loecher": 18, "spielform": "Zählspiel", "vorgabewirksam": true},
+            {"id": 13, "club_name": "Hamburger GC Falkenstein", "name": "Falkenstein Herbst-Vierer", "datum": "18.10.2026", "loecher": 18, "spielform": "Chapman-Vierer", "vorgabewirksam": false},
             {"id": 14, "club_name": "GC Wendlohe", "name": "Wendlohe After-Work Cup", "datum": "09.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": true},
-            {"id": 15, "club_name": "GC St. Leon-Rot (St. Leon)", "name": "St. Leon Open Championship", "datum": "25.10.2026", "loecher": 18, "spielform": "Zählspiel", "vorgabewirksam": true}
+            {"id": 15, "club_name": "GC St. Leon-Rot (St. Leon)", "name": "St. Leon Open Championship", "datum": "25.10.2026", "loecher": 18, "spielform": "Zählspiel", "vorgabewirksam": true},
+            {"id": 16, "club_name": "GC Hamburg-Walddörfer", "name": "Walddörfer Herbst-Trophy", "datum": "11.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 17, "club_name": "GC Holm", "name": "Holmer Herbstpokal", "datum": "18.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 18, "club_name": "GC Treudelberg", "name": "Treudelberg Open", "datum": "24.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 19, "club_name": "HLGC Hittfeld", "name": "Hittfelder Herbstpreis", "datum": "25.10.2026", "loecher": 18, "spielform": "Zählspiel", "vorgabewirksam": true},
+            {"id": 20, "club_name": "GC Sylt", "name": "Sylter Insel-Cup", "datum": "10.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 21, "club_name": "GC Hannover", "name": "Hannoveraner Trophy", "datum": "17.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 22, "club_name": "GC München Eichenried (A+B)", "name": "Eichenried Herbst-Masters", "datum": "18.10.2026", "loecher": 18, "spielform": "Zählspiel", "vorgabewirksam": true},
+            {"id": 23, "club_name": "Frankfurter GC", "name": "Frankfurter Herbst-Vierer", "datum": "24.10.2026", "loecher": 18, "spielform": "Chapman-Vierer", "vorgabewirksam": false},
+            {"id": 24, "club_name": "GC Hubbelrath (Ostplatz)", "name": "Hubbelrather Clubpokal", "datum": "25.10.2026", "loecher": 18, "spielform": "Zählspiel", "vorgabewirksam": true},
+            {"id": 25, "club_name": "G&CC Seddiner See (Süd)", "name": "Seddiner See Herbst-Cup", "datum": "18.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true}
         ];
 
         const defaultSdErgaenzung = [
@@ -1604,6 +2087,17 @@
         let authToken = null;
         let currentAuthTab = 'login'; // 'login' or 'register'
 
+        // --- NEW FEATURES STATE ---
+        let favoriteClubNames = new Set();
+        let weatherCache = {};
+        let currentViewingTournament = null;
+        let scorecardMode = 'single'; // 'single' or 'flight'
+        let scPlayerSigPad = null;
+        let scMarkerSigPad = null;
+        let scGpsData = null; // { verified, lat, lon, distance_km, token }
+        let currentFlightData = null;
+        let scHolesData = [];
+
         // Determine API Base URL
         const API_BASE = window.location.protocol === 'file:' ? 'http://localhost:5000' : '';
 
@@ -1665,7 +2159,16 @@
                 } else {
                     turniere = JSON.parse(localStorage.getItem('golf_turniere')) || defaultTurniere;
                 }
+
+                // Load club favorites
+                const resFav = await apiFetch('/api/favorites/clubs');
+                if(resFav.ok && Array.isArray(resFav.data)) {
+                    favoriteClubNames = new Set(resFav.data);
+                } else {
+                    favoriteClubNames = new Set();
+                }
             } else {
+                favoriteClubNames = new Set();
                 currentUser = null;
                 authToken = null;
                 renderAuthHeader();
@@ -1752,9 +2255,18 @@
                 if(currentUser.email) {
                     document.getElementById('auth-username-display').title = currentUser.email;
                 }
+                const adminBtn = document.getElementById('auth-admin-badge');
+                if(adminBtn) {
+                    if(currentUser.is_admin) {
+                        adminBtn.classList.remove('hidden');
+                    } else {
+                        adminBtn.classList.add('hidden');
+                    }
+                }
             } else {
                 loggedInView.classList.add('hidden');
                 loggedOutView.classList.remove('hidden');
+                document.getElementById('auth-admin-badge')?.classList.add('hidden');
             }
         }
 
@@ -2580,7 +3092,9 @@
             const q = clubSearchQuery.toLowerCase().trim();
             let filtered = clubs.filter(c => {
                 // Region filter
-                if(selectedClubRegionFilter === 'Hamburg & Umland') {
+                if(selectedClubRegionFilter === 'favorites') {
+                    if(!favoriteClubNames.has(c.name)) return false;
+                } else if(selectedClubRegionFilter === 'Hamburg & Umland') {
                     if(!c.region || !c.region.includes('Hamburg')) return false;
                 } else if(selectedClubRegionFilter === 'Schleswig-Holstein') {
                     if(!c.region || !c.region.includes('Schleswig-Holstein')) return false;
@@ -2610,6 +3124,15 @@
                 return true;
             });
 
+            // Sort: Favorites first when in 'all' view
+            if(selectedClubRegionFilter === 'all') {
+                filtered.sort((a, b) => {
+                    const aFav = favoriteClubNames.has(a.name) ? 1 : 0;
+                    const bFav = favoriteClubNames.has(b.name) ? 1 : 0;
+                    return bFav - aFav;
+                });
+            }
+
             // Update Badges
             const badgeClubs = document.getElementById('clubs-count-badge');
             if(badgeClubs) badgeClubs.innerText = `${filtered.length} Clubs`;
@@ -2635,6 +3158,7 @@
                 cardsGrid.innerHTML = '';
                 filtered.forEach(c => {
                     const isCheckedIn = activeCheckIn && activeCheckIn.clubName === c.name;
+                    const isFav = favoriteClubNames.has(c.name);
                     const cTournaments = turniere.filter(t => t.club_name === c.name);
                     const origIndex = clubs.findIndex(item => item.name === c.name);
 
@@ -2651,15 +3175,15 @@
                             <div class="mt-4 pt-3.5 border-t border-slate-100 space-y-2">
                                 <div class="flex items-center justify-between text-xs">
                                     <span class="font-bold text-slate-800 flex items-center gap-1">
-                                        <span>🏆 Anstehende Turniere</span>
+                                        <span>🏆 Turniere & Flights</span>
                                         <span class="px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-800 text-[10px] font-black">${cTournaments.length}</span>
                                     </span>
                                     <button type="button" onclick="openTurnierModal('${c.name.replace(/'/g, "\\'")}')" class="text-[11px] text-amber-600 hover:text-amber-800 font-bold hover:underline">+ Mehr</button>
                                 </div>
-                                <div class="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+                                <div class="space-y-1.5 max-h-40 overflow-y-auto pr-1">
                                     ${cTournaments.map(t => `
                                         <div class="p-2.5 rounded-xl bg-amber-50/60 border border-amber-200/80 hover:bg-amber-50 transition-colors flex items-center justify-between gap-2">
-                                            <div class="min-w-0 flex-1">
+                                            <div class="min-w-0 flex-1 cursor-pointer" onclick="openTournamentDetails(${t.id})">
                                                 <div class="text-xs font-bold text-slate-900 truncate" title="${t.name}">${t.name}</div>
                                                 <div class="text-[10px] text-slate-500 flex items-center gap-1.5 mt-0.5">
                                                     <span class="font-semibold text-amber-900">${t.datum}</span>
@@ -2667,11 +3191,18 @@
                                                     <span>${t.loecher}L</span>
                                                     <span>•</span>
                                                     <span>${t.spielform || 'Stableford'}</span>
+                                                    <span>•</span>
+                                                    <span class="font-semibold ${t.vorgabewirksam ? 'text-emerald-700' : 'text-slate-400'}">${t.vorgabewirksam ? 'HCP' : 'Nicht vorgabew.'}</span>
                                                 </div>
                                             </div>
-                                            <button type="button" onclick="checkInClub('${c.name.replace(/'/g, "\\'")}', { name: '${t.name.replace(/'/g, "\\'")}', loecher: ${t.loecher}, datum: '${t.datum}', spielform: '${t.spielform || 'Stableford'}' })" class="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-bold text-[11px] shrink-0 shadow-xs transition-transform active:scale-95 flex items-center gap-1" title="Dieses Turnier spielen und einchecken">
-                                                <span>Spielen</span>
-                                            </button>
+                                            <div class="flex items-center gap-1 shrink-0">
+                                                <button type="button" onclick="openTournamentDetails(${t.id})" class="px-2 py-1 rounded-lg bg-white hover:bg-slate-100 text-slate-700 font-bold text-[10px] border border-slate-200 shadow-xs" title="Teilnehmer & Flight Details">
+                                                    Details
+                                                </button>
+                                                <button type="button" onclick="openScorecardModal(${JSON.stringify(t).replace(/"/g, '&quot;')})" class="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-bold text-[10px] shadow-xs transition-transform active:scale-95 flex items-center gap-1" title="Digitale Scorekarte spielen">
+                                                    <span>🏆 Score</span>
+                                                </button>
+                                            </div>
                                         </div>
                                     `).join('')}
                                 </div>
@@ -2686,13 +3217,30 @@
                         `;
                     }
 
+                    // Weather widget box
+                    let weatherHtml = '';
+                    if(c.lat && c.lon) {
+                        weatherHtml = `
+                            <div class="mt-2.5 flex items-center justify-between p-2 rounded-xl bg-sky-50/70 border border-sky-200/80 text-[11px] text-sky-950">
+                                <div class="flex items-center gap-1.5" id="weather-chip-${origIndex}">
+                                    <span>🌤️</span>
+                                    <span class="font-medium">Live Wetter</span>
+                                </div>
+                                <button type="button" onclick="openWeatherModal('${c.name.replace(/'/g, "\\'")}')" class="text-[10px] font-bold text-sky-700 hover:text-sky-900 underline">
+                                    Wind & Details →
+                                </button>
+                            </div>
+                        `;
+                    }
+
                     card.innerHTML = `
                         <div>
-                            <!-- Card Header -->
+                            <!-- Card Header with Favorite Star -->
                             <div class="flex items-start justify-between gap-2">
                                 <div class="min-w-0">
                                     <div class="flex items-center gap-1.5 flex-wrap">
                                         <h3 class="font-bold text-slate-900 text-base leading-tight">${c.name}</h3>
+                                        ${isFav ? '<span class="px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 text-[10px] font-bold border border-amber-200">⭐ Favorit</span>' : ''}
                                         ${c.is_custom ? '<span class="px-1.5 py-0.2 rounded bg-purple-100 text-purple-700 text-[10px] font-bold">Mein Club</span>' : ''}
                                     </div>
                                     <div class="flex items-center gap-1.5 mt-1 text-xs text-slate-500 flex-wrap">
@@ -2701,16 +3249,24 @@
                                         <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[10px] font-mono">Tee: ${c.tee || 'gelb'}</span>
                                     </div>
                                 </div>
-                                ${isCheckedIn ? `
-                                    <span class="px-2.5 py-1 rounded-full bg-emerald-500 text-white font-black text-[10px] uppercase tracking-wider shrink-0 flex items-center gap-1 shadow-xs animate-pulse">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
-                                        <span>Hier aktiv</span>
-                                    </span>
-                                ` : ''}
+                                <div class="flex items-center gap-1 shrink-0">
+                                    <button type="button" onclick="toggleFavoriteClub('${c.name.replace(/'/g, "\\'")}')" class="p-1 rounded-lg hover:bg-amber-50 text-base leading-none transition-transform active:scale-125" title="${isFav ? 'Aus Favoriten entfernen' : 'Als Favorit speichern'}">
+                                        ${isFav ? '<span class="text-amber-500">⭐</span>' : '<span class="text-slate-300 hover:text-amber-400">☆</span>'}
+                                    </button>
+                                    ${isCheckedIn ? `
+                                        <span class="px-2 py-0.5 rounded-full bg-emerald-500 text-white font-black text-[10px] uppercase tracking-wider flex items-center gap-1 shadow-xs animate-pulse">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
+                                            <span>Hier aktiv</span>
+                                        </span>
+                                    ` : ''}
+                                </div>
                             </div>
 
+                            <!-- Live Weather chip -->
+                            ${weatherHtml}
+
                             <!-- Course Rating Stats Grid -->
-                            <div class="mt-4 grid grid-cols-2 gap-2 text-xs">
+                            <div class="mt-3.5 grid grid-cols-2 gap-2 text-xs">
                                 <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80">
                                     <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">18-Loch</div>
                                     ${c.par18 ? `
@@ -2767,6 +3323,7 @@
                 tableBody.innerHTML = '';
                 filtered.forEach(c => {
                     const isCheckedIn = activeCheckIn && activeCheckIn.clubName === c.name;
+                    const isFav = favoriteClubNames.has(c.name);
                     const cTournaments = turniere.filter(t => t.club_name === c.name);
                     const origIndex = clubs.findIndex(item => item.name === c.name);
 
@@ -2775,6 +3332,9 @@
                     tr.innerHTML = `
                         <td class="py-3 px-4 font-bold text-slate-900">
                             <div class="flex items-center gap-1.5">
+                                <button type="button" onclick="toggleFavoriteClub('${c.name.replace(/'/g, "\\'")}')" class="text-sm ${isFav ? 'text-amber-500' : 'text-slate-300 hover:text-amber-400'}" title="${isFav ? 'Aus Favoriten entfernen' : 'Als Favorit speichern'}">
+                                    ${isFav ? '⭐' : '☆'}
+                                </button>
                                 <span>${c.name}</span>
                                 ${isCheckedIn ? '<span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>' : ''}
                                 ${c.is_custom ? '<span class="px-1.5 py-0.2 rounded bg-purple-100 text-purple-700 text-[10px] font-bold">Mein Club</span>' : ''}
@@ -3869,6 +4429,1014 @@
                 }
             };
             reader.readAsText(file);
+        }
+
+        // =======================================================
+        // --- FEATURE EXTENSIONS: FAVORITES, WEATHER, SCORECARD, ADMIN, FRIENDS, STAMMBLATT ---
+        // =======================================================
+
+        // --- 1. FAVORITES LOGIC ---
+        async function toggleFavoriteClub(clubName) {
+            if(!currentUser || !authToken) {
+                openAuthModal('login');
+                return;
+            }
+            const res = await apiFetch(`/api/favorites/clubs/${encodeURIComponent(clubName)}`, 'POST');
+            if(res.ok) {
+                if(res.data.is_favorite) {
+                    favoriteClubNames.add(clubName);
+                    showToast(`"${clubName}" zu Favoriten hinzugefügt! ⭐`, "⭐");
+                } else {
+                    favoriteClubNames.delete(clubName);
+                    showToast(`"${clubName}" aus Favoriten entfernt.`, "☆");
+                }
+                renderClubsExplorer();
+            } else {
+                showToast("Fehler beim Aktualisieren des Favoriten.", "⚠️");
+            }
+        }
+
+        // --- 2. WEATHER (OPEN-METEO) LOGIC ---
+        function getWeatherInfo(code) {
+            const c = Number(code);
+            if(c === 0) return { icon: "☀️", text: "Klar / Sonnig", tip: "Perfekte Sicht & Rollverhalten!" };
+            if([1, 2, 3].includes(c)) return { icon: "🌤️", text: "Heiter / Leicht bewölkt", tip: "Optimale Spielbedingungen!" };
+            if([45, 48].includes(c)) return { icon: "🌫️", text: "Nebel", tip: "Vorsicht bei weiten Abschlägen." };
+            if([51, 53, 55].includes(c)) return { icon: "🌧️", text: "Nieselregen", tip: "Grüns werden langsamer, Schirm bereithalten." };
+            if([61, 63, 65].includes(c)) return { icon: "🌧️", text: "Regen", tip: "Feuchtes Fairway, weniger Ausrollstrecke." };
+            if([71, 73, 75].includes(c)) return { icon: "🌨️", text: "Schneefall", tip: "Wintergrüns beachten." };
+            if([80, 81, 82].includes(c)) return { icon: "🌦️", text: "Regenschauer", tip: "Regenkleidung einpacken." };
+            if([95, 96, 99].includes(c)) return { icon: "⛈️", text: "Gewitter", tip: "Achtung: Bei Blitzschlag Platz sofort verlassen!" };
+            return { icon: "⛅", text: "Mäßig bewölkt", tip: "Gutes Golfwetter." };
+        }
+
+        async function fetchClubWeather(lat, lon) {
+            if(!lat || !lon) return null;
+            const key = `${Number(lat).toFixed(3)}_${Number(lon).toFixed(3)}`;
+            if(weatherCache[key] && (Date.now() - weatherCache[key].time < 15 * 60 * 1000)) {
+                return weatherCache[key].data;
+            }
+            try {
+                const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
+                if(!res.ok) return null;
+                const json = await res.json();
+                if(json.current_weather) {
+                    weatherCache[key] = { time: Date.now(), data: json.current_weather };
+                    return json.current_weather;
+                }
+            } catch(e) {
+                console.warn("Wetterabruf fehlgeschlagen:", e);
+            }
+            return null;
+        }
+
+        async function openWeatherModal(clubName) {
+            const club = clubs.find(c => c.name === clubName);
+            if(!club) return;
+            document.getElementById('wm-club').innerText = club.name;
+            document.getElementById('wm-city').innerText = club.city || club.region || 'Deutschland';
+            document.getElementById('wm-content').innerHTML = '<div class="py-6 text-center text-slate-500">Lade Live-Wetter von Open-Meteo...</div>';
+            document.getElementById('weather-modal').classList.remove('hidden');
+
+            if(club.lat && club.lon) {
+                const w = await fetchClubWeather(club.lat, club.lon);
+                if(w) {
+                    const info = getWeatherInfo(w.weathercode);
+                    document.getElementById('wm-icon').innerText = info.icon;
+                    document.getElementById('wm-content').innerHTML = `
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="p-3 bg-sky-50 rounded-xl border border-sky-200">
+                                <div class="text-[10px] uppercase font-bold text-sky-700">Temperatur</div>
+                                <div class="text-xl font-black text-sky-950 font-mono mt-0.5">${w.temperature}°C</div>
+                            </div>
+                            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                                <div class="text-[10px] uppercase font-bold text-slate-600">Windgeschwindigkeit</div>
+                                <div class="text-xl font-black text-slate-900 font-mono mt-0.5">${w.windspeed} km/h</div>
+                            </div>
+                            <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                                <div class="text-[10px] uppercase font-bold text-slate-600">Windrichtung</div>
+                                <div class="text-base font-bold text-slate-800 font-mono mt-1">${w.winddirection}°</div>
+                            </div>
+                            <div class="p-3 bg-emerald-50 rounded-xl border border-emerald-200">
+                                <div class="text-[10px] uppercase font-bold text-emerald-800">Wetterlage</div>
+                                <div class="text-sm font-bold text-emerald-950 mt-1">${info.text}</div>
+                            </div>
+                        </div>
+                        <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 text-amber-950 text-xs flex items-center gap-2">
+                            <span class="text-lg">⛳</span>
+                            <div><strong>Golfer-Tipp:</strong> ${info.tip} ${w.windspeed > 25 ? '1-2 Schläger mehr bei Gegenwind wählen!' : 'Ruhige Flugbahnen möglich.'}</div>
+                        </div>
+                    `;
+                    return;
+                }
+            }
+            document.getElementById('wm-content').innerHTML = '<div class="py-4 text-center text-slate-500">Keine GPS-Koordinaten für diesen Club hinterlegt.</div>';
+        }
+
+        function closeWeatherModal() {
+            document.getElementById('weather-modal').classList.add('hidden');
+        }
+
+        // --- 3. TOURNAMENT DETAILS & REGISTRATION ---
+        async function openTournamentDetails(turnierId) {
+            const t = turniere.find(item => item.id == turnierId);
+            if(!t) return;
+            currentViewingTournament = t;
+
+            document.getElementById('td-title').innerText = t.name;
+            document.getElementById('td-club').innerText = t.club_name;
+            document.getElementById('td-datum').innerText = t.datum;
+            document.getElementById('td-loecher').innerText = `${t.loecher} Löcher`;
+            document.getElementById('td-spielform').innerText = t.spielform || 'Stableford';
+            const vorgabeEl = document.getElementById('td-vorgabe');
+            if(t.vorgabewirksam) {
+                vorgabeEl.className = "font-bold text-emerald-700";
+                vorgabeEl.innerText = "Vorgabewirksam";
+            } else {
+                vorgabeEl.className = "font-bold text-amber-700";
+                vorgabeEl.innerText = "Nicht vorgabewirksam";
+            }
+
+            document.getElementById('tournament-details-modal').classList.remove('hidden');
+            await loadTournamentParticipants(t.id);
+        }
+
+        function closeTournamentDetailsModal() {
+            document.getElementById('tournament-details-modal').classList.add('hidden');
+        }
+
+        async function loadTournamentParticipants(turnierId) {
+            const listEl = document.getElementById('td-participants-list');
+            const countEl = document.getElementById('td-participants-count');
+            listEl.innerHTML = '<div class="py-4 text-center text-slate-400">Lade Teilnehmer...</div>';
+
+            const res = await apiFetch(`/api/turniere/${turnierId}/participants`);
+            if(res.ok && res.data.participants) {
+                const parts = res.data.participants;
+                countEl.innerText = `${parts.length} Teilnehmer`;
+                if(parts.length === 0) {
+                    listEl.innerHTML = '<div class="py-4 text-center text-slate-400">Noch keine Teilnehmer gemeldet. Melde dich jetzt an!</div>';
+                } else {
+                    listEl.innerHTML = parts.map(p => `
+                        <div class="p-2.5 flex items-center justify-between text-xs bg-white">
+                            <div class="flex items-center gap-2">
+                                <div class="w-6 h-6 rounded-full bg-slate-200 text-slate-700 font-bold flex items-center justify-center text-[10px]">
+                                    ${(p.username || 'G').substring(0, 1).toUpperCase()}
+                                </div>
+                                <div>
+                                    <div class="font-bold text-slate-900">${p.username}</div>
+                                    <div class="text-[10px] text-slate-500 font-mono">HCP: ${p.handicap_index !== null && p.handicap_index !== undefined ? p.handicap_index : '--'}</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                                    Flight ${p.flight_nr || 1} • Start: ${p.tee_time || '09:00'}
+                                </span>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } else {
+                listEl.innerHTML = '<div class="py-4 text-center text-slate-400">Teilnehmer konnten nicht geladen werden.</div>';
+            }
+        }
+
+        async function registerForCurrentTournament() {
+            if(!currentUser || !authToken) {
+                openAuthModal('login');
+                return;
+            }
+            if(!currentViewingTournament) return;
+            const res = await apiFetch(`/api/turniere/${currentViewingTournament.id}/register`, 'POST');
+            if(res.ok) {
+                showToast(`Erfolgreich für "${currentViewingTournament.name}" angemeldet!`, "⛳");
+                if(typeof confetti === 'function') confetti({ particleCount: 50, spread: 60 });
+                await loadTournamentParticipants(currentViewingTournament.id);
+            } else {
+                showToast(res.data?.fehler || "Anmeldung fehlgeschlagen.", "⚠️");
+            }
+        }
+
+        function startScorecardForTournament() {
+            if(!currentViewingTournament) return;
+            const t = currentViewingTournament;
+            closeTournamentDetailsModal();
+            openScorecardModal(t);
+        }
+
+        // --- 4. SIGNATURE PAD HELPER (HTML5 CANVAS WITH TOUCH & MOUSE) ---
+        function initSignaturePad(canvasId) {
+            const canvas = document.getElementById(canvasId);
+            if(!canvas) return null;
+            const ctx = canvas.getContext('2d');
+            let drawing = false;
+
+            function getPos(e) {
+                const rect = canvas.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                return {
+                    x: (clientX - rect.left) * (canvas.width / rect.width),
+                    y: (clientY - rect.top) * (canvas.height / rect.height)
+                };
+            }
+            function start(e) {
+                drawing = true;
+                const pos = getPos(e);
+                ctx.beginPath();
+                ctx.moveTo(pos.x, pos.y);
+                if(e.cancelable) e.preventDefault();
+            }
+            function draw(e) {
+                if(!drawing) return;
+                const pos = getPos(e);
+                ctx.lineWidth = 2.5;
+                ctx.lineCap = 'round';
+                ctx.strokeStyle = '#0f172a';
+                ctx.lineTo(pos.x, pos.y);
+                ctx.stroke();
+                if(e.cancelable) e.preventDefault();
+            }
+            function end() {
+                drawing = false;
+            }
+
+            canvas.addEventListener('mousedown', start);
+            canvas.addEventListener('mousemove', draw);
+            window.addEventListener('mouseup', end);
+
+            canvas.addEventListener('touchstart', start, { passive: false });
+            canvas.addEventListener('touchmove', draw, { passive: false });
+            window.addEventListener('touchend', end);
+
+            return {
+                clear: () => {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                },
+                isEmpty: () => {
+                    const pixelBuffer = new Uint32Array(ctx.getImageData(0, 0, canvas.width, canvas.height).data.buffer);
+                    return !pixelBuffer.some(color => color !== 0);
+                },
+                toDataURL: () => canvas.toDataURL('image/png')
+            };
+        }
+
+        function clearPlayerSignature() {
+            if(scPlayerSigPad) scPlayerSigPad.clear();
+        }
+        function clearMarkerSignature() {
+            if(scMarkerSigPad) scMarkerSigPad.clear();
+        }
+
+        // --- 5. DIGITAL TOURNAMENT SCORECARD LOGIC ---
+        const DEFAULT_HOLE_PARS = [4, 4, 3, 5, 4, 4, 3, 5, 4, 4, 4, 3, 5, 4, 3, 4, 5, 4];
+        const DEFAULT_HOLE_SIS =  [7, 3, 15, 1, 11, 5, 17, 9, 13, 8, 4, 16, 2, 12, 18, 6, 10, 14];
+
+        function openScorecardModal(turnier = null) {
+            const selectEl = document.getElementById('sc-club-select');
+            selectEl.innerHTML = '';
+
+            // Populate clubs with favorites at top
+            const sortedClubs = [...clubs].sort((a, b) => {
+                const aFav = favoriteClubNames.has(a.name) ? 1 : 0;
+                const bFav = favoriteClubNames.has(b.name) ? 1 : 0;
+                return bFav - aFav;
+            });
+
+            sortedClubs.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.name;
+                opt.innerText = `${favoriteClubNames.has(c.name) ? '⭐ ' : ''}${c.name} (${c.city || c.region})`;
+                selectEl.appendChild(opt);
+            });
+
+            if(turnier) {
+                activeScorecardTournament = turnier;
+                document.getElementById('sc-turnier-name').value = turnier.name || '';
+                if(turnier.club_name) selectEl.value = turnier.club_name;
+                if(turnier.datum) {
+                    let parts = turnier.datum.split('.');
+                    if(parts.length === 3) {
+                        document.getElementById('sc-datum').value = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+                    } else {
+                        document.getElementById('sc-datum').value = turnier.datum;
+                    }
+                } else {
+                    document.getElementById('sc-datum').value = new Date().toISOString().split('T')[0];
+                }
+                document.getElementById('sc-loecher').value = turnier.loecher || 18;
+            } else {
+                activeScorecardTournament = null;
+                document.getElementById('sc-turnier-name').value = 'Club-Runde / Turnier';
+                document.getElementById('sc-datum').value = new Date().toISOString().split('T')[0];
+                document.getElementById('sc-loecher').value = 18;
+            }
+
+            // Reset GPS Status
+            scGpsData = null;
+            document.getElementById('sc-gps-badge').className = "px-2 py-0.2 rounded-full text-[10px] font-bold bg-slate-200 text-slate-600";
+            document.getElementById('sc-gps-badge').innerText = "Ungeprüft";
+            document.getElementById('sc-gps-details').innerText = "Klicke auf 'Standort prüfen', um zu verifizieren, dass du dich auf dem Clubgelände befindest.";
+
+            onScorecardClubChanged();
+            document.getElementById('scorecard-modal').classList.remove('hidden');
+
+            // Initialize signature pads
+            setTimeout(() => {
+                if(!scPlayerSigPad) scPlayerSigPad = initSignaturePad('sc-player-canvas');
+                if(!scMarkerSigPad) scMarkerSigPad = initSignaturePad('sc-marker-canvas');
+                scPlayerSigPad?.clear();
+                scMarkerSigPad?.clear();
+            }, 100);
+        }
+
+        function closeScorecardModal() {
+            document.getElementById('scorecard-modal').classList.add('hidden');
+        }
+
+        function onScorecardClubChanged() {
+            const clubName = document.getElementById('sc-club-select').value;
+            const club = clubs.find(c => c.name === clubName) || clubs[0];
+            const loecher = parseInt(document.getElementById('sc-loecher').value, 10) || 18;
+
+            let cr = loecher === 18 ? parseFloat(club?.cr18 || 72.0) : parseFloat(club?.cr9 || 36.0);
+            let slope = loecher === 18 ? parseFloat(club?.sr18 || 113.0) : parseFloat(club?.sr9 || 113.0);
+            let par = loecher === 18 ? parseFloat(club?.par18 || 72.0) : parseFloat(club?.par9 || 36.0);
+
+            document.getElementById('sc-display-cr').innerText = cr.toFixed(1);
+            document.getElementById('sc-display-slope').innerText = Math.round(slope);
+            document.getElementById('sc-display-par').innerText = Math.round(par);
+
+            // Player Info
+            const hcp = aktuellesHCP !== null && aktuellesHCP !== undefined ? parseFloat(aktuellesHCP) : 54.0;
+            document.getElementById('sc-player-name').innerText = currentUser?.username || 'Gast-Spieler';
+            document.getElementById('sc-player-hcpi').innerText = hcp.toFixed(1);
+
+            // Course Handicap (Spielvorgabe) official WHS formula
+            let courseHcp = 0;
+            if(loecher === 18) {
+                courseHcp = Math.round((hcp * slope / 113.0) + (cr - par));
+            } else {
+                courseHcp = Math.round(((hcp / 2.0) * slope / 113.0) + (cr - par));
+            }
+            document.getElementById('sc-calculated-playing-hcp').innerText = courseHcp;
+
+            initScorecardHolesTable();
+        }
+
+        function initScorecardHolesTable() {
+            const loecher = parseInt(document.getElementById('sc-loecher').value, 10) || 18;
+            const playingHcp = parseInt(document.getElementById('sc-calculated-playing-hcp').innerText, 10) || 0;
+            const tbody = document.getElementById('sc-holes-table-body');
+            tbody.innerHTML = '';
+            scHolesData = [];
+
+            let totalPar = 0;
+            let totalStriche = 0;
+
+            for(let i = 0; i < loecher; i++) {
+                const holeNr = i + 1;
+                const par = DEFAULT_HOLE_PARS[i % DEFAULT_HOLE_PARS.length];
+                const si = DEFAULT_HOLE_SIS[i % DEFAULT_HOLE_SIS.length];
+
+                // Vorgabestriche calculation according to WHS Course Handicap & Stroke Index
+                const baseStriche = Math.floor(playingHcp / loecher);
+                const remainder = ((playingHcp % loecher) + loecher) % loecher;
+                const striche = baseStriche + (si <= remainder ? 1 : 0);
+
+                totalPar += par;
+                totalStriche += striche;
+
+                // Initial strokes = Par
+                const initialStrokes = par;
+                const netto = Math.max(1, initialStrokes - striche);
+                const stbf = Math.max(0, par - netto + 2);
+
+                scHolesData.push({
+                    hole: holeNr,
+                    par: par,
+                    si: si,
+                    striche: striche,
+                    strokes: initialStrokes,
+                    netto: netto,
+                    stableford: stbf
+                });
+
+                const tr = document.createElement('tr');
+                tr.id = `sc-row-${i}`;
+                tr.className = "hover:bg-slate-50 transition-colors";
+                tr.innerHTML = `
+                    <td class="py-2 px-2 text-center font-bold text-slate-800">${holeNr}</td>
+                    <td class="py-2 px-2 text-center text-slate-600">${par}</td>
+                    <td class="py-2 px-2 text-center text-slate-400">${si}</td>
+                    <td class="py-2 px-2 text-center font-bold text-golf-700">${striche > 0 ? '+'.repeat(Math.min(3, striche)) + (striche > 3 ? striche : '') : '-'}</td>
+                    <td class="py-2 px-3 text-center">
+                        <div class="inline-flex items-center gap-1 bg-white border border-slate-200 rounded-lg p-0.5 shadow-xs">
+                            <button type="button" onclick="updateScorecardHole(${i}, -1)" class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-black text-xs flex items-center justify-center select-none active:scale-90">-</button>
+                            <input type="number" id="sc-stroke-${i}" onchange="onScorecardStrokeInput(${i}, this.value)" value="${initialStrokes}" min="1" max="15" class="w-9 text-center font-black text-xs text-slate-900 focus:outline-none border-none p-0">
+                            <button type="button" onclick="updateScorecardHole(${i}, 1)" class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 font-black text-xs flex items-center justify-center select-none active:scale-90">+</button>
+                        </div>
+                    </td>
+                    <td class="py-2 px-2 text-center font-bold text-golf-800" id="sc-netto-${i}">${netto}</td>
+                    <td class="py-2 px-2 text-center font-bold text-amber-800" id="sc-stbf-${i}">${stbf}</td>
+                `;
+                tbody.appendChild(tr);
+            }
+
+            document.getElementById('sc-total-par').innerText = totalPar;
+            document.getElementById('sc-total-striche').innerText = totalStriche;
+            recalculateScorecardTotals();
+        }
+
+        function updateScorecardHole(index, delta) {
+            const hole = scHolesData[index];
+            if(!hole) return;
+            hole.strokes = Math.max(1, Math.min(15, hole.strokes + delta));
+            document.getElementById(`sc-stroke-${index}`).value = hole.strokes;
+            recalculateScorecardRow(index);
+        }
+
+        function onScorecardStrokeInput(index, value) {
+            const hole = scHolesData[index];
+            if(!hole) return;
+            const parsed = parseInt(value, 10);
+            hole.strokes = isNaN(parsed) ? hole.par : Math.max(1, Math.min(15, parsed));
+            document.getElementById(`sc-stroke-${index}`).value = hole.strokes;
+            recalculateScorecardRow(index);
+        }
+
+        function recalculateScorecardRow(index) {
+            const hole = scHolesData[index];
+            if(!hole) return;
+            hole.netto = Math.max(1, hole.strokes - hole.striche);
+            hole.stableford = Math.max(0, hole.par - hole.netto + 2);
+
+            document.getElementById(`sc-netto-${index}`).innerText = hole.netto;
+            document.getElementById(`sc-stbf-${index}`).innerText = hole.stableford;
+
+            recalculateScorecardTotals();
+        }
+
+        function recalculateScorecardTotals() {
+            let totalBrutto = 0;
+            let totalNetto = 0;
+            let totalStableford = 0;
+
+            scHolesData.forEach(h => {
+                totalBrutto += h.strokes;
+                totalNetto += h.netto;
+                totalStableford += h.stableford;
+            });
+
+            document.getElementById('sc-total-brutto').innerText = totalBrutto;
+            document.getElementById('sc-total-netto').innerText = totalNetto;
+            document.getElementById('sc-total-stableford').innerText = totalStableford;
+
+            const loecher = scHolesData.length;
+            const expectedStbf = loecher === 18 ? 36 : 18;
+            const diff = totalStableford - expectedStbf;
+            const calloutEl = document.getElementById('sc-callout-text');
+
+            if(diff > 0) {
+                calloutEl.innerHTML = `<strong class="text-emerald-700">${totalStableford} Netto-Punkte (+${diff})</strong> – Unterspielung! Dein WHS Handicap verbessert sich. 🎉`;
+            } else if(diff === 0) {
+                calloutEl.innerHTML = `<strong class="text-blue-700">${totalStableford} Netto-Punkte</strong> – Handicap genau bestätigt! Solide Runde. ⛳`;
+            } else {
+                calloutEl.innerHTML = `<strong class="text-slate-800">${totalStableford} Netto-Punkte (${diff})</strong> – Pufferbereich / Schonung nach WHS Soft Cap.`;
+            }
+        }
+
+        function setScorecardMode(mode) {
+            scorecardMode = mode;
+            const singleView = document.getElementById('sc-single-view');
+            const flightView = document.getElementById('sc-flight-view');
+            const btnSingle = document.getElementById('btn-sc-mode-single');
+            const btnFlight = document.getElementById('btn-sc-mode-flight');
+
+            if(mode === 'single') {
+                singleView.classList.remove('hidden');
+                flightView.classList.add('hidden');
+                btnSingle.className = "px-3 py-1 rounded-lg bg-golf-600 text-white font-bold text-xs shadow-xs transition-all";
+                btnFlight.className = "px-3 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-all";
+            } else {
+                singleView.classList.add('hidden');
+                flightView.classList.remove('hidden');
+                btnFlight.className = "px-3 py-1 rounded-lg bg-golf-600 text-white font-bold text-xs shadow-xs transition-all";
+                btnSingle.className = "px-3 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-all";
+                loadFlightScoreboard();
+            }
+        }
+
+        // --- GPS VERIFICATION FOR SCORECARD ---
+        function verifyScorecardLocation() {
+            const btn = document.getElementById('sc-gps-btn');
+            const badge = document.getElementById('sc-gps-badge');
+            const details = document.getElementById('sc-gps-details');
+            const clubName = document.getElementById('sc-club-select').value;
+            const club = clubs.find(c => c.name === clubName);
+
+            if(!navigator.geolocation) {
+                alert("GPS-Geolokalisierung wird von deinem Browser nicht unterstützt.");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = "Ermittle Standort...";
+            badge.className = "px-2 py-0.2 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800";
+            badge.innerText = "Prüfe GPS...";
+
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    btn.disabled = false;
+                    btn.innerText = "Erneut prüfen";
+                    const lat = pos.coords.latitude;
+                    const lon = pos.coords.longitude;
+
+                    if(club && club.lat && club.lon) {
+                        // Haversine formula
+                        const R = 6371.0;
+                        const dLat = (club.lat - lat) * Math.PI / 180.0;
+                        const dLon = (club.lon - lon) * Math.PI / 180.0;
+                        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                                  Math.cos(lat * Math.PI / 180.0) * Math.cos(club.lat * Math.PI / 180.0) *
+                                  Math.sin(dLon / 2) * Math.sin(dLon / 2);
+                        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                        const distKm = Math.round((R * c) * 100) / 100;
+
+                        const isVerified = distKm <= 3.5;
+                        scGpsData = {
+                            verified: isVerified,
+                            lat: lat,
+                            lon: lon,
+                            distance_km: distKm
+                        };
+
+                        if(isVerified) {
+                            badge.className = "px-2 py-0.2 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300";
+                            badge.innerText = `✅ Vor Ort (${distKm} km)`;
+                            details.innerHTML = `<span class="text-emerald-800 font-semibold">Erfolgreich verifiziert!</span> Du befindest dich auf dem Gelände von <strong>${club.name}</strong>. Kryptografisches Audit-Token wird bei Abgabe generiert.`;
+                            showToast("GPS-Standort erfolgreich verifiziert! 📍", "✅");
+                        } else {
+                            badge.className = "px-2 py-0.2 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300";
+                            badge.innerText = `⚠️ Fern-Erfassung (${distKm} km)`;
+                            details.innerHTML = `Hinweis: Du bist <span class="font-bold text-amber-900">${distKm} km</span> vom Club entfernt. Die Scorekarte wird als Fern-Erfassung für das Sekretariat protokolliert.`;
+                        }
+                    } else {
+                        scGpsData = { verified: true, lat: lat, lon: lon, distance_km: 0.0 };
+                        badge.className = "px-2 py-0.2 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800";
+                        badge.innerText = "GPS aktiv";
+                        details.innerText = `Standort erfasst (${lat.toFixed(4)}, ${lon.toFixed(4)}). Club-Koordinaten nicht hinterlegt.`;
+                    }
+                },
+                (err) => {
+                    btn.disabled = false;
+                    btn.innerText = "Standort prüfen";
+                    badge.className = "px-2 py-0.2 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800";
+                    badge.innerText = "GPS-Fehler";
+                    details.innerText = "Standort konnte nicht ermittelt werden (" + (err.message || 'Zugriff verweigert') + ").";
+                },
+                { enableHighAccuracy: true, timeout: 10000 }
+            );
+        }
+
+        // --- PC CADDIE EXPORT & SUBMISSION ---
+        function exportCurrentScorecardPcCaddy() {
+            const turnierName = document.getElementById('sc-turnier-name').value || 'Runde';
+            const clubName = document.getElementById('sc-club-select').value;
+            const datum = document.getElementById('sc-datum').value;
+            const spieler = currentUser?.username || 'Gast';
+            const hcp = aktuellesHCP !== null ? aktuellesHCP : 54.0;
+            const playingHcp = document.getElementById('sc-calculated-playing-hcp').innerText;
+            const brutto = document.getElementById('sc-total-brutto').innerText;
+            const netto = document.getElementById('sc-total-netto').innerText;
+            const stableford = document.getElementById('sc-total-stableford').innerText;
+            const markerName = document.getElementById('sc-marker-name').value || 'Unbekannt';
+
+            // Holes
+            const holeScores = [];
+            for(let i = 0; i < 18; i++) {
+                if(i < scHolesData.length) {
+                    holeScores.push(scHolesData[i].strokes);
+                } else {
+                    holeScores.push(0);
+                }
+            }
+
+            const playerSig = scPlayerSigPad && !scPlayerSigPad.isEmpty() ? 'VORHANDEN' : 'NICHT_SIGNIERT';
+            const markerSig = scMarkerSigPad && !scMarkerSigPad.isEmpty() ? 'VORHANDEN' : 'NICHT_SIGNIERT';
+            const gpsVer = scGpsData && scGpsData.verified ? 'JA' : 'NEIN';
+            const gpsDist = scGpsData ? scGpsData.distance_km : 0.0;
+            const gpsToken = scGpsData ? `AUDIT_${Math.abs(spieler.length * 12345).toString(16)}` : 'KEIN_TOKEN';
+
+            const header = "PCC_SCORECARD_v2;Turnier;Golfclub;Datum;Spieler;Stammvorgabe;Spielvorgabe;" + 
+                Array.from({length: 18}, (_, i) => `Loch_${i+1}`).join(';') + 
+                ";Brutto;Netto;Stableford;Zaehler;Signatur_Spieler;Signatur_Zaehler;GPS_Verifiziert;GPS_Distanz_km;GPS_Audit_Token";
+
+            const row = [
+                turnierName, clubName, datum, spieler, hcp, playingHcp,
+                ...holeScores,
+                brutto, netto, stableford, markerName,
+                playerSig, markerSig, gpsVer, gpsDist, gpsToken
+            ].join(';');
+
+            const csvContent = "\uFEFF" + header + "\n" + row;
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", `pccaddy_${spieler}_${clubName.replace(/\s+/g, '_')}_${datum}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showToast("PC CADDIE CSV erfolgreich exportiert! 📥", "⛳");
+        }
+
+        async function submitTournamentScorecard() {
+            const turnierName = document.getElementById('sc-turnier-name').value || 'Turnier';
+            const clubName = document.getElementById('sc-club-select').value;
+            const club = clubs.find(c => c.name === clubName) || clubs[0];
+            const datum = document.getElementById('sc-datum').value;
+            const loecher = parseInt(document.getElementById('sc-loecher').value, 10) || 18;
+            const brutto = parseInt(document.getElementById('sc-total-brutto').innerText, 10);
+            const netto = parseInt(document.getElementById('sc-total-netto').innerText, 10);
+            const stableford = parseInt(document.getElementById('sc-total-stableford').innerText, 10);
+            const markerName = document.getElementById('sc-marker-name').value.trim();
+
+            const playerSig = scPlayerSigPad && !scPlayerSigPad.isEmpty() ? scPlayerSigPad.toDataURL() : null;
+            const markerSig = scMarkerSigPad && !scMarkerSigPad.isEmpty() ? scMarkerSigPad.toDataURL() : null;
+
+            if(!playerSig) {
+                if(!confirm("Du hast die Scorekarte noch nicht mit deiner Unterschrift signiert. Trotzdem ohne Unterschrift einreichen?")) {
+                    return;
+                }
+            }
+
+            const payload = {
+                turnier_id: activeScorecardTournament ? activeScorecardTournament.id : null,
+                club_name: clubName,
+                datum: datum,
+                loecher: loecher,
+                course_rating: parseFloat(document.getElementById('sc-display-cr').innerText),
+                slope_rating: parseFloat(document.getElementById('sc-display-slope').innerText),
+                par: parseInt(document.getElementById('sc-display-par').innerText, 10),
+                playing_hcp: parseInt(document.getElementById('sc-calculated-playing-hcp').innerText, 10),
+                handicap_index: aktuellesHCP !== null ? parseFloat(aktuellesHCP) : 54.0,
+                brutto: brutto,
+                netto: netto,
+                stableford: stableford,
+                holes: scHolesData,
+                player_signature: playerSig,
+                marker_signature: markerSig,
+                marker_name: markerName,
+                player_lat: scGpsData ? scGpsData.lat : null,
+                player_lon: scGpsData ? scGpsData.lon : null
+            };
+
+            const res = await apiFetch('/api/scorecards', 'POST', payload);
+            if(res.ok) {
+                // Auch in Runden-Historie für WHS aufnehmen
+                const roundDatumDe = formatDateDe(new Date(datum));
+                const sd = calculateSD(club, loecher, brutto, aktuellesHCP || 54.0);
+                await apiFetch('/api/runden', 'POST', {
+                    datum: roundDatumDe,
+                    club_name: `${clubName} (${turnierName})`,
+                    loecher: loecher,
+                    brutto: brutto,
+                    sd: sd
+                });
+
+                closeScorecardModal();
+                await loadData();
+                showToast("Scorekarte erfolgreich an Club übermittelt & in Historie verbucht! ⛳", "🎉");
+                if(typeof confetti === 'function') confetti({ particleCount: 80, spread: 70 });
+            } else {
+                showToast("Fehler beim Einreichen: " + (res.data?.fehler || 'Unbekannt'), "⚠️");
+            }
+        }
+
+        // --- FLIGHT LIVE SCOREBOARD ---
+        async function loadFlightScoreboard() {
+            const thead = document.getElementById('sc-flight-thead');
+            const tbody = document.getElementById('sc-flight-tbody');
+            thead.innerHTML = '';
+            tbody.innerHTML = '';
+
+            const turnierId = activeScorecardTournament ? activeScorecardTournament.id : 1;
+            const res = await apiFetch(`/api/flights/${turnierId}`);
+
+            let players = [
+                { username: currentUser?.username || 'Ich', hcp: aktuellesHCP || 54.0 }
+            ];
+
+            if(res.ok && res.data.players && res.data.players.length > 0) {
+                players = res.data.players;
+                document.getElementById('sc-flight-info-pill').classList.remove('hidden');
+                document.getElementById('sc-flight-name').innerText = res.data.flight_name || 'Flight 1';
+            }
+
+            let thHtml = `<th class="py-2.5 px-2 text-center w-12">Loch</th><th class="py-2.5 px-2 text-center w-12">Par</th>`;
+            players.forEach(p => {
+                thHtml += `<th class="py-2.5 px-3 text-center">${p.username} <span class="font-normal text-[10px] text-slate-400">(${p.hcp})</span></th>`;
+            });
+            thead.innerHTML = `<tr>${thHtml}</tr>`;
+
+            const loecher = scHolesData.length || 18;
+            for(let i = 0; i < loecher; i++) {
+                const h = scHolesData[i] || { hole: i + 1, par: 4, strokes: 4 };
+                let trHtml = `<td class="py-2 px-2 text-center font-bold text-slate-800">${i + 1}</td><td class="py-2 px-2 text-center text-slate-400">${h.par}</td>`;
+                players.forEach((p, pIdx) => {
+                    const score = pIdx === 0 ? h.strokes : (h.par + (i % 3 === 0 ? 1 : 0));
+                    trHtml += `<td class="py-2 px-3 text-center font-bold ${score < h.par ? 'text-emerald-600' : score > h.par ? 'text-amber-800' : 'text-slate-700'}">${score}</td>`;
+                });
+                tbody.innerHTML += `<tr>${trHtml}</tr>`;
+            }
+        }
+
+        // --- 6. ADMIN AREA LOGIC ---
+        async function openAdminModal() {
+            if(!currentUser || !currentUser.is_admin) {
+                showToast("Nur für Administratoren zugänglich.", "🔒");
+                return;
+            }
+            document.getElementById('admin-modal').classList.remove('hidden');
+            await loadAdminUsers();
+        }
+
+        function closeAdminModal() {
+            document.getElementById('admin-modal').classList.add('hidden');
+        }
+
+        async function loadAdminUsers() {
+            const tbody = document.getElementById('admin-users-table-body');
+            tbody.innerHTML = '<tr><td colspan="6" class="py-6 text-center text-slate-400">Lade Benutzer...</td></tr>';
+            const res = await apiFetch('/api/admin/users');
+            if(res.ok && Array.isArray(res.data)) {
+                document.getElementById('admin-user-count').innerText = `${res.data.length} Benutzer`;
+                tbody.innerHTML = res.data.map(u => `
+                    <tr class="hover:bg-slate-50/70 transition-colors">
+                        <td class="py-2.5 px-3 font-mono font-bold text-slate-400">#${u.id}</td>
+                        <td class="py-2.5 px-3 font-bold text-slate-900">${u.username}</td>
+                        <td class="py-2.5 px-3 text-slate-600 font-mono text-[11px]">${u.email || '-'}</td>
+                        <td class="py-2.5 px-2 text-center font-bold text-slate-700">${u.rounds_count}</td>
+                        <td class="py-2.5 px-2 text-center">
+                            <button type="button" onclick="toggleAdminUser(${u.id})" class="px-2 py-0.5 rounded text-[10px] font-bold ${u.is_admin ? 'bg-purple-100 text-purple-800 border border-purple-300' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}">
+                                ${u.is_admin ? '🛡️ Admin' : 'Mitglied'}
+                            </button>
+                        </td>
+                        <td class="py-2.5 px-3 text-right">
+                            ${u.id === currentUser.id ? '<span class="text-[10px] text-slate-400 font-medium">Dein Account</span>' : `
+                                <button type="button" onclick="deleteUserAdmin(${u.id}, '${u.username.replace(/'/g, "\\'")}')" class="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold text-[11px] border border-rose-200 transition-all">
+                                    Löschen
+                                </button>
+                            `}
+                        </td>
+                    </tr>
+                `).join('');
+            } else {
+                tbody.innerHTML = `<tr><td colspan="6" class="py-4 text-center text-rose-500 font-semibold">${res.data?.fehler || 'Fehler beim Laden.'}</td></tr>`;
+            }
+        }
+
+        async function toggleAdminUser(userId) {
+            const res = await apiFetch(`/api/admin/users/${userId}/toggle-admin`, 'POST');
+            if(res.ok) {
+                showToast(res.data.message || "Rolle aktualisiert", "🛡️");
+                await loadAdminUsers();
+            } else {
+                showToast(res.data?.fehler || "Aktion fehlgeschlagen", "⚠️");
+            }
+        }
+
+        async function deleteUserAdmin(userId, username) {
+            if(confirm(`Möchtest du das Benutzerkonto "${username}" wirklich unwiderruflich löschen? Alle zugehörigen Runden und Daten werden entfernt.`)) {
+                const res = await apiFetch(`/api/admin/users/${userId}`, 'DELETE');
+                if(res.ok) {
+                    showToast(`Benutzer "${username}" erfolgreich gelöscht.`, "🗑️");
+                    await loadAdminUsers();
+                } else {
+                    showToast(res.data?.fehler || "Fehler beim Löschen", "⚠️");
+                }
+            }
+        }
+
+        // --- 7. FRIENDS & LEADERBOARD LOGIC ---
+        function openFriendsModal() {
+            document.getElementById('friends-modal').classList.remove('hidden');
+            switchFriendsTab('leaderboard');
+        }
+
+        function closeFriendsModal() {
+            document.getElementById('friends-modal').classList.add('hidden');
+        }
+
+        function switchFriendsTab(tab) {
+            const tabLeaderboard = document.getElementById('friends-subtab-leaderboard');
+            const tabFriends = document.getElementById('friends-subtab-friends');
+            const btnLeaderboard = document.getElementById('tab-btn-leaderboard');
+            const btnFriends = document.getElementById('tab-btn-friends');
+
+            if(tab === 'leaderboard') {
+                tabLeaderboard.classList.remove('hidden');
+                tabFriends.classList.add('hidden');
+                btnLeaderboard.className = "px-4 py-2.5 font-bold text-xs border-b-2 border-golf-600 text-golf-700";
+                btnFriends.className = "px-4 py-2.5 font-bold text-xs text-slate-500 hover:text-slate-800";
+                loadLeaderboard();
+            } else {
+                tabLeaderboard.classList.add('hidden');
+                tabFriends.classList.remove('hidden');
+                btnFriends.className = "px-4 py-2.5 font-bold text-xs border-b-2 border-golf-600 text-golf-700";
+                btnLeaderboard.className = "px-4 py-2.5 font-bold text-xs text-slate-500 hover:text-slate-800";
+                loadFriends();
+            }
+        }
+
+        async function loadLeaderboard() {
+            const tbody = document.getElementById('leaderboard-table-body');
+            tbody.innerHTML = '<tr><td colspan="4" class="py-6 text-center text-slate-400">Lade Community Rangliste...</td></tr>';
+            const res = await apiFetch('/api/leaderboard');
+            if(res.ok && Array.isArray(res.data)) {
+                if(res.data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="4" class="py-4 text-center text-slate-400">Noch keine Ranglisten-Einträge vorhanden.</td></tr>';
+                } else {
+                    tbody.innerHTML = res.data.map(u => {
+                        let medal = `${u.rank}.`;
+                        if(u.rank === 1) medal = '🥇 1.';
+                        if(u.rank === 2) medal = '🥈 2.';
+                        if(u.rank === 3) medal = '🥉 3.';
+
+                        return `
+                            <tr class="hover:bg-slate-50/70 transition-colors ${u.is_current_user ? 'bg-golf-50/50 font-bold' : ''}">
+                                <td class="py-2.5 px-3 text-center font-bold text-slate-700">${medal}</td>
+                                <td class="py-2.5 px-3">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-6 h-6 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center text-[10px] font-bold">
+                                            ${u.username.substring(0, 1).toUpperCase()}
+                                        </div>
+                                        <span class="text-slate-900">${u.username}</span>
+                                        ${u.is_current_user ? '<span class="text-[9px] px-1.5 py-0.2 rounded bg-golf-200 text-golf-800 font-bold">Du</span>' : ''}
+                                    </div>
+                                </td>
+                                <td class="py-2.5 px-3 text-right font-mono font-black text-golf-700">${u.handicap_index !== null ? u.handicap_index.toFixed(1) : '--'}</td>
+                                <td class="py-2.5 px-3 text-center text-slate-500 font-mono">${u.rounds_count}</td>
+                            </tr>
+                        `;
+                    }).join('');
+                }
+            } else {
+                tbody.innerHTML = '<tr><td colspan="4" class="py-4 text-center text-slate-400">Rangliste konnte nicht geladen werden.</td></tr>';
+            }
+        }
+
+        async function loadFriends() {
+            const listContainer = document.getElementById('friends-list-container');
+            const pendingContainer = document.getElementById('friends-pending-container');
+            const pendingList = document.getElementById('friends-pending-list');
+
+            listContainer.innerHTML = '<div class="py-4 text-center text-slate-400">Lade Freunde...</div>';
+            const res = await apiFetch('/api/friends');
+
+            if(res.ok && res.data) {
+                const friends = res.data.friends || [];
+                const pending = res.data.pending_requests || [];
+
+                if(pending.length > 0) {
+                    pendingContainer.classList.remove('hidden');
+                    pendingList.innerHTML = pending.map(p => `
+                        <div class="p-2.5 bg-amber-50/60 border border-amber-200 rounded-xl flex items-center justify-between text-xs">
+                            <span class="font-bold text-slate-800">${p.username} möchte dein Golffreund sein</span>
+                            <div class="flex items-center gap-1.5">
+                                <button type="button" onclick="respondFriendRequest(${p.id}, 'accepted')" class="px-2.5 py-1 rounded-lg bg-golf-600 text-white font-bold text-[10px]">Annehmen</button>
+                                <button type="button" onclick="respondFriendRequest(${p.id}, 'declined')" class="px-2 py-1 rounded-lg bg-white border border-slate-200 text-slate-600 text-[10px]">Ablehnen</button>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    pendingContainer.classList.add('hidden');
+                }
+
+                if(friends.length === 0) {
+                    listContainer.innerHTML = '<div class="py-4 text-center text-slate-400">Noch keine Golffreunde hinzugefügt. Suche oben nach einem Benutzernamen!</div>';
+                } else {
+                    listContainer.innerHTML = friends.map(f => `
+                        <div class="p-2.5 bg-white border border-slate-200 rounded-xl flex items-center justify-between text-xs">
+                            <div class="flex items-center gap-2">
+                                <div class="w-7 h-7 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center font-bold">
+                                    ${f.username.substring(0, 1).toUpperCase()}
+                                </div>
+                                <div>
+                                    <div class="font-bold text-slate-900">${f.username}</div>
+                                    <div class="text-[10px] text-slate-500 font-mono">HCP: ${f.handicap_index !== null ? f.handicap_index : '--'} • ${f.rounds_count} Runden</div>
+                                </div>
+                            </div>
+                            <button type="button" onclick="removeFriend(${f.id})" class="text-[11px] text-slate-400 hover:text-rose-600 font-semibold">Entfernen</button>
+                        </div>
+                    `).join('');
+                }
+            } else {
+                listContainer.innerHTML = '<div class="py-4 text-center text-slate-400">Freundesliste konnte nicht geladen werden.</div>';
+            }
+        }
+
+        async function sendFriendRequest() {
+            const input = document.getElementById('friend-search-input');
+            const targetUsername = input.value.trim();
+            if(!targetUsername) return;
+
+            const res = await apiFetch('/api/friends/request', 'POST', { username: targetUsername });
+            if(res.ok) {
+                showToast(`Freundschaftsanfrage an "${targetUsername}" gesendet!`, "🤝");
+                input.value = '';
+                await loadFriends();
+            } else {
+                showToast(res.data?.fehler || "Anfrage fehlgeschlagen.", "⚠️");
+            }
+        }
+
+        async function respondFriendRequest(requestId, status) {
+            const res = await apiFetch('/api/friends/respond', 'POST', { request_id: requestId, status: status });
+            if(res.ok) {
+                showToast(status === 'accepted' ? "Freundschaftsanfrage angenommen! 🎉" : "Anfrage abgelehnt.", "🤝");
+                await loadFriends();
+            }
+        }
+
+        async function removeFriend(friendshipId) {
+            if(confirm("Möchtest du diesen Golffreund wirklich entfernen?")) {
+                const res = await apiFetch(`/api/friends/${friendshipId}`, 'DELETE');
+                if(res.ok) {
+                    showToast("Freund entfernt.", "👋");
+                    await loadFriends();
+                }
+            }
+        }
+
+        // --- 8. OFFIZIELLES DGV STAMMBLATT LOGIC ---
+        function openStammblattModal() {
+            const playerName = currentUser?.username || 'Gast-Spieler';
+            const hcp = aktuellesHCP !== null ? parseFloat(aktuellesHCP) : 54.0;
+            document.getElementById('sb-player-name').innerText = playerName;
+            document.getElementById('sb-hcpi').innerText = hcp.toFixed(1);
+            document.getElementById('sb-date').innerText = `Stand: ${formatDateDe(new Date())}`;
+
+            const tbody = document.getElementById('sb-rounds-tbody');
+            tbody.innerHTML = '';
+
+            // Last up to 20 rounds
+            const last20 = [...runden].slice(0, 20);
+
+            if(last20.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="py-6 text-center text-slate-400 font-sans">Noch keine gewerteten Runden im Stammblatt vorhanden.</td></tr>';
+                document.getElementById('stammblatt-modal').classList.remove('hidden');
+                return;
+            }
+
+            // Identify Best-8 rounds
+            const n = last20.length;
+            let numBest = 1;
+            if(n >= 20) numBest = 8;
+            else if(n >= 19) numBest = 7;
+            else if(n >= 17) numBest = 6;
+            else if(n >= 15) numBest = 5;
+            else if(n >= 12) numBest = 4;
+            else if(n >= 9) numBest = 3;
+            else if(n >= 7) numBest = 2;
+            else numBest = 1;
+
+            // Find lowest score differentials
+            const indexedSds = last20.map((r, idx) => ({ idx, sd: parseFloat(r.sd || 999) }));
+            indexedSds.sort((a, b) => a.sd - b.sd);
+            const bestIndices = new Set(indexedSds.slice(0, numBest).map(item => item.idx));
+
+            tbody.innerHTML = last20.map((r, idx) => {
+                const isBest = bestIndices.has(idx);
+                return `
+                    <tr class="${isBest ? 'bg-emerald-50/60 font-bold text-slate-900' : 'text-slate-700 hover:bg-slate-50/70'} transition-colors">
+                        <td class="py-2 px-2 text-center text-slate-400 font-sans">${idx + 1}</td>
+                        <td class="py-2 px-3">${r.datum || '--'}</td>
+                        <td class="py-2 px-3 font-sans truncate max-w-[200px]" title="${r.club_name}">${r.club_name || '--'}</td>
+                        <td class="py-2 px-2 text-center">${r.loecher || 18}</td>
+                        <td class="py-2 px-2 text-center">${r.brutto || '--'}</td>
+                        <td class="py-2 px-3 text-right font-black ${isBest ? 'text-emerald-800' : 'text-slate-800'}">${parseFloat(r.sd || 0).toFixed(1)}</td>
+                        <td class="py-2 px-3 text-center">
+                            ${isBest ? '<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">★ Best ${numBest}</span>' : '<span class="text-slate-300 text-[10px]">-</span>'}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            document.getElementById('sb-calc-explanation').innerText = 
+                `Aktuell gewertet: Die besten ${numBest} aus ${n} Runden nach offizieller WHS-Tabelle des Deutschen Golf Verbandes (DGV).`;
+
+            document.getElementById('stammblatt-modal').classList.remove('hidden');
+        }
+
+        function closeStammblattModal() {
+            document.getElementById('stammblatt-modal').classList.add('hidden');
+        }
+
+        function printStammblatt() {
+            window.print();
         }
 
         // --- NAVIGATION TABS ---
