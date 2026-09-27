@@ -114,6 +114,37 @@ class Runde(db.Model):
             "sd": self.sd
         }
 
+def generate_course_holes(par18, par9=None):
+    """
+    Erstellt eine realistische, DGV-konforme Lochliste für Golfplätze:
+    - 18 Löcher: Par 71, 72 oder 73 mit exakter Lochpar-Summe
+    - 9 Löcher: Par 36 mit exakter Lochpar-Summe
+    - Stroke Index (Vorgabenschlüssel): 1..18 (ungerade auf Front 9, gerade auf Back 9)
+    """
+    if par18 and float(par18) > 0:
+        p18 = int(float(par18))
+        if p18 == 71:
+            # Front 9 (Par 35): 4, 4, 3, 5, 4, 4, 3, 4, 4
+            # Back 9 (Par 36):  4, 4, 4, 3, 5, 4, 3, 5, 4 -> Summe 71
+            pars = [4, 4, 3, 5, 4, 4, 3, 4, 4, 4, 4, 4, 3, 5, 4, 3, 5, 4]
+        elif p18 == 73:
+            # Front 9 (Par 36): 4, 4, 3, 5, 4, 4, 3, 5, 4
+            # Back 9 (Par 37):  4, 4, 4, 3, 5, 4, 4, 5, 4 -> Summe 73
+            pars = [4, 4, 3, 5, 4, 4, 3, 5, 4, 4, 4, 4, 3, 5, 4, 4, 5, 4]
+        else: # Standard 72
+            # Front 9 (Par 36): 4, 4, 3, 5, 4, 4, 3, 5, 4
+            # Back 9 (Par 36):  4, 4, 4, 3, 5, 4, 3, 5, 4 -> Summe 72
+            pars = [4, 4, 3, 5, 4, 4, 3, 5, 4, 4, 4, 4, 3, 5, 4, 3, 5, 4]
+        
+        # DGV Stroke Index Verteilung (ungerade Front-9, gerade Back-9)
+        sis = [7, 3, 15, 1, 11, 5, 17, 9, 13, 8, 4, 16, 2, 12, 18, 6, 10, 14]
+        return [{"hole": i + 1, "par": pars[i], "si": sis[i]} for i in range(18)]
+    else:
+        # Reiner 9-Loch Platz (Par 36)
+        pars = [4, 4, 3, 5, 4, 4, 3, 5, 4]
+        sis = [7, 3, 9, 1, 5, 2, 8, 4, 6]
+        return [{"hole": i + 1, "par": pars[i], "si": sis[i]} for i in range(9)]
+
 class Club(db.Model):
     """Speichert Verzeichnis- oder benutzerdefinierte Golfclubs."""
     __tablename__ = 'clubs'
@@ -131,25 +162,42 @@ class Club(db.Model):
     sr9 = db.Column(db.Float, nullable=True)
     lat = db.Column(db.Float, nullable=True)
     lon = db.Column(db.Float, nullable=True)
+    holes_data = db.Column(db.Text, nullable=True)
+
+    def get_holes_list(self):
+        if self.holes_data:
+            try:
+                data = json.loads(self.holes_data)
+                if isinstance(data, list) and len(data) in [9, 18]:
+                    return data
+            except Exception:
+                pass
+        return generate_course_holes(self.par18, self.par9)
+
+    @property
+    def turniere(self):
+        """Gibt alle Turniere zurück, die diesem Club zugeordnet sind."""
+        return Turnier.query.filter_by(club_name=self.name).all()
 
     def to_dict(self):
         # Hole passende Turniere für diesen Club
-        turniere_db = Turnier.query.filter_by(club_name=self.name).all()
+        turniere_db = self.turniere
         return {
             "id": self.id,
             "name": self.name,
             "tee": self.tee or "gelb",
             "region": self.region or "Deutschland",
             "city": self.city or "",
-            "par18": self.par18 or "",
-            "cr18": self.cr18 or "",
-            "sr18": self.sr18 or "",
-            "par9": self.par9 or "",
-            "cr9": self.cr9 or "",
-            "sr9": self.sr9 or "",
+            "par18": self.par18 if self.par18 is not None else "",
+            "cr18": self.cr18 if self.cr18 is not None else "",
+            "sr18": self.sr18 if self.sr18 is not None else "",
+            "par9": self.par9 if self.par9 is not None else "",
+            "cr9": self.cr9 if self.cr9 is not None else "",
+            "sr9": self.sr9 if self.sr9 is not None else "",
             "lat": self.lat,
             "lon": self.lon,
             "is_custom": bool(self.user_id),
+            "holes": self.get_holes_list(),
             "turniere": [t.to_dict() for t in turniere_db]
         }
 
@@ -365,30 +413,67 @@ KATALOG_CLUBS = [
 ]
 
 KATALOG_TURNIERE = [
-    # Verifizierte Turniere mit korrekter DGV-Vorgabewirksamkeit
+    # Hamburg & Metropolregion
+    {"club_name": "Hamburger GC Falkenstein", "name": "Falkenstein Herbst-Vierer", "datum": "18.10.2026", "loecher": 18, "spielform": "Chapman-Vierer", "vorgabewirksam": False},
+    {"club_name": "Hamburger GC Falkenstein", "name": "Falkenstein Masters Einzel", "datum": "24.10.2026", "loecher": 18, "spielform": "Zählspiel", "vorgabewirksam": True},
+    {"club_name": "GC Hamburg-Walddörfer", "name": "Walddörfer Herbst-Trophy", "datum": "11.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": True},
+    {"club_name": "GC Hamburg-Walddörfer", "name": "Walddörfer After-Work 9L", "datum": "16.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": True},
+    {"club_name": "GC Wendlohe", "name": "Wendlohe After-Work Cup", "datum": "09.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": True},
+    {"club_name": "GC Wendlohe", "name": "Wendlohe Herbst-Open", "datum": "18.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": True},
+    {"club_name": "GC Gut Kaden (A+B)", "name": "Gut Kaden Herbst Open", "datum": "17.10.2026", "loecher": 18, "spielform": "Zählspiel", "vorgabewirksam": True},
+    {"club_name": "GC Gut Kaden (B+C)", "name": "Gut Kaden Club-Pokal", "datum": "25.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": True},
+    {"club_name": "GC Holm", "name": "Holmer Herbstpokal", "datum": "18.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": True},
+    {"club_name": "GC Holm", "name": "Holm 9-Loch Challenge", "datum": "22.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": True},
+    {"club_name": "GC Treudelberg", "name": "Treudelberg Open", "datum": "24.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": True},
+    {"club_name": "GC Treudelberg", "name": "Steigenberger Trophy 9L", "datum": "29.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": True},
+    {"club_name": "HLGC Hittfeld", "name": "Hittfelder Herbstpreis", "datum": "25.10.2026", "loecher": 18, "spielform": "Zählspiel", "vorgabewirksam": True},
+    {"club_name": "HLGC Hittfeld", "name": "Hittfelder 9-Loch Sundowner", "datum": "30.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": True},
+    {"club_name": "GC Buchholz-Nordheide", "name": "Nordheide Classic Cup", "datum": "11.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": True},
+    {"club_name": "GC Buchholz-Nordheide", "name": "Buchholzer After-Work 9L", "datum": "20.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": True},
+    {"club_name": "GC Hamburg-Ahrensburg", "name": "Ahrensburger Schloss-Pokal", "datum": "17.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": True},
+    {"club_name": "GC Hamburg-Ahrensburg", "name": "Ahrensburger 9-Loch Runde", "datum": "23.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": True},
+
+    # Schleswig-Holstein
+    {"club_name": "GC Escheburg 18", "name": "Offener Monatsbecher Escheburg", "datum": "03.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": True},
+    {"club_name": "GC Escheburg 18", "name": "Early Bird Trophy", "datum": "11.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": True},
+    {"club_name": "GC Escheburg 1-9", "name": "Escheburg Kurzplatz-Trophy 1-9", "datum": "07.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": True},
+    {"club_name": "GC Escheburg 1-9", "name": "After-Work Challenge 1-9", "datum": "14.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": True},
+    {"club_name": "GC Escheburg 10-18", "name": "Sonnwend-Cup Bahn 10-18", "datum": "16.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": True},
+    {"club_name": "GC Jersbek 18", "name": "Jersbeker Herbstpokal", "datum": "10.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": True},
+    {"club_name": "GC Jersbek 18", "name": "RPR Invitational", "datum": "24.10.2026", "loecher": 18, "spielform": "Zählspiel", "vorgabewirksam": True},
+    {"club_name": "GC Jersbek 1-9", "name": "Jersbek 9-Loch Feierabendrunde", "datum": "08.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": True},
+    {"club_name": "GC Jersbek 10-18", "name": "Jersbek Back-Nine Challenge", "datum": "15.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": True},
+    {"club_name": "GC Pinnau 18 A+B", "name": "Pinnau Monats-Cup", "datum": "18.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": True},
+    {"club_name": "GC Pinnau 18 A+B", "name": "Mercedes-Benz AWGC Pinnau", "datum": "22.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": True},
+    {"club_name": "GC Pinnau 18 A+C", "name": "Pinnau Herbst-Trophy A+C", "datum": "25.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": True},
+    {"club_name": "GC Pinnau 18 B+C", "name": "Pinnau Senioren-Masters B+C", "datum": "27.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": True},
+    {"club_name": "GC Grossensee 18", "name": "Grossensee Classic 18", "datum": "04.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": True},
+    {"club_name": "GC Grossensee 18", "name": "Sundowner 9-Hole Challenge", "datum": "15.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": True},
     {"club_name": "GC Gut Sachsenwald 18", "name": "Sachsenwaldbecher 2026", "datum": "04.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": True},
     {"club_name": "GC Gut Sachsenwald 18", "name": "After Work 9-Loch Challenge", "datum": "12.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": True},
     {"club_name": "GC Gut Sachsenwald 18", "name": "Clubmeisterschaft Runde 1", "datum": "17.10.2026", "loecher": 18, "spielform": "Zählspiel", "vorgabewirksam": True},
-    {"club_name": "GC Escheburg 18", "name": "Offener Monatsbecher Escheburg", "datum": "03.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": True},
-    {"club_name": "GC Escheburg 18", "name": "Early Bird Trophy", "datum": "11.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": True},
-    {"club_name": "GC Pinnau 18 A+B", "name": "Pinnau Monats-Cup", "datum": "18.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": True},
-    {"club_name": "GC Pinnau 18 A+B", "name": "Mercedes-Benz AWGC Pinnau", "datum": "22.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": True},
-    {"club_name": "GC Jersbek 18", "name": "Jersbeker Herbstpokal", "datum": "10.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": True},
-    {"club_name": "GC Jersbek 18", "name": "RPR Invitational", "datum": "24.10.2026", "loecher": 18, "spielform": "Zählspiel", "vorgabewirksam": True},
-    {"club_name": "GC Grossensee 18", "name": "Grossensee Classic 18", "datum": "04.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": True},
-    {"club_name": "GC Grossensee 18", "name": "Sundowner 9-Hole Challenge", "datum": "15.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": True},
-    {"club_name": "GC Gut Kaden (A+B)", "name": "Gut Kaden Herbst Open", "datum": "17.10.2026", "loecher": 18, "spielform": "Zählspiel", "vorgabewirksam": True},
-    {"club_name": "Hamburger GC Falkenstein", "name": "Falkenstein Herbst-Vierer", "datum": "18.10.2026", "loecher": 18, "spielform": "Chapman-Vierer", "vorgabewirksam": False},
-    {"club_name": "GC Wendlohe", "name": "Wendlohe After-Work Cup", "datum": "09.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": True},
-    {"club_name": "GC St. Leon-Rot (St. Leon)", "name": "St. Leon Open Championship", "datum": "25.10.2026", "loecher": 18, "spielform": "Zählspiel", "vorgabewirksam": True},
-    {"club_name": "GC Hamburg-Walddörfer", "name": "Walddörfer Herbst-Trophy", "datum": "11.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": True},
-    {"club_name": "GC Holm", "name": "Holmer Herbstpokal", "datum": "18.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": True},
-    {"club_name": "GC Treudelberg", "name": "Treudelberg Open", "datum": "24.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": True},
-    {"club_name": "HLGC Hittfeld", "name": "Hittfelder Herbstpreis", "datum": "25.10.2026", "loecher": 18, "spielform": "Zählspiel", "vorgabewirksam": True},
+    {"club_name": "GC Gut Grambek 18", "name": "Grambeker Heideturnier", "datum": "11.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": True},
+    {"club_name": "GC Gut Grambek 18", "name": "Grambek 9-Loch Trophy", "datum": "21.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": True},
+    {"club_name": "GC Timmendorfer Strand (Nord)", "name": "Ostsee-Pokal Nordplatz", "datum": "10.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": True},
+    {"club_name": "GC Timmendorfer Strand (Nord)", "name": "Strand-After-Work 9L", "datum": "16.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": True},
+    {"club_name": "Lübeck-Travemünder GK", "name": "Travemünder Hanse-Cup", "datum": "18.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": True},
+    {"club_name": "GC Altenhof", "name": "Altenhofer Gutshof-Pokal", "datum": "17.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": True},
     {"club_name": "GC Sylt", "name": "Sylter Insel-Cup", "datum": "10.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": True},
+    {"club_name": "Marine-GC Sylt", "name": "Marine-GC Dünen-Trophy", "datum": "17.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": True},
+    {"club_name": "GC Gut Bissenmoor", "name": "Bissenmoor Herbst-Cup", "datum": "24.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": True},
+
+    # Niedersachsen & Bremen
+    {"club_name": "Club zur Vahr (Garlstedt)", "name": "Bremer Herbstpreis", "datum": "18.10.2026", "loecher": 18, "spielform": "Zählspiel", "vorgabewirksam": True},
     {"club_name": "GC Hannover", "name": "Hannoveraner Trophy", "datum": "17.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": True},
+    {"club_name": "GC Deinster Mühle", "name": "Mühlen-Cup Deinste", "datum": "18.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": True},
+    {"club_name": "GC Verden", "name": "Verdener Aller-Pokal", "datum": "25.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": True},
+
+    # Deutschlandweit Top-Plätze
+    {"club_name": "GC St. Leon-Rot (St. Leon)", "name": "St. Leon Open Championship", "datum": "25.10.2026", "loecher": 18, "spielform": "Zählspiel", "vorgabewirksam": True},
+    {"club_name": "GC St. Leon-Rot (Rot)", "name": "Rot Course Trophy", "datum": "26.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": True},
     {"club_name": "GC München Eichenried (A+B)", "name": "Eichenried Herbst-Masters", "datum": "18.10.2026", "loecher": 18, "spielform": "Zählspiel", "vorgabewirksam": True},
     {"club_name": "Frankfurter GC", "name": "Frankfurter Herbst-Vierer", "datum": "24.10.2026", "loecher": 18, "spielform": "Chapman-Vierer", "vorgabewirksam": False},
+    {"club_name": "Frankfurter GC", "name": "Frankfurter Einzelpokal", "datum": "31.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": True},
     {"club_name": "GC Hubbelrath (Ostplatz)", "name": "Hubbelrather Clubpokal", "datum": "25.10.2026", "loecher": 18, "spielform": "Zählspiel", "vorgabewirksam": True},
     {"club_name": "G&CC Seddiner See (Süd)", "name": "Seddiner See Herbst-Cup", "datum": "18.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": True}
 ]
@@ -465,6 +550,8 @@ def migrate_and_seed_database():
                     cursor.execute("ALTER TABLE clubs ADD COLUMN lat FLOAT")
                 if club_cols and 'lon' not in club_cols:
                     cursor.execute("ALTER TABLE clubs ADD COLUMN lon FLOAT")
+                if club_cols and 'holes_data' not in club_cols:
+                    cursor.execute("ALTER TABLE clubs ADD COLUMN holes_data TEXT")
 
                 cursor.execute("PRAGMA table_info(users)")
                 user_cols = [row[1] for row in cursor.fetchall()]
@@ -483,6 +570,7 @@ def migrate_and_seed_database():
                 conn.execute(text("ALTER TABLE clubs ADD COLUMN IF NOT EXISTS city VARCHAR(100) DEFAULT ''"))
                 conn.execute(text("ALTER TABLE clubs ADD COLUMN IF NOT EXISTS lat FLOAT"))
                 conn.execute(text("ALTER TABLE clubs ADD COLUMN IF NOT EXISTS lon FLOAT"))
+                conn.execute(text("ALTER TABLE clubs ADD COLUMN IF NOT EXISTS holes_data TEXT"))
                 conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS email VARCHAR(120)"))
                 conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token VARCHAR(64)"))
                 conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expires TIMESTAMP"))
@@ -494,13 +582,14 @@ def migrate_and_seed_database():
     # 2. Tabellen erstellen, falls noch nicht existent
     db.create_all()
 
-    # 3. System-Clubs aktualisieren / seeden mit Koordinaten
+    # 3. System-Clubs aktualisieren / seeden mit Koordinaten und Lochdaten
     try:
         system_clubs_count = Club.query.filter_by(user_id=None).count()
         sample_club = Club.query.filter_by(user_id=None).first()
-        if system_clubs_count < len(KATALOG_CLUBS) or (sample_club and sample_club.lat is None):
+        if system_clubs_count < len(KATALOG_CLUBS) or (sample_club and (sample_club.lat is None or sample_club.holes_data is None)):
             Club.query.filter_by(user_id=None).delete()
             for c_data in KATALOG_CLUBS:
+                holes = generate_course_holes(c_data.get("par18"), c_data.get("par9"))
                 club = Club(
                     name=c_data["name"],
                     tee=c_data.get("tee", "gelb"),
@@ -514,6 +603,7 @@ def migrate_and_seed_database():
                     sr9=c_data.get("sr9") or None,
                     lat=c_data.get("lat"),
                     lon=c_data.get("lon"),
+                    holes_data=json.dumps(holes),
                     user_id=None
                 )
                 db.session.add(club)
@@ -1040,15 +1130,40 @@ def delete_club(club_id):
     db.session.commit()
     return jsonify({"nachricht": "Club erfolgreich gelöscht."}), 200
 
+@app.route('/api/clubs/<int:club_id>/turniere', methods=['GET'])
+def get_club_turniere(club_id):
+    """Gibt alle anstehenden Turniere eines bestimmten Golfclubs zurück."""
+    club = db.session.get(Club, club_id)
+    if not club:
+        return jsonify({"fehler": f"Club mit ID {club_id} nicht gefunden."}), 404
+
+    turniere = Turnier.query.filter_by(club_name=club.name).all()
+    return jsonify({
+        "club_id": club.id,
+        "club_name": club.name,
+        "count": len(turniere),
+        "turniere": [t.to_dict() for t in turniere]
+    }), 200
+
 @app.route('/api/turniere', methods=['GET', 'POST'])
 def turniere_endpoint():
     """Gibt Turniere zurück oder legt ein neues Turnier für einen Club an."""
     user = get_current_user()
 
     if request.method == 'GET':
-        club_filter = request.args.get('club')
+        club_filter = request.args.get('club') or request.args.get('club_name')
+        club_id = request.args.get('club_id')
         query = Turnier.query
-        if club_filter:
+        if club_id:
+            try:
+                club = db.session.get(Club, int(club_id))
+                if club:
+                    query = query.filter_by(club_name=club.name)
+                else:
+                    return jsonify([]), 200
+            except (ValueError, TypeError):
+                return jsonify([]), 200
+        elif club_filter:
             query = query.filter_by(club_name=club_filter)
         turniere_db = query.all()
         return jsonify([t.to_dict() for t in turniere_db]), 200

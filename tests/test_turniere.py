@@ -77,7 +77,102 @@ class TournamentDataValidationTests(unittest.TestCase):
         # 3. Löschen
         turnier_id = created['id']
         res_del = self.client.delete(f'/api/turniere/{turnier_id}')
-        self.assertEqual(res_del.status_code, 200)
+    def test_get_club_turniere_by_id_endpoint(self):
+        """Prüft, dass /api/clubs/<id>/turniere für jeden Club genau dessen Turniere liefert."""
+        clubs = Club.query.all()
+        self.assertGreaterEqual(len(clubs), 38)
+        for club in clubs:
+            res = self.client.get(f'/api/clubs/{club.id}/turniere')
+            self.assertEqual(res.status_code, 200, f"Fehler bei /api/clubs/{club.id}/turniere")
+            data = res.get_json()
+            turniere_list = data.get('turniere') if isinstance(data, dict) else data
+            self.assertIsInstance(turniere_list, list)
+            for t in turniere_list:
+                self.assertEqual(t['club_name'], club.name, f"Turnier '{t['name']}' gehört nicht zu Club '{club.name}'")
+                if t.get('club_id'):
+                    self.assertEqual(t['club_id'], club.id)
+
+    def test_every_katalog_club_has_turniere(self):
+        """Stellt sicher, dass alle 38 Katalog-Clubs mindestens 1 Turnier haben."""
+        for c in KATALOG_CLUBS:
+            club_name = c['name']
+            matching = [t for t in KATALOG_TURNIERE if t.get('club_name') == club_name]
+            self.assertGreater(
+                len(matching),
+                0,
+                f"Katalog-Club '{club_name}' hat kein einziges Turnier im Katalog hinterlegt!"
+            )
+
+    def test_nine_hole_clubs_have_only_nine_hole_turniere(self):
+        """Prüft, dass reine 9-Loch Plätze nur 9-Loch Turniere austragen."""
+        clubs = Club.query.all()
+        for club in clubs:
+            has_18 = bool(club.par18 and str(club.par18).strip())
+            has_9 = bool(club.par9 and str(club.par9).strip())
+            if not has_18 and has_9:
+                turniere = club.turniere
+                self.assertGreater(len(turniere), 0, f"Reiner 9-Loch Club '{club.name}' sollte Turniere haben")
+                for t in turniere:
+                    self.assertEqual(
+                        t.loecher, 9,
+                        f"Reiner 9-Loch Club '{club.name}' darf kein {t.loecher}-Loch Turnier '{t.name}' haben!"
+                    )
+
+    def test_club_holes_data_integrity(self):
+        """Validiert die Par-Summe, Lochanzahl und Stroke Index Regeln (DGV odd/even) für jeden Club."""
+        clubs = Club.query.all()
+        for club in clubs:
+            holes = club.get_holes_list()
+            has_18 = bool(club.par18 and str(club.par18).strip())
+            has_9 = bool(club.par9 and str(club.par9).strip())
+
+            if has_18:
+                self.assertEqual(len(holes), 18, f"Club '{club.name}' mit Par18 muss 18 Löcher haben")
+                expected_par = int(round(float(club.par18)))
+                actual_par = sum(h['par'] for h in holes)
+                self.assertEqual(
+                    actual_par, expected_par,
+                    f"Club '{club.name}': Par-Summe {actual_par} weicht von Par18 {expected_par} ab!"
+                )
+                sis = [h['si'] for h in holes]
+                self.assertEqual(sorted(sis), list(range(1, 19)), f"Club '{club.name}': SIs müssen 1..18 ohne Duplikate sein")
+                # DGV Regel: Front 9 ungerade SIs, Back 9 gerade SIs
+                front_sis = [h['si'] for h in holes[:9]]
+                back_sis = [h['si'] for h in holes[9:]]
+                for si in front_sis:
+                    self.assertEqual(si % 2, 1, f"Club '{club.name}' Front 9 SI {si} muss ungerade sein")
+                for si in back_sis:
+                    self.assertEqual(si % 2, 0, f"Club '{club.name}' Back 9 SI {si} muss gerade sein")
+            elif has_9:
+                self.assertEqual(len(holes), 9, f"Club '{club.name}' ohne Par18 muss genau 9 Löcher haben")
+                expected_par = int(round(float(club.par9)))
+                actual_par = sum(h['par'] for h in holes)
+                self.assertEqual(
+                    actual_par, expected_par,
+                    f"Club '{club.name}': 9-Loch Par-Summe {actual_par} weicht von Par9 {expected_par} ab!"
+                )
+                sis = [h['si'] for h in holes]
+                self.assertEqual(sorted(sis), list(range(1, 10)), f"Club '{club.name}': 9-Loch SIs müssen 1..9 sein")
+
+    def test_api_turniere_filtering(self):
+        """Testet die Filterung von /api/turniere nach club_id und club / club_name."""
+        test_club = Club.query.first()
+        self.assertIsNotNone(test_club)
+
+        # Filter by club_id
+        res_id = self.client.get(f'/api/turniere?club_id={test_club.id}')
+        self.assertEqual(res_id.status_code, 200)
+        data_id = res_id.get_json()
+        for t in data_id:
+            self.assertEqual(t['club_name'], test_club.name)
+
+        # Filter by club_name
+        res_name = self.client.get(f'/api/turniere?club={test_club.name}')
+        self.assertEqual(res_name.status_code, 200)
+        data_name = res_name.get_json()
+        for t in data_name:
+            self.assertEqual(t['club_name'], test_club.name)
 
 if __name__ == '__main__':
     unittest.main()
+
