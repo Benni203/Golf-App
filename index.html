@@ -1033,6 +1033,9 @@
 
                     <!-- Top Action Buttons -->
                     <div class="flex items-center gap-2 flex-wrap">
+                        <button onclick="openPcCaddyImportModal()" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-xs transition-all active:scale-95" title="PC CADDIE / iCal / CSV Turnierkalender importieren">
+                            <span>📥 PC CADDIE Import</span>
+                        </button>
                         <button onclick="openTurnierModal()" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs shadow-xs transition-all active:scale-95">
                             <span>🏆 + Neues Turnier</span>
                         </button>
@@ -1527,6 +1530,94 @@
                 <div class="pt-4 flex items-center justify-end gap-3 border-t border-slate-100">
                     <button type="button" onclick="closeTurnierModal()" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors">Abbrechen</button>
                     <button type="submit" class="px-5 py-2.5 rounded-xl bg-sand-500 hover:bg-sand-600 text-white text-xs font-bold shadow-xs transition-all">Turnier speichern</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODAL: PC CADDIE & iCal / CSV TURNIER-IMPORT -->
+    <!-- ========================================== -->
+    <div id="pccaddy-import-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto hidden">
+        <div class="bg-white rounded-t-3xl sm:rounded-2xl w-full max-w-xl shadow-2xl border border-slate-200 overflow-hidden transform transition-all my-0 sm:my-auto max-h-[94dvh] sm:max-h-[90vh] flex flex-col">
+            <div class="flex items-center justify-between p-5 border-b border-slate-100 bg-gradient-to-r from-indigo-900 via-slate-900 to-indigo-950 text-white">
+                <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center text-lg">📥</div>
+                    <div>
+                        <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                            <span>PC CADDIE / iCal Turnier-Import</span>
+                            <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-400/20 text-indigo-300 border border-indigo-400/30">.ics / .csv</span>
+                        </h3>
+                        <p class="text-xs text-indigo-200/80">Offizielle Turnierkalender von PC CADDIE://online oder Golf.de mit 1 Klick importieren</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closePcCaddyImportModal()" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center font-bold text-lg transition-colors">&times;</button>
+            </div>
+
+            <form id="pccaddy-import-form" onsubmit="submitPcCaddyImport(event)" class="p-6 space-y-4 overflow-y-auto">
+                <div class="space-y-1">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">Ziel-Golfclub</label>
+                    <select id="pccaddy-import-club-select" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 bg-white">
+                        <!-- Populated via JS -->
+                    </select>
+                </div>
+
+                <!-- Input Type Switcher Tabs -->
+                <div class="space-y-2">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">Import-Methode</label>
+                    <div class="flex p-1 bg-slate-100 rounded-xl text-xs font-bold text-slate-600 gap-1">
+                        <button type="button" id="pccaddy-tab-file" onclick="switchPcCaddyImportTab('file')" class="flex-1 py-1.5 rounded-lg bg-white shadow-xs text-indigo-700 font-extrabold transition-all">
+                            📁 Datei (.ics / .csv)
+                        </button>
+                        <button type="button" id="pccaddy-tab-text" onclick="switchPcCaddyImportTab('text')" class="flex-1 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition-all">
+                            📋 Text einfügen
+                        </button>
+                        <button type="button" id="pccaddy-tab-url" onclick="switchPcCaddyImportTab('url')" class="flex-1 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition-all">
+                            🔗 Web-URL
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Pane 1: File Upload -->
+                <div id="pccaddy-pane-file" class="space-y-2">
+                    <label class="block text-xs font-medium text-slate-600">iCalendar (.ics) oder PC CADDIE (.csv / .txt) Datei auswählen:</label>
+                    <div class="relative border-2 border-dashed border-slate-200 hover:border-indigo-400 rounded-2xl p-5 text-center transition-colors bg-slate-50/50">
+                        <input type="file" id="pccaddy-file-input" accept=".ics,.csv,.txt" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" onchange="onPcCaddyFileSelected(event)">
+                        <div class="space-y-1 pointer-events-none">
+                            <div class="text-2xl">📅</div>
+                            <div class="text-xs font-bold text-slate-700" id="pccaddy-file-label">Klicke hier oder ziehe eine .ics / .csv Datei hinein</div>
+                            <div class="text-[11px] text-slate-400">Unterstützt PC CADDIE://online iCal-Export & Desktop-CSV</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pane 2: Text / ICS Paste -->
+                <div id="pccaddy-pane-text" class="hidden space-y-2">
+                    <label class="block text-xs font-medium text-slate-600">Kalenderinhalt (ICS VEVENTs oder CSV-Zeilen) direkt einfügen:</label>
+                    <textarea id="pccaddy-text-input" rows="6" placeholder="BEGIN:VCALENDAR&#10;BEGIN:VEVENT&#10;SUMMARY:Mercedes-Benz After Work Golf Cup&#10;DTSTART:20261017...&#10;END:VEVENT&#10;END:VCALENDAR" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-mono focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500"></textarea>
+                </div>
+
+                <!-- Pane 3: URL Feed -->
+                <div id="pccaddy-pane-url" class="hidden space-y-2">
+                    <label class="block text-xs font-medium text-slate-600">Webcal / ICS-Feed URL des Clubs eingeben:</label>
+                    <input type="url" id="pccaddy-url-input" placeholder="https://www.pccaddie.net/.../calendar.ics" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500">
+                </div>
+
+                <div class="pt-2 flex items-center justify-between">
+                    <label class="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-700">
+                        <input type="checkbox" id="pccaddy-replace-existing" checked class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4">
+                        <span>Bestehende Turniere dieses Clubs ersetzen</span>
+                    </label>
+                </div>
+
+                <!-- Status Feedback Message -->
+                <div id="pccaddy-import-status" class="hidden p-3 rounded-xl text-xs font-medium"></div>
+
+                <div class="pt-4 flex items-center justify-end gap-3 border-t border-slate-100">
+                    <button type="button" onclick="closePcCaddyImportModal()" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors">Abbrechen</button>
+                    <button type="submit" id="pccaddy-submit-btn" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-xs transition-all flex items-center gap-1.5 active:scale-95">
+                        <span>📥 Jetzt importieren</span>
+                    </button>
                 </div>
             </form>
         </div>
@@ -2293,31 +2384,44 @@
         ];
 
         const defaultTurniere = [
-            {"id": 1, "club_name": "GC Gut Sachsenwald 18", "name": "Sachsenwaldbecher 2026", "datum": "04.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
-            {"id": 2, "club_name": "GC Gut Sachsenwald 18", "name": "After Work 9-Loch Challenge", "datum": "12.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": true},
-            {"id": 3, "club_name": "GC Gut Sachsenwald 18", "name": "Clubmeisterschaft Runde 1", "datum": "17.10.2026", "loecher": 18, "spielform": "Zählspiel", "vorgabewirksam": true},
-            {"id": 4, "club_name": "GC Escheburg 18", "name": "Offener Monatsbecher Escheburg", "datum": "03.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
-            {"id": 5, "club_name": "GC Escheburg 18", "name": "Early Bird Trophy", "datum": "11.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": true},
-            {"id": 6, "club_name": "GC Pinnau 18 A+B", "name": "Pinnau Monats-Cup", "datum": "18.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
-            {"id": 7, "club_name": "GC Pinnau 18 A+B", "name": "Mercedes-Benz AWGC Pinnau", "datum": "22.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": true},
-            {"id": 8, "club_name": "GC Jersbek 18", "name": "Jersbeker Herbstpokal", "datum": "10.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
-            {"id": 9, "club_name": "GC Jersbek 18", "name": "RPR Invitational", "datum": "24.10.2026", "loecher": 18, "spielform": "Zählspiel", "vorgabewirksam": true},
-            {"id": 10, "club_name": "GC Grossensee 18", "name": "Grossensee Classic 18", "datum": "04.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
-            {"id": 11, "club_name": "GC Grossensee 18", "name": "Sundowner 9-Hole Challenge", "datum": "15.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": true},
-            {"id": 12, "club_name": "GC Gut Kaden (A+B)", "name": "Gut Kaden Herbst Open", "datum": "17.10.2026", "loecher": 18, "spielform": "Zählspiel", "vorgabewirksam": true},
-            {"id": 13, "club_name": "Hamburger GC Falkenstein", "name": "Falkenstein Herbst-Vierer", "datum": "18.10.2026", "loecher": 18, "spielform": "Chapman-Vierer", "vorgabewirksam": false},
-            {"id": 14, "club_name": "GC Wendlohe", "name": "Wendlohe After-Work Cup", "datum": "09.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": true},
-            {"id": 15, "club_name": "GC St. Leon-Rot (St. Leon)", "name": "St. Leon Open Championship", "datum": "25.10.2026", "loecher": 18, "spielform": "Zählspiel", "vorgabewirksam": true},
-            {"id": 16, "club_name": "GC Hamburg-Walddörfer", "name": "Walddörfer Herbst-Trophy", "datum": "11.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
-            {"id": 17, "club_name": "GC Holm", "name": "Holmer Herbstpokal", "datum": "18.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
-            {"id": 18, "club_name": "GC Treudelberg", "name": "Treudelberg Open", "datum": "24.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
-            {"id": 19, "club_name": "HLGC Hittfeld", "name": "Hittfelder Herbstpreis", "datum": "25.10.2026", "loecher": 18, "spielform": "Zählspiel", "vorgabewirksam": true},
-            {"id": 20, "club_name": "GC Sylt", "name": "Sylter Insel-Cup", "datum": "10.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
-            {"id": 21, "club_name": "GC Hannover", "name": "Hannoveraner Trophy", "datum": "17.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
-            {"id": 22, "club_name": "GC München Eichenried (A+B)", "name": "Eichenried Herbst-Masters", "datum": "18.10.2026", "loecher": 18, "spielform": "Zählspiel", "vorgabewirksam": true},
-            {"id": 23, "club_name": "Frankfurter GC", "name": "Frankfurter Herbst-Vierer", "datum": "24.10.2026", "loecher": 18, "spielform": "Chapman-Vierer", "vorgabewirksam": false},
-            {"id": 24, "club_name": "GC Hubbelrath (Ostplatz)", "name": "Hubbelrather Clubpokal", "datum": "25.10.2026", "loecher": 18, "spielform": "Zählspiel", "vorgabewirksam": true},
-            {"id": 25, "club_name": "G&CC Seddiner See (Süd)", "name": "Seddiner See Herbst-Cup", "datum": "18.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true}
+            {"id": 1, "club_name": "Hamburger GC Falkenstein", "name": "Falkenstein Monatsbecher", "datum": "11.10.2026", "loecher": 18, "spielform": "Zählspiel", "vorgabewirksam": true},
+            {"id": 2, "club_name": "Hamburger GC Falkenstein", "name": "Mercedes-Benz After Work Golf Cup", "datum": "16.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 3, "club_name": "GC Hamburg-Walddörfer", "name": "Walddörfer Monatsbecher", "datum": "11.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 4, "club_name": "GC Hamburg-Walddörfer", "name": "Mercedes-Benz After Work Golf Cup", "datum": "16.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 5, "club_name": "GC Wendlohe", "name": "Mercedes-Benz After Work Golf Cup", "datum": "09.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 6, "club_name": "GC Gut Kaden (A+B)", "name": "Gut Kaden Early Bird Trophy", "datum": "17.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 7, "club_name": "GC Holm", "name": "Holmer Monatsbecher", "datum": "18.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 8, "club_name": "GC Holm", "name": "Mercedes-Benz AWGC 9-Loch", "datum": "22.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 9, "club_name": "GC Treudelberg", "name": "Steigenberger Treudelberg Trophy", "datum": "24.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 10, "club_name": "HLGC Hittfeld", "name": "Hittfelder Traditions-Pokal", "datum": "25.10.2026", "loecher": 18, "spielform": "Zählspiel", "vorgabewirksam": true},
+            {"id": 11, "club_name": "GC Buchholz-Nordheide", "name": "Nordheide Monatsbecher", "datum": "11.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 12, "club_name": "GC Hamburg-Ahrensburg", "name": "Ahrensburger Schloss-Pokal", "datum": "17.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 13, "club_name": "GC Escheburg 18", "name": "Offener Monatsbecher Escheburg", "datum": "03.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 14, "club_name": "GC Escheburg 1-9", "name": "Mercedes-Benz After Work Golf Cup 1-9", "datum": "07.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 15, "club_name": "GC Escheburg 10-18", "name": "Sonnwend-Cup Bahn 10-18", "datum": "16.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 16, "club_name": "GC Jersbek 18", "name": "Jersbeker Monatsbecher", "datum": "10.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 17, "club_name": "GC Jersbek 1-9", "name": "Mercedes-Benz After Work Golf Cup Jersbek", "datum": "08.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 18, "club_name": "GC Pinnau 18 A+B", "name": "Pinnau Monatsbecher A+B", "datum": "18.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 19, "club_name": "GC Pinnau 18 A+B", "name": "Mercedes-Benz After Work Golf Cup Pinnau", "datum": "22.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 20, "club_name": "GC Grossensee 18", "name": "Grossensee Monatsbecher", "datum": "04.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 21, "club_name": "GC Gut Sachsenwald 18", "name": "Sachsenwaldbecher 2026", "datum": "04.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 22, "club_name": "GC Gut Sachsenwald 18", "name": "Mercedes-Benz AWGC Sachsenwald", "datum": "12.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 23, "club_name": "GC Gut Grambek 18", "name": "Grambeker Monatsbecher", "datum": "11.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 24, "club_name": "GC Timmendorfer Strand (Nord)", "name": "Ostsee Monats-Cup Nord", "datum": "10.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 25, "club_name": "Lübeck-Travemünder GK", "name": "Travemünder Hanse-Cup", "datum": "18.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 26, "club_name": "GC Altenhof", "name": "Altenhofer Gutshof-Pokal", "datum": "17.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 27, "club_name": "GC Sylt", "name": "Sylter Monatsbecher", "datum": "10.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 28, "club_name": "Marine-GC Sylt", "name": "Marine-GC Dünen-Trophy", "datum": "17.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 29, "club_name": "GC Gut Bissenmoor", "name": "Bissenmoor Monats-Trophy", "datum": "24.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 30, "club_name": "Club zur Vahr (Garlstedt)", "name": "Bremer Monatsbecher", "datum": "18.10.2026", "loecher": 18, "spielform": "Zählspiel", "vorgabewirksam": true},
+            {"id": 31, "club_name": "GC Hannover", "name": "Hannoveraner Monatsbecher", "datum": "17.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 32, "club_name": "GC Deinster Mühle", "name": "Mühlen-Cup Deinste", "datum": "18.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 33, "club_name": "GC Verden", "name": "Verdener Aller-Pokal", "datum": "25.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 34, "club_name": "GC St. Leon-Rot (St. Leon)", "name": "St. Leon Open Championship", "datum": "25.10.2026", "loecher": 18, "spielform": "Zählspiel", "vorgabewirksam": true},
+            {"id": 35, "club_name": "GC München Eichenried (A+B)", "name": "Eichenried Monats-Masters", "datum": "18.10.2026", "loecher": 18, "spielform": "Zählspiel", "vorgabewirksam": true},
+            {"id": 36, "club_name": "Frankfurter GC", "name": "Frankfurter Monatsbecher", "datum": "31.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 37, "club_name": "GC Hubbelrath (Ostplatz)", "name": "Hubbelrather Clubpokal", "datum": "25.10.2026", "loecher": 18, "spielform": "Zählspiel", "vorgabewirksam": true},
+            {"id": 38, "club_name": "G&CC Seddiner See (Süd)", "name": "Seddiner See Monats-Cup", "datum": "18.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true}
         ];
 
         const defaultSdErgaenzung = [
@@ -3580,7 +3684,10 @@
                                         <span>🏆 Turniere & Flights</span>
                                         <span class="px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-800 text-[10px] font-black">${cTournaments.length}</span>
                                     </span>
-                                    <button type="button" onclick="openTurnierModal('${c.name.replace(/'/g, "\\'")}')" class="text-[11px] text-amber-600 hover:text-amber-800 font-bold hover:underline">+ Mehr</button>
+                                    <div class="flex items-center gap-2">
+                                        <button type="button" onclick="openPcCaddyImportModal('${c.name.replace(/'/g, "\\'")}')" class="text-[11px] text-indigo-600 hover:text-indigo-800 font-bold hover:underline" title="PC CADDIE / iCal Turnierkalender importieren">📥 Import</button>
+                                        <button type="button" onclick="openTurnierModal('${c.name.replace(/'/g, "\\'")}')" class="text-[11px] text-amber-600 hover:text-amber-800 font-bold hover:underline">+ Mehr</button>
+                                    </div>
                                 </div>
                                 <div class="space-y-1.5 max-h-40 overflow-y-auto pr-1">
                                     ${cTournaments.map(t => `
@@ -3614,7 +3721,10 @@
                         tournamentsHtml = `
                             <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
                                 <span class="text-[11px]">Keine Turniere hinterlegt</span>
-                                <button type="button" onclick="openTurnierModal('${c.name.replace(/'/g, "\\'")}')" class="text-[11px] text-sand-600 hover:text-sand-700 font-bold hover:underline">+ Turnier anlegen</button>
+                                <div class="flex items-center gap-2">
+                                    <button type="button" onclick="openPcCaddyImportModal('${c.name.replace(/'/g, "\\'")}')" class="text-[11px] text-indigo-600 hover:text-indigo-800 font-bold hover:underline">📥 PC CADDIE Import</button>
+                                    <button type="button" onclick="openTurnierModal('${c.name.replace(/'/g, "\\'")}')" class="text-[11px] text-sand-600 hover:text-sand-700 font-bold hover:underline">+ Manuell</button>
+                                </div>
                             </div>
                         `;
                     }
@@ -3690,7 +3800,7 @@
                         </div>
 
                         <!-- Card Actions Footer -->
-                        <div class="mt-5 pt-3 border-t border-slate-100 flex items-center gap-2">
+                        <div class="mt-5 pt-3 border-t border-slate-100 flex items-center gap-1.5 flex-wrap">
                             ${isCheckedIn ? `
                                 <button type="button" onclick="switchTab('record')" class="flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition-all flex items-center justify-center gap-1.5 active:scale-95">
                                     <span>Zur Scorekarte →</span>
@@ -3700,9 +3810,15 @@
                                 </button>
                             ` : `
                                 <button type="button" onclick="checkInClub('${c.name.replace(/'/g, "\\'")}')" class="flex-1 py-2 px-3 rounded-xl bg-golf-600 hover:bg-golf-700 text-white font-bold text-xs shadow-xs transition-all flex items-center justify-center gap-1.5 hover:scale-[1.01] active:scale-95">
-                                    <span>⛳ Hier jetzt golfen</span>
+                                    <span>⛳ Hier golfen</span>
                                 </button>
-                                <button type="button" onclick="openTurnierModal('${c.name.replace(/'/g, "\\'")}')" class="py-2 px-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 font-bold text-xs transition-all" title="Turnier für diesen Club eintragen">
+                                <a href="${c.pccaddie_url || ('https://www.google.com/search?q=' + encodeURIComponent(c.name + ' turnierkalender pccaddie'))}" target="_blank" rel="noopener noreferrer" class="py-2 px-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 font-bold text-xs transition-all flex items-center gap-1" title="Offiziellen PC CADDIE / Golf.de Turnierkalender im Browser öffnen">
+                                    <span>🌐 PC CADDIE</span>
+                                </a>
+                                <button type="button" onclick="openPcCaddyImportModal('${c.name.replace(/'/g, "\\'")}')" class="py-2 px-2.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-bold text-xs transition-all" title="PC CADDIE / iCal Kalender importieren">
+                                    📥
+                                </button>
+                                <button type="button" onclick="openTurnierModal('${c.name.replace(/'/g, "\\'")}')" class="py-2 px-2.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 font-bold text-xs transition-all" title="Turnier manuell eintragen">
                                     🏆 +
                                 </button>
                             `}
@@ -3759,14 +3875,20 @@
                                 </button>
                             ` : '<span class="text-slate-300 text-xs">-</span>'}
                         </td>
-                        <td class="py-3 px-4 text-right space-x-1.5 whitespace-nowrap">
+                        <td class="py-3 px-4 text-right space-x-1 whitespace-nowrap">
                             ${isCheckedIn ? `
                                 <button onclick="switchTab('record')" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-colors">
                                     Scorekarte →
                                 </button>
                             ` : `
                                 <button onclick="checkInClub('${c.name.replace(/'/g, "\\'")}')" class="px-2.5 py-1 rounded-lg bg-golf-600 hover:bg-golf-700 text-white font-bold text-xs transition-colors">
-                                    ⛳ Hier spielen
+                                    ⛳ Spielen
+                                </button>
+                                <a href="${c.pccaddie_url || ('https://www.google.com/search?q=' + encodeURIComponent(c.name + ' turnierkalender pccaddie'))}" target="_blank" rel="noopener noreferrer" class="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors inline-block" title="PC CADDIE öffnen">
+                                    🌐
+                                </a>
+                                <button onclick="openPcCaddyImportModal('${c.name.replace(/'/g, "\\'")}')" class="px-2 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs transition-colors" title="PC CADDIE Turniere importieren">
+                                    📥
                                 </button>
                             `}
                             ${c.is_custom ? `
@@ -3925,6 +4047,170 @@
             closeTurnierModal();
             updateApp();
             showToast(`Turnier "${name}" erfolgreich angelegt! 🏆`, "⛳");
+        }
+
+        // --- PC CADDIE & iCal TURNIER-IMPORT LOGIC ---
+        let pccaddySelectedTab = 'file';
+
+        function openPcCaddyImportModal(preselectedClub = null) {
+            const modal = document.getElementById('pccaddy-import-modal');
+            const select = document.getElementById('pccaddy-import-club-select');
+            const form = document.getElementById('pccaddy-import-form');
+            const statusBox = document.getElementById('pccaddy-import-status');
+            const fileLabel = document.getElementById('pccaddy-file-label');
+
+            if(form) form.reset();
+            if(statusBox) {
+                statusBox.classList.add('hidden');
+                statusBox.innerHTML = '';
+            }
+            if(fileLabel) fileLabel.innerText = 'Klicke hier oder ziehe eine .ics / .csv Datei hinein';
+
+            if(select) {
+                const sortedClubs = [...clubs].sort((a,b) => a.name.localeCompare(b.name));
+                select.innerHTML = '';
+                sortedClubs.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.id || c.name;
+                    opt.dataset.clubName = c.name;
+                    opt.dataset.clubId = c.id || '';
+                    opt.innerText = c.name + (c.city ? ` (${c.city})` : '');
+                    select.appendChild(opt);
+                });
+
+                if(preselectedClub) {
+                    const match = sortedClubs.find(c => c.name === preselectedClub);
+                    if(match) select.value = match.id || match.name;
+                }
+            }
+
+            switchPcCaddyImportTab('file');
+            if(modal) modal.classList.remove('hidden');
+        }
+
+        function closePcCaddyImportModal() {
+            const modal = document.getElementById('pccaddy-import-modal');
+            if(modal) modal.classList.add('hidden');
+        }
+
+        function switchPcCaddyImportTab(tab) {
+            pccaddySelectedTab = tab;
+            const tabFile = document.getElementById('pccaddy-tab-file');
+            const tabText = document.getElementById('pccaddy-tab-text');
+            const tabUrl = document.getElementById('pccaddy-tab-url');
+            const paneFile = document.getElementById('pccaddy-pane-file');
+            const paneText = document.getElementById('pccaddy-pane-text');
+            const paneUrl = document.getElementById('pccaddy-pane-url');
+
+            const activeClass = 'flex-1 py-1.5 rounded-lg bg-white shadow-xs text-indigo-700 font-extrabold transition-all';
+            const inactiveClass = 'flex-1 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 transition-all';
+
+            if(tabFile) tabFile.className = tab === 'file' ? activeClass : inactiveClass;
+            if(tabText) tabText.className = tab === 'text' ? activeClass : inactiveClass;
+            if(tabUrl) tabUrl.className = tab === 'url' ? activeClass : inactiveClass;
+
+            if(paneFile) paneFile.classList.toggle('hidden', tab !== 'file');
+            if(paneText) paneText.classList.toggle('hidden', tab !== 'text');
+            if(paneUrl) paneUrl.classList.toggle('hidden', tab !== 'url');
+        }
+
+        function onPcCaddyFileSelected(event) {
+            const file = event.target.files && event.target.files[0];
+            const fileLabel = document.getElementById('pccaddy-file-label');
+            if(file && fileLabel) {
+                fileLabel.innerText = `Ausgewählt: ${file.name} (${Math.round(file.size / 1024)} KB)`;
+            }
+        }
+
+        async function submitPcCaddyImport(e) {
+            e.preventDefault();
+            const select = document.getElementById('pccaddy-import-club-select');
+            const statusBox = document.getElementById('pccaddy-import-status');
+            const submitBtn = document.getElementById('pccaddy-submit-btn');
+            const replaceExisting = document.getElementById('pccaddy-replace-existing')?.checked ?? true;
+
+            const selectedOption = select?.selectedOptions?.[0];
+            const clubId = selectedOption?.dataset?.clubId || (select ? select.value : '');
+            const clubName = selectedOption?.dataset?.clubName || (select ? select.value : '');
+
+            statusBox.classList.remove('hidden', 'bg-rose-50', 'text-rose-700', 'border-rose-200', 'bg-emerald-50', 'text-emerald-700', 'border-emerald-200');
+            statusBox.className = 'p-3 rounded-xl text-xs font-medium border bg-slate-50 text-slate-700 border-slate-200';
+            statusBox.innerHTML = '<span class="animate-pulse">⏳ Turniere werden analysiert und importiert...</span>';
+
+            if(submitBtn) submitBtn.disabled = true;
+
+            try {
+                let res;
+                if(pccaddySelectedTab === 'file') {
+                    const fileInput = document.getElementById('pccaddy-file-input');
+                    const file = fileInput?.files?.[0];
+                    if(!file) {
+                        throw new Error("Bitte wähle zuerst eine Datei (.ics oder .csv) aus.");
+                    }
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('replace_existing', replaceExisting ? 'true' : 'false');
+                    formData.append('club_name', clubName);
+
+                    const targetUrl = clubId ? `/api/clubs/${clubId}/import-pccaddy` : '/api/turniere/import-pccaddy';
+                    const headers = {};
+                    if(authToken) headers['Authorization'] = `Bearer ${authToken}`;
+
+                    const response = await fetch(targetUrl, {
+                        method: 'POST',
+                        body: formData,
+                        headers: headers
+                    });
+                    const data = await response.json();
+                    if(!response.ok) throw new Error(data.fehler || "Import fehlgeschlagen.");
+                    res = { ok: true, data };
+                } else if(pccaddySelectedTab === 'text') {
+                    const text = document.getElementById('pccaddy-text-input')?.value.trim();
+                    if(!text) throw new Error("Bitte füge zuerst Kalenderdaten im Textfeld ein.");
+
+                    const targetUrl = clubId ? `/api/clubs/${clubId}/import-pccaddy` : '/api/turniere/import-pccaddy';
+                    res = await apiFetch(targetUrl, 'POST', {
+                        content: text,
+                        replace_existing: replaceExisting,
+                        club_name: clubName
+                    });
+                    if(!res.ok) throw new Error(res.data?.fehler || "Import fehlgeschlagen.");
+                } else {
+                    const url = document.getElementById('pccaddy-url-input')?.value.trim();
+                    if(!url) throw new Error("Bitte gib eine gültige URL ein.");
+
+                    const targetUrl = clubId ? `/api/clubs/${clubId}/import-pccaddy` : '/api/turniere/import-pccaddy';
+                    res = await apiFetch(targetUrl, 'POST', {
+                        url: url,
+                        replace_existing: replaceExisting,
+                        club_name: clubName
+                    });
+                    if(!res.ok) throw new Error(res.data?.fehler || "Import fehlgeschlagen.");
+                }
+
+                statusBox.className = 'p-3 rounded-xl text-xs font-bold border bg-emerald-50 text-emerald-800 border-emerald-200';
+                statusBox.innerHTML = `✅ ${res.data.nachricht || 'Turniere erfolgreich importiert!'}`;
+
+                // Turniere & Clubs im State neu laden
+                const resClubs = await apiFetch('/api/clubs');
+                if(resClubs.ok && Array.isArray(resClubs.data)) clubs = resClubs.data;
+                const resTurniere = await apiFetch('/api/turniere');
+                if(resTurniere.ok && Array.isArray(resTurniere.data)) turniere = resTurniere.data;
+
+                saveData();
+                renderClubsExplorer();
+                showToast(res.data.nachricht || "PC CADDIE Turniere erfolgreich importiert!", "📥");
+
+                setTimeout(() => {
+                    closePcCaddyImportModal();
+                }, 1300);
+
+            } catch(err) {
+                statusBox.className = 'p-3 rounded-xl text-xs font-medium border bg-rose-50 text-rose-700 border-rose-200';
+                statusBox.innerHTML = `⚠️ ${err.message || 'Fehler beim Import.'}`;
+            } finally {
+                if(submitBtn) submitBtn.disabled = false;
+            }
         }
 
         // --- INTERACTIVE CHART.JS PROGRESSION ---

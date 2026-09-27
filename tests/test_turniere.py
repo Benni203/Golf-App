@@ -173,6 +173,153 @@ class TournamentDataValidationTests(unittest.TestCase):
         for t in data_name:
             self.assertEqual(t['club_name'], test_club.name)
 
+    def test_parse_pccaddy_turniere_ics(self):
+        """Testet das Parsen von iCalendar (.ics) Exporten aus PC CADDIE."""
+        from app import parse_pccaddy_turniere
+
+        ics_sample = """BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//PC CADDIE//DE
+BEGIN:VEVENT
+UID:turnier-101@pccaddie
+DTSTART:20261017T090000Z
+SUMMARY:Mercedes-Benz After Work Golf Cup 9-Loch
+DESCRIPTION:9 Löcher Stableford; vorgabewirksam: Ja; Start ab 17:00 Uhr
+LOCATION:GC Escheburg
+END:VEVENT
+BEGIN:VEVENT
+UID:turnier-102@pccaddie
+DTSTART;VALUE=DATE:20261024
+SUMMARY:Offener Monatsbecher Escheburg
+DESCRIPTION:18 Löcher Einzel-Zählspiel
+LOCATION:GC Escheburg
+END:VEVENT
+BEGIN:VEVENT
+UID:turnier-103@pccaddie
+DTSTART:2026-10-31
+SUMMARY:Herbst Scramble 2er
+DESCRIPTION:18 Löcher Scramble nicht vorgabewirksam
+LOCATION:GC Escheburg
+END:VEVENT
+END:VCALENDAR"""
+
+        parsed = parse_pccaddy_turniere(ics_sample, fallback_club_name="GC Escheburg")
+        self.assertEqual(len(parsed), 3)
+
+        # 1. 9-Loch Stableford
+        t1 = parsed[0]
+        self.assertEqual(t1['name'], "Mercedes-Benz After Work Golf Cup 9-Loch")
+        self.assertEqual(t1['datum'], "17.10.2026")
+        self.assertEqual(t1['loecher'], 9)
+        self.assertEqual(t1['spielform'], "Stableford")
+        self.assertTrue(t1['vorgabewirksam'])
+
+        # 2. 18-Loch Zählspiel
+        t2 = parsed[1]
+        self.assertEqual(t2['name'], "Offener Monatsbecher Escheburg")
+        self.assertEqual(t2['datum'], "24.10.2026")
+        self.assertEqual(t2['loecher'], 18)
+        self.assertEqual(t2['spielform'], "Zählspiel")
+        self.assertTrue(t2['vorgabewirksam'])
+
+        # 3. Scramble (nicht vorgabewirksam)
+        t3 = parsed[2]
+        self.assertEqual(t3['name'], "Herbst Scramble 2er")
+        self.assertEqual(t3['datum'], "31.10.2026")
+        self.assertEqual(t3['loecher'], 18)
+        self.assertEqual(t3['spielform'], "Scramble")
+        self.assertFalse(t3['vorgabewirksam'])
+
+    def test_parse_pccaddy_turniere_csv(self):
+        """Testet das Parsen von CSV Exporten aus PC CADDIE."""
+        from app import parse_pccaddy_turniere
+
+        csv_sample = """Datum;Turniername;Löcher;Spielform;Vorgabewirksam
+15.10.2026;Tiger & Rabbit 9-Loch;9;Stableford;Ja
+22.10.2026;Clubmeisterschaft Runde 1;18;Zählspiel;Ja
+29.10.2026;Chapman-Vierer Clubpokal;18;Chapman-Vierer;Nein"""
+
+        parsed = parse_pccaddy_turniere(csv_sample, fallback_club_name="GC Gut Sachsenwald 18")
+        self.assertEqual(len(parsed), 3)
+
+        self.assertEqual(parsed[0]['name'], "Tiger & Rabbit 9-Loch")
+        self.assertEqual(parsed[0]['datum'], "15.10.2026")
+        self.assertEqual(parsed[0]['loecher'], 9)
+        self.assertEqual(parsed[0]['spielform'], "Stableford")
+        self.assertTrue(parsed[0]['vorgabewirksam'])
+
+        self.assertEqual(parsed[1]['name'], "Clubmeisterschaft Runde 1")
+        self.assertEqual(parsed[1]['loecher'], 18)
+        self.assertEqual(parsed[1]['spielform'], "Zählspiel")
+        self.assertTrue(parsed[1]['vorgabewirksam'])
+
+        self.assertEqual(parsed[2]['name'], "Chapman-Vierer Clubpokal")
+        self.assertEqual(parsed[2]['loecher'], 18)
+        self.assertEqual(parsed[2]['spielform'], "Chapman-Vierer")
+        self.assertFalse(parsed[2]['vorgabewirksam'])
+
+    def test_import_club_turniere_pccaddy_endpoint(self):
+        """Testet den POST /api/clubs/<id>/import-pccaddy Endpunkt."""
+        test_club = Club(
+            name="Test Neunloch GC",
+            par18=None,
+            cr18=None,
+            sr18=None,
+            par9=36.0,
+            cr9=35.5,
+            sr9=125.0
+        )
+        db.session.add(test_club)
+        db.session.commit()
+
+        try:
+            # Reiner 9-Loch Club: Ein 18-Loch Turnier im Input muss automatisch auf 9 Löcher beschränkt werden!
+            ics_payload = {
+                "content": """BEGIN:VCALENDAR
+BEGIN:VEVENT
+DTSTART:20261105
+SUMMARY:Test Imported Tournament 18L
+DESCRIPTION:Wurde irrtümlich als 18L exportiert
+LOCATION:Test Neunloch GC
+END:VEVENT
+END:VCALENDAR""",
+                "replace_existing": True
+            }
+
+            res = self.client.post(f'/api/clubs/{test_club.id}/import-pccaddy', json=ics_payload)
+            self.assertEqual(res.status_code, 200)
+            data = res.get_json()
+            self.assertEqual(data['count'], 1)
+            imported = data['turniere'][0]
+            self.assertEqual(imported['name'], "Test Imported Tournament 18L")
+            self.assertEqual(imported['datum'], "05.11.2026")
+            # Bei einem reinen 9-Loch Club muss loecher=9 erzwungen werden!
+            self.assertEqual(imported['loecher'], 9)
+
+            # Prüfen in Datenbank
+            db_turnier = Turnier.query.filter_by(club_name=test_club.name, name="Test Imported Tournament 18L").first()
+            self.assertIsNotNone(db_turnier)
+            self.assertEqual(db_turnier.loecher, 9)
+        finally:
+            Turnier.query.filter_by(club_name=test_club.name).delete()
+            db.session.delete(test_club)
+            db.session.commit()
+
+    def test_import_general_turniere_pccaddy_csv_endpoint(self):
+        """Testet den allgemeinen POST /api/turniere/import-pccaddy Endpunkt mit CSV."""
+        csv_payload = {
+            "content": """Datum;Turniername;Löcher;Spielform;Vorgabewirksam
+08.11.2026;Allgemeines API Turnier;18;Stableford;Ja""",
+            "club_name": "GC Gut Sachsenwald 18"
+        }
+        res = self.client.post('/api/turniere/import-pccaddy', json=csv_payload)
+        self.assertEqual(res.status_code, 200)
+        data = res.get_json()
+        self.assertEqual(data['count'], 1)
+        # Bereinigen
+        t_id = data['turniere'][0]['id']
+        self.client.delete(f'/api/turniere/{t_id}')
+
 if __name__ == '__main__':
     unittest.main()
 
