@@ -8,6 +8,7 @@ import csv
 import re
 import urllib.parse
 import urllib.request
+import ssl
 from email.mime.text import MIMEText
 from datetime import datetime, timedelta
 from flask import Flask, request, jsonify, send_from_directory, Response
@@ -445,10 +446,14 @@ def parse_pccaddy_turniere(content_str, fallback_club_name=""):
                 vw = True
 
             # Vorgabewirksam explizit überschreiben falls angegeben
-            if any(term in combined_text for term in ["nicht vorgabewirksam", "nicht vw", "vorgabenunwirksam", "privatturnier"]):
+            if any(term in combined_text for term in ["nicht vorgabewirksam", "nicht vw", "vorgabenunwirksam", "privatturnier", "nicht hcpr", "nicht hcpi", "nicht handicaprelevant"]):
                 vw = False
-            elif any(term in combined_text for term in ["vorgabewirksam: ja", "hcpi-relevant", "vorgabenwirksam: ja"]):
+            elif any(term in combined_text for term in ["vorgabewirksam: ja", "hcpi-relevant", "vorgabenwirksam: ja", "handicaprelevant", "hcpr"]):
                 vw = True
+
+            # Team-Wettspiele (Vierer, Scramble) dürfen laut WHS/DGV niemals vorgabewirksam sein
+            if spielform in ["Scramble", "Vierer", "Chapman-Vierer"]:
+                vw = False
 
             turniere.append({
                 "club_name": club_name,
@@ -591,6 +596,9 @@ def parse_pccaddy_turniere(content_str, fallback_club_name=""):
         elif vw_lower in ["ja", "true", "1", "vw", "ja/yes", "wirksam"]:
             vw = True
 
+        if spielform in ["Scramble", "Vierer", "Chapman-Vierer"]:
+            vw = False
+
         turniere.append({
             "club_name": raw_club or fallback_club_name or "Golfclub",
             "name": raw_name,
@@ -605,27 +613,27 @@ def parse_pccaddy_turniere(content_str, fallback_club_name=""):
 # --- SEED DATEN: UMFANGREICHER DEUTSCHER GOLFCLUB-KATALOG & TURNIERE ---
 KATALOG_CLUBS = [
     # Hamburg & Metropolregion
-    {"name": "Hamburger GC Falkenstein", "tee": "gelb", "region": "Hamburg & Umland", "city": "Hamburg-Rissen", "par18": 71.0, "cr18": 72.8, "sr18": 133.0, "par9": 36.0, "cr9": 36.4, "sr9": 131.0, "lat": 53.5702, "lon": 9.7712},
-    {"name": "GC Hamburg-Walddörfer", "tee": "gelb", "region": "Hamburg & Umland", "city": "Hamburg-Wohldorf", "par18": 72.0, "cr18": 72.2, "sr18": 130.0, "par9": 36.0, "cr9": 36.1, "sr9": 128.0, "lat": 53.7088, "lon": 10.1554},
-    {"name": "GC Wendlohe", "tee": "gelb", "region": "Hamburg & Umland", "city": "Bönningstedt", "par18": 72.0, "cr18": 72.5, "sr18": 132.0, "par9": 36.0, "cr9": 36.0, "sr9": 129.0, "lat": 53.6667, "lon": 9.9242},
-    {"name": "GC Gut Kaden (A+B)", "tee": "gelb", "region": "Hamburg & Umland", "city": "Alveslohe", "par18": 72.0, "cr18": 72.9, "sr18": 135.0, "par9": 36.0, "cr9": 36.5, "sr9": 133.0, "lat": 53.7715, "lon": 9.9482},
-    {"name": "GC Gut Kaden (B+C)", "tee": "gelb", "region": "Hamburg & Umland", "city": "Alveslohe", "par18": 72.0, "cr18": 72.4, "sr18": 132.0, "par9": 36.0, "cr9": 36.2, "sr9": 130.0, "lat": 53.7715, "lon": 9.9482},
-    {"name": "GC Holm", "tee": "gelb", "region": "Hamburg & Umland", "city": "Holm (Pinneberg)", "par18": 72.0, "cr18": 72.1, "sr18": 131.0, "par9": 36.0, "cr9": 36.0, "sr9": 128.0, "lat": 53.6212, "lon": 9.6812},
-    {"name": "GC Treudelberg", "tee": "gelb", "region": "Hamburg & Umland", "city": "Hamburg-Lemsahl", "par18": 72.0, "cr18": 71.9, "sr18": 130.0, "par9": 36.0, "cr9": 35.9, "sr9": 128.0, "lat": 53.6812, "lon": 10.0812},
-    {"name": "HLGC Hittfeld", "tee": "gelb", "region": "Hamburg & Umland", "city": "Seevetal", "par18": 71.0, "cr18": 71.5, "sr18": 129.0, "par9": 36.0, "cr9": 35.8, "sr9": 127.0, "lat": 53.3812, "lon": 9.9812},
-    {"name": "GC Buchholz-Nordheide", "tee": "gelb", "region": "Hamburg & Umland", "city": "Buchholz i.d.N.", "par18": 72.0, "cr18": 72.0, "sr18": 128.0, "par9": 36.0, "cr9": 36.0, "sr9": 127.0, "lat": 53.3112, "lon": 9.8712},
-    {"name": "GC Hamburg-Ahrensburg", "tee": "gelb", "region": "Hamburg & Umland", "city": "Ahrensburg", "par18": 71.0, "cr18": 71.2, "sr18": 128.0, "par9": 36.0, "cr9": 35.6, "sr9": 126.0, "lat": 53.6712, "lon": 10.2412},
+    {"name": "Hamburger GC Falkenstein", "tee": "gelb", "region": "Hamburg & Umland", "city": "Hamburg-Rissen", "par18": 71.0, "cr18": 72.8, "sr18": 133.0, "par9": 36.0, "cr9": 36.4, "sr9": 131.0, "lat": 53.5702, "lon": 9.7712, "pccaddie_url": "https://www.pccaddie.net/clubs/0492202/app.php?cat=ts_calendar"},
+    {"name": "GC Hamburg-Walddörfer", "tee": "gelb", "region": "Hamburg & Umland", "city": "Hamburg-Wohldorf", "par18": 72.0, "cr18": 72.2, "sr18": 130.0, "par9": 36.0, "cr9": 36.1, "sr9": 128.0, "lat": 53.7088, "lon": 10.1554, "pccaddie_url": "https://www.pccaddie.net/clubs/0492206/app.php?cat=ts_calendar"},
+    {"name": "GC Wendlohe", "tee": "gelb", "region": "Hamburg & Umland", "city": "Bönningstedt", "par18": 72.0, "cr18": 72.5, "sr18": 132.0, "par9": 36.0, "cr9": 36.0, "sr9": 129.0, "lat": 53.6667, "lon": 9.9242, "pccaddie_url": "https://www.pccaddie.net/clubs/0492207/app.php?cat=ts_calendar"},
+    {"name": "GC Gut Kaden (A+B)", "tee": "gelb", "region": "Hamburg & Umland", "city": "Alveslohe", "par18": 72.0, "cr18": 72.9, "sr18": 135.0, "par9": 36.0, "cr9": 36.5, "sr9": 133.0, "lat": 53.7715, "lon": 9.9482, "pccaddie_url": "https://www.pccaddie.net/clubs/0492221/app.php?cat=ts_calendar"},
+    {"name": "GC Gut Kaden (B+C)", "tee": "gelb", "region": "Hamburg & Umland", "city": "Alveslohe", "par18": 72.0, "cr18": 72.4, "sr18": 132.0, "par9": 36.0, "cr9": 36.2, "sr9": 130.0, "lat": 53.7715, "lon": 9.9482, "pccaddie_url": "https://www.pccaddie.net/clubs/0492221/app.php?cat=ts_calendar"},
+    {"name": "GC Holm", "tee": "gelb", "region": "Hamburg & Umland", "city": "Holm (Pinneberg)", "par18": 72.0, "cr18": 72.1, "sr18": 131.0, "par9": 36.0, "cr9": 36.0, "sr9": 128.0, "lat": 53.6212, "lon": 9.6812, "pccaddie_url": "https://www.pccaddie.net/clubs/0492203/app.php?cat=ts_calendar"},
+    {"name": "GC Treudelberg", "tee": "gelb", "region": "Hamburg & Umland", "city": "Hamburg-Lemsahl", "par18": 72.0, "cr18": 71.9, "sr18": 130.0, "par9": 36.0, "cr9": 35.9, "sr9": 128.0, "lat": 53.6812, "lon": 10.0812, "pccaddie_url": "https://www.pccaddie.net/clubs/0492218/app.php?cat=ts_calendar"},
+    {"name": "HLGC Hittfeld", "tee": "gelb", "region": "Hamburg & Umland", "city": "Seevetal", "par18": 71.0, "cr18": 71.5, "sr18": 129.0, "par9": 36.0, "cr9": 35.8, "sr9": 127.0, "lat": 53.3812, "lon": 9.9812, "pccaddie_url": "https://www.pccaddie.net/clubs/0492301/app.php?cat=ts_calendar"},
+    {"name": "GC Buchholz-Nordheide", "tee": "gelb", "region": "Hamburg & Umland", "city": "Buchholz i.d.N.", "par18": 72.0, "cr18": 72.0, "sr18": 128.0, "par9": 36.0, "cr9": 36.0, "sr9": 127.0, "lat": 53.3112, "lon": 9.8712, "pccaddie_url": "https://www.pccaddie.net/clubs/0492315/app.php?cat=ts_calendar"},
+    {"name": "GC Hamburg-Ahrensburg", "tee": "gelb", "region": "Hamburg & Umland", "city": "Ahrensburg", "par18": 71.0, "cr18": 71.2, "sr18": 128.0, "par9": 36.0, "cr9": 35.6, "sr9": 126.0, "lat": 53.6712, "lon": 10.2412, "pccaddie_url": "https://www.pccaddie.net/clubs/0492201/app.php?cat=ts_calendar"},
 
     # Schleswig-Holstein
-    {"name": "GC Escheburg 18", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Escheburg", "par18": 72.0, "cr18": 71.8, "sr18": 131.0, "par9": "", "cr9": "", "sr9": "", "lat": 53.4682, "lon": 10.3325},
-    {"name": "GC Escheburg 1-9", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Escheburg", "par18": "", "cr18": "", "sr18": "", "par9": 36.0, "cr9": 35.6, "sr9": 129.0, "lat": 53.4682, "lon": 10.3325},
-    {"name": "GC Escheburg 10-18", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Escheburg", "par18": "", "cr18": "", "sr18": "", "par9": 36.0, "cr9": 36.1, "sr9": 132.0, "lat": 53.4682, "lon": 10.3325},
-    {"name": "GC Jersbek 18", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Jersbek", "par18": 72.0, "cr18": 71.4, "sr18": 132.0, "par9": "", "cr9": "", "sr9": "", "lat": 53.7420, "lon": 10.2215},
-    {"name": "GC Jersbek 1-9", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Jersbek", "par18": "", "cr18": "", "sr18": "", "par9": 36.0, "cr9": 35.7, "sr9": 132.0, "lat": 53.7420, "lon": 10.2215},
-    {"name": "GC Jersbek 10-18", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Jersbek", "par18": "", "cr18": "", "sr18": "", "par9": 36.0, "cr9": 36.6, "sr9": 130.0, "lat": 53.7420, "lon": 10.2215},
-    {"name": "GC Pinnau 18 A+B", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Pinneberg", "par18": 73.0, "cr18": 71.8, "sr18": 137.0, "par9": "", "cr9": "", "sr9": "", "lat": 53.6917, "lon": 9.7667},
-    {"name": "GC Pinnau 18 A+C", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Pinneberg", "par18": 72.0, "cr18": 71.4, "sr18": 131.0, "par9": "", "cr9": "", "sr9": "", "lat": 53.6917, "lon": 9.7667},
-    {"name": "GC Pinnau 18 B+C", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Pinneberg", "par18": 73.0, "cr18": 71.0, "sr18": 126.0, "par9": "", "cr9": "", "sr9": "", "lat": 53.6917, "lon": 9.7667},
+    {"name": "GC Escheburg 18", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Escheburg", "par18": 72.0, "cr18": 71.8, "sr18": 131.0, "par9": "", "cr9": "", "sr9": "", "lat": 53.4682, "lon": 10.3325, "pccaddie_url": "https://www.pccaddie.net/clubs/0492233/app.php?cat=ts_calendar"},
+    {"name": "GC Escheburg 1-9", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Escheburg", "par18": "", "cr18": "", "sr18": "", "par9": 36.0, "cr9": 35.6, "sr9": 129.0, "lat": 53.4682, "lon": 10.3325, "pccaddie_url": "https://www.pccaddie.net/clubs/0492233/app.php?cat=ts_calendar"},
+    {"name": "GC Escheburg 10-18", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Escheburg", "par18": "", "cr18": "", "sr18": "", "par9": 36.0, "cr9": 36.1, "sr9": 132.0, "lat": 53.4682, "lon": 10.3325, "pccaddie_url": "https://www.pccaddie.net/clubs/0492233/app.php?cat=ts_calendar"},
+    {"name": "GC Jersbek 18", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Jersbek", "par18": 72.0, "cr18": 71.4, "sr18": 132.0, "par9": "", "cr9": "", "sr9": "", "lat": 53.7420, "lon": 10.2215, "pccaddie_url": "https://www.pccaddie.net/clubs/0492230/app.php?cat=ts_calendar"},
+    {"name": "GC Jersbek 1-9", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Jersbek", "par18": "", "cr18": "", "sr18": "", "par9": 36.0, "cr9": 35.7, "sr9": 132.0, "lat": 53.7420, "lon": 10.2215, "pccaddie_url": "https://www.pccaddie.net/clubs/0492230/app.php?cat=ts_calendar"},
+    {"name": "GC Jersbek 10-18", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Jersbek", "par18": "", "cr18": "", "sr18": "", "par9": 36.0, "cr9": 36.6, "sr9": 130.0, "lat": 53.7420, "lon": 10.2215, "pccaddie_url": "https://www.pccaddie.net/clubs/0492230/app.php?cat=ts_calendar"},
+    {"name": "GC Pinnau 18 A+B", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Pinneberg", "par18": 73.0, "cr18": 71.8, "sr18": 137.0, "par9": "", "cr9": "", "sr9": "", "lat": 53.6917, "lon": 9.7667, "pccaddie_url": "https://www.pccaddie.net/clubs/0492204/app.php?cat=ts_calendar"},
+    {"name": "GC Pinnau 18 A+C", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Pinneberg", "par18": 72.0, "cr18": 71.4, "sr18": 131.0, "par9": "", "cr9": "", "sr9": "", "lat": 53.6917, "lon": 9.7667, "pccaddie_url": "https://www.pccaddie.net/clubs/0492204/app.php?cat=ts_calendar"},
+    {"name": "GC Pinnau 18 B+C", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Pinneberg", "par18": 73.0, "cr18": 71.0, "sr18": 126.0, "par9": "", "cr9": "", "sr9": "", "lat": 53.6917, "lon": 9.7667, "pccaddie_url": "https://www.pccaddie.net/clubs/0492204/app.php?cat=ts_calendar"},
     {"name": "GC Grossensee 18", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Großensee", "par18": 73.0, "cr18": 72.3, "sr18": 130.0, "par9": "", "cr9": "", "sr9": "", "lat": 53.6189, "lon": 10.3482},
     {"name": "GC Gut Sachsenwald 18", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Dassendorf", "par18": 72.0, "cr18": 72.6, "sr18": 130.0, "par9": "", "cr9": "", "sr9": "", "lat": 53.5350, "lon": 10.3800},
     {"name": "GC Gut Grambek 18", "tee": "gelb", "region": "Schleswig-Holstein", "city": "Grambek / Mölln", "par18": 71.0, "cr18": 71.8, "sr18": 126.0, "par9": "", "cr9": "", "sr9": "", "lat": 53.5732, "lon": 10.6654},
@@ -685,11 +693,53 @@ KATALOG_TURNIERE = [
     {"club_name": "GC Escheburg 1-9", "name": "Tiger & Rabbit 9-Loch 1-9", "datum": "14.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": True},
     {"club_name": "GC Escheburg 10-18", "name": "Sonnwend-Cup Bahn 10-18", "datum": "16.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": True},
     {"club_name": "GC Escheburg 10-18", "name": "Feierabend-Runde 10-18", "datum": "23.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": True},
-    {"club_name": "GC Jersbek 18", "name": "Jersbeker Monatsbecher", "datum": "10.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": True},
-    {"club_name": "GC Jersbek 18", "name": "Jersbek Open Zählspiel", "datum": "24.10.2026", "loecher": 18, "spielform": "Zählspiel", "vorgabewirksam": True},
-    {"club_name": "GC Jersbek 1-9", "name": "Mercedes-Benz After Work Golf Cup Jersbek", "datum": "08.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": True},
-    {"club_name": "GC Jersbek 1-9", "name": "Tiger & Rabbit 9L Jersbek", "datum": "22.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": True},
-    {"club_name": "GC Jersbek 10-18", "name": "Jersbek Back-Nine Sundowner", "datum": "15.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": True},
+    # GC Jersbek - Offizielle Live-Turniere direkt aus PC CADDIE://online (Club 0492230)
+    {"club_name": "GC Jersbek 18", "name": "Clubwettkampf GC Ahrensburg - GC Jersbek (in Jersbek)", "datum": "27.09.2026", "loecher": 18, "spielform": "Vierer", "vorgabewirksam": False},
+    {"club_name": "GC Jersbek 18", "name": "SenDieGos - Texas Scramble", "datum": "28.09.2026", "loecher": 18, "spielform": "Scramble", "vorgabewirksam": False},
+    {"club_name": "GC Jersbek 18", "name": "Herrenrunde: Fuchsjagd", "datum": "30.09.2026", "loecher": 18, "spielform": "Vierer", "vorgabewirksam": False},
+    {"club_name": "GC Jersbek 18", "name": "SENIORAS -  3 Schläger + 1 Putter", "datum": "01.10.2026", "loecher": 18, "spielform": "Scramble", "vorgabewirksam": False},
+    {"club_name": "GC Jersbek 18", "name": "Damennachmittag- Chapman-Vierer", "datum": "01.10.2026", "loecher": 18, "spielform": "Chapman-Vierer", "vorgabewirksam": False},
+    {"club_name": "GC Jersbek 18", "name": "GASTRO CUP mit anschließendem Freibier und bayrischer Stimmung 18 Loch handicaprelevant", "datum": "03.10.2026", "loecher": 18, "spielform": "Zählspiel", "vorgabewirksam": True},
+    {"club_name": "GC Jersbek 18", "name": "SenDieGos - Einzel- Stableford 9 Loch- Handicaprelevant", "datum": "06.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": True},
+    {"club_name": "GC Jersbek 18", "name": "Herrenrunde -Einzelzählspiel mit  Maximumscore - handicaprelevant-- 18 Loch", "datum": "07.10.2026", "loecher": 18, "spielform": "Zählspiel", "vorgabewirksam": True},
+    {"club_name": "GC Jersbek 18", "name": "Herrenrunde -Einzelzählspiel mit  Maximumscore - handicaprelevant-- 9 Loch", "datum": "07.10.2026", "loecher": 9, "spielform": "Zählspiel", "vorgabewirksam": True},
+    {"club_name": "GC Jersbek 18", "name": "SENIORAS - Saison Eclectic Einzelspiel", "datum": "08.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": True},
+    {"club_name": "GC Jersbek 18", "name": "Damennachmittag, Vierer- Auswahldrive", "datum": "08.10.2026", "loecher": 18, "spielform": "Vierer", "vorgabewirksam": False},
+    {"club_name": "GC Jersbek 18", "name": "Flexi Cup (Florida Scramble, 9 Löcher)  Tee 1-9  mit Spaß und Kürbissuppenimbiss", "datum": "11.10.2026", "loecher": 18, "spielform": "Scramble", "vorgabewirksam": False},
+    {"club_name": "GC Jersbek 18", "name": "SenDieGos Stableford Teammatch", "datum": "13.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": True},
+    {"club_name": "GC Jersbek 18", "name": "Herrenrunde: Vierball/Bestball, 18-Loch/ 9-Loch", "datum": "14.10.2026", "loecher": 9, "spielform": "Vierer", "vorgabewirksam": False},
+    {"club_name": "GC Jersbek 18", "name": "SENIORAS- Vierball-Auswahldrive", "datum": "15.10.2026", "loecher": 18, "spielform": "Vierer", "vorgabewirksam": False},
+    {"club_name": "GC Jersbek 18", "name": "Damennachmittag, Blindwertung 9 aus 18 Loch, 3er Flights, nicht HCPr", "datum": "15.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": False},
+    {"club_name": "GC Jersbek 18", "name": "SenDieGos - Chapman 4er - Lochspiel", "datum": "20.10.2026", "loecher": 18, "spielform": "Chapman-Vierer", "vorgabewirksam": False},
+    {"club_name": "GC Jersbek 18", "name": "Herrenrunde Teamwettbewerb 3 x 6", "datum": "21.10.2026", "loecher": 18, "spielform": "Vierer", "vorgabewirksam": False},
+    {"club_name": "GC Jersbek 18", "name": "Damennachmittag, Saisonabschluss 9-Loch Vierer Auswahldrive  mit Wunschpartnerin, anschl. gem. Essen,", "datum": "22.10.2026", "loecher": 9, "spielform": "Scramble", "vorgabewirksam": False},
+    {"club_name": "GC Jersbek 18", "name": "SenDieGos, Saisonabschluss - Klassischer Texas- Scramble (mit anschl. Grünkohlessen)", "datum": "27.10.2026", "loecher": 18, "spielform": "Scramble", "vorgabewirksam": False},
+    {"club_name": "GC Jersbek 18", "name": "Herrenrunde Endspiel um den Rioja-Cup, Einzellochspiel", "datum": "28.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": True},
+    {"club_name": "GC Jersbek 18", "name": "Herrenrunde: Chapman 4er, Lochwettspiel, Eisbärenpokal 18 oder 9 Loch", "datum": "04.11.2026", "loecher": 9, "spielform": "Chapman-Vierer", "vorgabewirksam": False},
+    {"club_name": "GC Jersbek 18", "name": "Herrenrunde EISEN 7 Indoorgolf", "datum": "06.11.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": True},
+    {"club_name": "GC Jersbek 18", "name": "Damen Winterrunde", "datum": "07.11.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": True},
+    {"club_name": "GC Jersbek 18", "name": "Martinstagturnier \"11 Gänse\"", "datum": "08.11.2026", "loecher": 18, "spielform": "Scramble", "vorgabewirksam": False},
+    {"club_name": "GC Jersbek 18", "name": "Herrenrunde Teamwettspiel -9 Loch-", "datum": "11.11.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": True},
+    {"club_name": "GC Jersbek 18", "name": "Herrenrunde - Lochspiel Bestball für  Eisbärenpokal 18 oder 9 Loch", "datum": "18.11.2026", "loecher": 9, "spielform": "Vierer", "vorgabewirksam": False},
+    {"club_name": "GC Jersbek 18", "name": "Herrenrunde: Chapman 4er, Lochwettspiel, 18 oder 9 Loch  Eisbärenpokal", "datum": "25.11.2026", "loecher": 9, "spielform": "Chapman-Vierer", "vorgabewirksam": False},
+    {"club_name": "GC Jersbek 18", "name": "Herrenrunde Einzellochspiel Stableford 18 oder  9 Löcher Eisbärenpokal", "datum": "02.12.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": True},
+    {"club_name": "GC Jersbek 18", "name": "Herrenrunde EISEN 7 Indoorgolf", "datum": "04.12.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": True},
+    {"club_name": "GC Jersbek 18", "name": "SenDieGos, Nikolaus-Turnier mit Damen, Florida-Scramble", "datum": "08.12.2026", "loecher": 18, "spielform": "Scramble", "vorgabewirksam": False},
+    {"club_name": "GC Jersbek 18", "name": "Herrenrunde Rolle Rückwärts Chapman 4er nach Stableford", "datum": "09.12.2026", "loecher": 18, "spielform": "Chapman-Vierer", "vorgabewirksam": False},
+    {"club_name": "GC Jersbek 18", "name": "Herrenrunde: Chapman 4er, Lochwettspiel, 18 oder 9 Loch Eisbärenpokal anschl. Weihnachtsessen", "datum": "16.12.2026", "loecher": 9, "spielform": "Chapman-Vierer", "vorgabewirksam": False},
+
+    # GC Jersbek 1-9 (9-Loch Kurswettspiele)
+    {"club_name": "GC Jersbek 1-9", "name": "SenDieGos - Einzel- Stableford 9 Loch- Handicaprelevant", "datum": "06.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": True},
+    {"club_name": "GC Jersbek 1-9", "name": "Herrenrunde -Einzelzählspiel mit  Maximumscore - handicaprelevant-- 9 Loch", "datum": "07.10.2026", "loecher": 9, "spielform": "Zählspiel", "vorgabewirksam": True},
+    {"club_name": "GC Jersbek 1-9", "name": "Herrenrunde: Vierball/Bestball, 18-Loch/ 9-Loch", "datum": "14.10.2026", "loecher": 9, "spielform": "Vierer", "vorgabewirksam": False},
+    {"club_name": "GC Jersbek 1-9", "name": "Damennachmittag, Saisonabschluss 9-Loch Vierer Auswahldrive  mit Wunschpartnerin, anschl. gem. Essen,", "datum": "22.10.2026", "loecher": 9, "spielform": "Scramble", "vorgabewirksam": False},
+    {"club_name": "GC Jersbek 1-9", "name": "Herrenrunde: Chapman 4er, Lochwettspiel, Eisbärenpokal 18 oder 9 Loch", "datum": "04.11.2026", "loecher": 9, "spielform": "Chapman-Vierer", "vorgabewirksam": False},
+    {"club_name": "GC Jersbek 1-9", "name": "Herrenrunde Teamwettspiel -9 Loch-", "datum": "11.11.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": True},
+
+    # GC Jersbek 10-18 (Back-Nine Kurswettspiele)
+    {"club_name": "GC Jersbek 10-18", "name": "Herrenrunde - Lochspiel Bestball für  Eisbärenpokal 18 oder 9 Loch", "datum": "18.11.2026", "loecher": 9, "spielform": "Vierer", "vorgabewirksam": False},
+    {"club_name": "GC Jersbek 10-18", "name": "Herrenrunde: Chapman 4er, Lochwettspiel, 18 oder 9 Loch  Eisbärenpokal", "datum": "25.11.2026", "loecher": 9, "spielform": "Chapman-Vierer", "vorgabewirksam": False},
+    {"club_name": "GC Jersbek 10-18", "name": "Herrenrunde: Chapman 4er, Lochwettspiel, 18 oder 9 Loch Eisbärenpokal anschl. Weihnachtsessen", "datum": "16.12.2026", "loecher": 9, "spielform": "Chapman-Vierer", "vorgabewirksam": False},
     {"club_name": "GC Pinnau 18 A+B", "name": "Pinnau Monatsbecher A+B", "datum": "18.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": True},
     {"club_name": "GC Pinnau 18 A+B", "name": "Mercedes-Benz After Work Golf Cup Pinnau", "datum": "22.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": True},
     {"club_name": "GC Pinnau 18 A+C", "name": "Pinnau Herbst-Trophy A+C", "datum": "25.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": True},
@@ -849,7 +899,7 @@ def migrate_and_seed_database():
     try:
         system_clubs_count = Club.query.filter_by(user_id=None).count()
         sample_club = Club.query.filter_by(user_id=None).first()
-        if system_clubs_count < len(KATALOG_CLUBS) or (sample_club and (sample_club.lat is None or sample_club.holes_data is None)):
+        if system_clubs_count < len(KATALOG_CLUBS) or (sample_club and (sample_club.lat is None or sample_club.holes_data is None or sample_club.pccaddie_url is None)):
             Club.query.filter_by(user_id=None).delete()
             for c_data in KATALOG_CLUBS:
                 holes = generate_course_holes(c_data.get("par18"), c_data.get("par9"))
@@ -866,10 +916,17 @@ def migrate_and_seed_database():
                     sr9=c_data.get("sr9") or None,
                     lat=c_data.get("lat"),
                     lon=c_data.get("lon"),
+                    pccaddie_url=c_data.get("pccaddie_url"),
                     holes_data=json.dumps(holes),
                     user_id=None
                 )
                 db.session.add(club)
+        else:
+            # Bestehende System-Clubs mit pccaddie_url aktualisieren falls nötig
+            for c_data in KATALOG_CLUBS:
+                existing_club = Club.query.filter_by(name=c_data["name"], user_id=None).first()
+                if existing_club and c_data.get("pccaddie_url") and existing_club.pccaddie_url != c_data.get("pccaddie_url"):
+                    existing_club.pccaddie_url = c_data.get("pccaddie_url")
 
         # 4. Turniere aktualisieren / seeden
         system_turniere = Turnier.query.filter_by(user_id=None).all()
@@ -1408,6 +1465,111 @@ def get_club_turniere(club_id):
         "club_name": club.name,
         "count": len(turniere),
         "turniere": [t.to_dict() for t in turniere]
+    }), 200
+
+@app.route('/api/clubs/<int:club_id>/sync-pccaddy', methods=['POST'])
+def sync_club_pccaddy(club_id):
+    """
+    Ruft Live-Turniere direkt von PC CADDIE://online (iCal ICS-Feed) für den Club ab
+    und aktualisiert die Turniere in der Datenbank.
+    """
+    club = db.session.get(Club, club_id)
+    if not club:
+        return jsonify({"fehler": f"Club mit ID {club_id} nicht gefunden."}), 404
+
+    user = get_current_user()
+
+    # Bekannte PC CADDIE Feeds nach Club-Name-Muster
+    known_feeds = {
+        "jersbek": "https://www.pccaddie.net/clubs/0492230/app.php?cat=ts_calendar&sub=ics",
+        "ahrensburg": "https://www.pccaddie.net/clubs/0492201/app.php?cat=ts_calendar&sub=ics",
+        "falkenstein": "https://www.pccaddie.net/clubs/0492202/app.php?cat=ts_calendar&sub=ics",
+        "holm": "https://www.pccaddie.net/clubs/0492203/app.php?cat=ts_calendar&sub=ics",
+        "pinnau": "https://www.pccaddie.net/clubs/0492204/app.php?cat=ts_calendar&sub=ics",
+        "walddörfer": "https://www.pccaddie.net/clubs/0492206/app.php?cat=ts_calendar&sub=ics",
+        "wendlohe": "https://www.pccaddie.net/clubs/0492207/app.php?cat=ts_calendar&sub=ics",
+        "escheburg": "https://www.pccaddie.net/clubs/0492233/app.php?cat=ts_calendar&sub=ics",
+        "kaden": "https://www.pccaddie.net/clubs/0492221/app.php?cat=ts_calendar&sub=ics"
+    }
+
+    # URL aus Request, Club-Attribut oder Known Feeds ermitteln
+    req_data = request.get_json(silent=True) or {}
+    custom_url = req_data.get('url', '').strip()
+    target_url = custom_url or club.pccaddie_url or ""
+
+    if not target_url or "google.com" in target_url:
+        club_lower = club.name.lower()
+        for key, feed_url in known_feeds.items():
+            if key in club_lower:
+                target_url = feed_url
+                break
+
+    if not target_url or "google.com" in target_url:
+        return jsonify({
+            "fehler": f"Für '{club.name}' ist keine PC CADDIE URL konfiguriert. Bitte gib eine URL ein oder nutze den Datei-Import."
+        }), 400
+
+    # In direkten ICS-Feed umwandeln, falls noch normale Web-URL
+    feed_url = target_url
+    if "sub=ics" not in feed_url:
+        if "cat=ts_calendar" in feed_url:
+            feed_url = feed_url.replace("cat=ts_calendar", "cat=ts_calendar&sub=ics")
+        else:
+            feed_url += ("&" if "?" in feed_url else "?") + "sub=ics"
+
+    # Club pccaddie_url aktualisieren falls noch nicht gesetzt
+    if not club.pccaddie_url or "google.com" in club.pccaddie_url:
+        club.pccaddie_url = target_url
+        db.session.commit()
+
+    # iCal Feed von PC CADDIE herunterladen
+    try:
+        ctx = ssl._create_unverified_context()
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        }
+        req = urllib.request.Request(feed_url, headers=headers)
+        with urllib.request.urlopen(req, timeout=12, context=ctx) as response:
+            content_str = response.read().decode('utf-8', errors='replace')
+    except Exception as e:
+        return jsonify({
+            "fehler": f"Verbindung zu PC CADDIE ({feed_url}) fehlgeschlagen: {str(e)}"
+        }), 502
+
+    parsed = parse_pccaddy_turniere(content_str, fallback_club_name=club.name)
+    if not parsed:
+        return jsonify({
+            "fehler": f"Vom PC CADDIE Server konnten keine Turniere für '{club.name}' eingelesen werden."
+        }), 400
+
+    # Bisherige Turniere für diesen Club löschen
+    Turnier.query.filter_by(club_name=club.name).delete()
+
+    is_pure_9_hole = (not club.par18 and club.par9)
+    saved_turniere = []
+
+    for item in parsed:
+        loecher = 9 if is_pure_9_hole else item.get('loecher', 18)
+        turnier = Turnier(
+            club_name=club.name,
+            name=item['name'],
+            datum=item['datum'],
+            loecher=loecher,
+            spielform=item.get('spielform', 'Stableford'),
+            vorgabewirksam=item.get('vorgabewirksam', True),
+            user_id=user.id if user else None
+        )
+        db.session.add(turnier)
+        saved_turniere.append(turnier)
+
+    db.session.commit()
+
+    return jsonify({
+        "nachricht": f"{len(saved_turniere)} Turniere erfolgreich live von PC CADDIE synchronisiert!",
+        "club_id": club.id,
+        "club_name": club.name,
+        "count": len(saved_turniere),
+        "turniere": [t.to_dict() for t in saved_turniere]
     }), 200
 
 @app.route('/api/clubs/<int:club_id>/import-pccaddy', methods=['POST'])

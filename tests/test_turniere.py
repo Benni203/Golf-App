@@ -320,6 +320,120 @@ END:VCALENDAR""",
         t_id = data['turniere'][0]['id']
         self.client.delete(f'/api/turniere/{t_id}')
 
+    def test_jersbek_tournaments_match_pccaddie_official_schedule(self):
+        """
+        Validiert, dass die Turnierdaten für GC Jersbek exakt mit den offiziellen
+        auf www.pccaddie.net publizierten Terminen übereinstimmen.
+        """
+        club18 = Club.query.filter_by(name="GC Jersbek 18").first()
+        self.assertIsNotNone(club18, "GC Jersbek 18 muss in der Datenbank existieren")
+        self.assertTrue(
+            club18.pccaddie_url and "0492230" in club18.pccaddie_url,
+            "GC Jersbek 18 muss die offizielle PC CADDIE Clubnummer 0492230 hinterlegt haben"
+        )
+
+        turniere = Turnier.query.filter_by(club_name="GC Jersbek 18").all()
+        self.assertGreaterEqual(len(turniere), 30, "GC Jersbek 18 muss den vollständigen Saisonplan mit mind. 30 Turnieren enthalten")
+
+        turnier_namen = {t.name: t for t in turniere}
+
+        # 1. Bekannte Schlüsselwettspiele aus dem offiziellen PC CADDIE Kalender prüfen
+        self.assertIn("Clubwettkampf GC Ahrensburg - GC Jersbek (in Jersbek)", turnier_namen)
+        t_ahrensburg = turnier_namen["Clubwettkampf GC Ahrensburg - GC Jersbek (in Jersbek)"]
+        self.assertEqual(t_ahrensburg.datum, "27.09.2026")
+        self.assertEqual(t_ahrensburg.spielform, "Vierer")
+        self.assertFalse(t_ahrensburg.vorgabewirksam)
+
+        self.assertIn("SenDieGos - Texas Scramble", turnier_namen)
+        t_scramble = turnier_namen["SenDieGos - Texas Scramble"]
+        self.assertEqual(t_scramble.datum, "28.09.2026")
+        self.assertEqual(t_scramble.spielform, "Scramble")
+        self.assertFalse(t_scramble.vorgabewirksam)
+
+        self.assertIn("GASTRO CUP mit anschließendem Freibier und bayrischer Stimmung 18 Loch handicaprelevant", turnier_namen)
+        t_gastro = turnier_namen["GASTRO CUP mit anschließendem Freibier und bayrischer Stimmung 18 Loch handicaprelevant"]
+        self.assertEqual(t_gastro.datum, "03.10.2026")
+        self.assertEqual(t_gastro.spielform, "Zählspiel")
+        self.assertTrue(t_gastro.vorgabewirksam)
+
+        self.assertIn("Flexi Cup (Florida Scramble, 9 Löcher)  Tee 1-9  mit Spaß und Kürbissuppenimbiss", turnier_namen)
+        t_flexi = turnier_namen["Flexi Cup (Florida Scramble, 9 Löcher)  Tee 1-9  mit Spaß und Kürbissuppenimbiss"]
+        self.assertEqual(t_flexi.datum, "11.10.2026")
+        self.assertEqual(t_flexi.spielform, "Scramble")
+        self.assertFalse(t_flexi.vorgabewirksam)
+
+        self.assertIn('Martinstagturnier "11 Gänse"', turnier_namen)
+        t_martins = turnier_namen['Martinstagturnier "11 Gänse"']
+        self.assertEqual(t_martins.datum, "08.11.2026")
+        self.assertEqual(t_martins.spielform, "Scramble")
+        self.assertFalse(t_martins.vorgabewirksam)
+
+        # 2. Prüfen, dass Scramble und Vierer niemals vorgabewirksam sind
+        for t in turniere:
+            sf = t.spielform.lower()
+            if 'scramble' in sf or 'vierer' in sf:
+                self.assertFalse(
+                    t.vorgabewirksam,
+                    f"Turnier '{t.name}' mit Spielform '{t.spielform}' darf nicht vorgabewirksam sein!"
+                )
+
+    def test_sync_club_pccaddy_endpoint(self):
+        """Testet den automatischen Live-Synchronisations-Endpoint POST /api/clubs/<id>/sync-pccaddy."""
+        from unittest.mock import patch, MagicMock
+
+        club = Club.query.filter_by(name="GC Jersbek 18").first()
+        self.assertIsNotNone(club)
+
+        # Mock urllib response mit echten ICS-Daten
+        ics_mock_content = """BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:pccaddie.net
+BEGIN:VEVENT
+SUMMARY:Live Sync Jersbek Testturnier
+DTSTART:20261114T090000Z
+LOCATION:Gut Jersbek Golf
+DESCRIPTION:18 Löcher Stableford; handicaprelevant
+END:VEVENT
+END:VCALENDAR""".encode('utf-8')
+
+        mock_resp = MagicMock()
+        mock_resp.read.return_value = ics_mock_content
+        mock_resp.__enter__.return_value = mock_resp
+
+        with patch('urllib.request.urlopen', return_value=mock_resp):
+            res = self.client.post(f'/api/clubs/{club.id}/sync-pccaddy')
+            self.assertEqual(res.status_code, 200)
+            data = res.get_json()
+            self.assertEqual(data['count'], 1)
+            self.assertEqual(data['club_name'], "GC Jersbek 18")
+            self.assertEqual(data['turniere'][0]['name'], "Live Sync Jersbek Testturnier")
+
+        # Prüfen in Datenbank
+        synced_t = Turnier.query.filter_by(club_name="GC Jersbek 18", name="Live Sync Jersbek Testturnier").first()
+        self.assertIsNotNone(synced_t)
+        self.assertEqual(synced_t.datum, "14.11.2026")
+        self.assertEqual(synced_t.loecher, 18)
+
+        # Datenbank wieder mit Originaldaten auffüllen
+        Turnier.query.filter_by(club_name="GC Jersbek 18").delete()
+        for t_data in KATALOG_TURNIERE:
+            if t_data["club_name"] == "GC Jersbek 18":
+                db.session.add(Turnier(
+                    club_name=t_data["club_name"],
+                    name=t_data["name"],
+                    datum=t_data["datum"],
+                    loecher=t_data["loecher"],
+                    spielform=t_data["spielform"],
+                    vorgabewirksam=t_data["vorgabewirksam"],
+                    user_id=None
+                ))
+        db.session.commit()
+
+    def test_sync_club_pccaddy_not_found(self):
+        """Testet Fehlerbehandlung bei ungültiger Club-ID."""
+        res = self.client.post('/api/clubs/999999/sync-pccaddy')
+        self.assertEqual(res.status_code, 404)
+
 if __name__ == '__main__':
     unittest.main()
 

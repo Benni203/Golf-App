@@ -1562,6 +1562,20 @@
                     </select>
                 </div>
 
+                <!-- 1-Klick Live-Sync Shortcut -->
+                <div class="p-3.5 rounded-2xl bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 border border-emerald-200 flex items-center justify-between gap-3 shadow-xs">
+                    <div class="text-xs text-emerald-950 min-w-0">
+                        <div class="font-extrabold flex items-center gap-1.5 text-emerald-900">
+                            <span>⚡ 1-Klick PC CADDIE Live-Sync</span>
+                            <span class="px-1.5 py-0.2 rounded-full bg-emerald-200 text-emerald-900 text-[10px] font-black uppercase">Echtzeit</span>
+                        </div>
+                        <div class="text-[11px] text-emerald-800 mt-0.5 truncate">Holt aktuelle Turniere direkt von pccaddie.net für den gewählten Club</div>
+                    </div>
+                    <button type="button" onclick="triggerModalLiveSync()" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs transition-transform active:scale-95 shrink-0 flex items-center gap-1.5 cursor-pointer">
+                        <span>🔄 Live Sync</span>
+                    </button>
+                </div>
+
                 <!-- Input Type Switcher Tabs -->
                 <div class="space-y-2">
                     <label class="block text-xs font-bold uppercase tracking-wider text-slate-700">Import-Methode</label>
@@ -2399,8 +2413,49 @@
             {"id": 13, "club_name": "GC Escheburg 18", "name": "Offener Monatsbecher Escheburg", "datum": "03.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
             {"id": 14, "club_name": "GC Escheburg 1-9", "name": "Mercedes-Benz After Work Golf Cup 1-9", "datum": "07.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": true},
             {"id": 15, "club_name": "GC Escheburg 10-18", "name": "Sonnwend-Cup Bahn 10-18", "datum": "16.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": true},
-            {"id": 16, "club_name": "GC Jersbek 18", "name": "Jersbeker Monatsbecher", "datum": "10.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
-            {"id": 17, "club_name": "GC Jersbek 1-9", "name": "Mercedes-Benz After Work Golf Cup Jersbek", "datum": "08.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": true},
+            // GC Jersbek - Offizielle Live-Turniere direkt aus PC CADDIE://online (Club 0492230)
+            {"id": 16, "club_name": "GC Jersbek 18", "name": "Clubwettkampf GC Ahrensburg - GC Jersbek (in Jersbek)", "datum": "27.09.2026", "loecher": 18, "spielform": "Vierer", "vorgabewirksam": false},
+            {"id": 17, "club_name": "GC Jersbek 18", "name": "SenDieGos - Texas Scramble", "datum": "28.09.2026", "loecher": 18, "spielform": "Scramble", "vorgabewirksam": false},
+            {"id": 18, "club_name": "GC Jersbek 18", "name": "Herrenrunde: Fuchsjagd", "datum": "30.09.2026", "loecher": 18, "spielform": "Vierer", "vorgabewirksam": false},
+            {"id": 19, "club_name": "GC Jersbek 18", "name": "SENIORAS -  3 Schläger + 1 Putter", "datum": "01.10.2026", "loecher": 18, "spielform": "Scramble", "vorgabewirksam": false},
+            {"id": 20, "club_name": "GC Jersbek 18", "name": "Damennachmittag- Chapman-Vierer", "datum": "01.10.2026", "loecher": 18, "spielform": "Chapman-Vierer", "vorgabewirksam": false},
+            {"id": 21, "club_name": "GC Jersbek 18", "name": "GASTRO CUP mit anschließendem Freibier und bayrischer Stimmung 18 Loch handicaprelevant", "datum": "03.10.2026", "loecher": 18, "spielform": "Zählspiel", "vorgabewirksam": true},
+            {"id": 22, "club_name": "GC Jersbek 18", "name": "SenDieGos - Einzel- Stableford 9 Loch- Handicaprelevant", "datum": "06.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 23, "club_name": "GC Jersbek 18", "name": "Herrenrunde -Einzelzählspiel mit  Maximumscore - handicaprelevant-- 18 Loch", "datum": "07.10.2026", "loecher": 18, "spielform": "Zählspiel", "vorgabewirksam": true},
+            {"id": 24, "club_name": "GC Jersbek 18", "name": "Herrenrunde -Einzelzählspiel mit  Maximumscore - handicaprelevant-- 9 Loch", "datum": "07.10.2026", "loecher": 9, "spielform": "Zählspiel", "vorgabewirksam": true},
+            {"id": 25, "club_name": "GC Jersbek 18", "name": "SENIORAS - Saison Eclectic Einzelspiel", "datum": "08.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 26, "club_name": "GC Jersbek 18", "name": "Damennachmittag, Vierer- Auswahldrive", "datum": "08.10.2026", "loecher": 18, "spielform": "Vierer", "vorgabewirksam": false},
+            {"id": 27, "club_name": "GC Jersbek 18", "name": "Flexi Cup (Florida Scramble, 9 Löcher)  Tee 1-9  mit Spaß und Kürbissuppenimbiss", "datum": "11.10.2026", "loecher": 18, "spielform": "Scramble", "vorgabewirksam": false},
+            {"id": 28, "club_name": "GC Jersbek 18", "name": "SenDieGos Stableford Teammatch", "datum": "13.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 29, "club_name": "GC Jersbek 18", "name": "Herrenrunde: Vierball/Bestball, 18-Loch/ 9-Loch", "datum": "14.10.2026", "loecher": 9, "spielform": "Vierer", "vorgabewirksam": false},
+            {"id": 30, "club_name": "GC Jersbek 18", "name": "SENIORAS- Vierball-Auswahldrive", "datum": "15.10.2026", "loecher": 18, "spielform": "Vierer", "vorgabewirksam": false},
+            {"id": 31, "club_name": "GC Jersbek 18", "name": "Damennachmittag, Blindwertung 9 aus 18 Loch, 3er Flights, nicht HCPr", "datum": "15.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": false},
+            {"id": 32, "club_name": "GC Jersbek 18", "name": "SenDieGos - Chapman 4er - Lochspiel", "datum": "20.10.2026", "loecher": 18, "spielform": "Chapman-Vierer", "vorgabewirksam": false},
+            {"id": 33, "club_name": "GC Jersbek 18", "name": "Herrenrunde Teamwettbewerb 3 x 6", "datum": "21.10.2026", "loecher": 18, "spielform": "Vierer", "vorgabewirksam": false},
+            {"id": 34, "club_name": "GC Jersbek 18", "name": "Damennachmittag, Saisonabschluss 9-Loch Vierer Auswahldrive  mit Wunschpartnerin, anschl. gem. Essen,", "datum": "22.10.2026", "loecher": 9, "spielform": "Scramble", "vorgabewirksam": false},
+            {"id": 35, "club_name": "GC Jersbek 18", "name": "SenDieGos, Saisonabschluss - Klassischer Texas- Scramble (mit anschl. Grünkohlessen)", "datum": "27.10.2026", "loecher": 18, "spielform": "Scramble", "vorgabewirksam": false},
+            {"id": 36, "club_name": "GC Jersbek 18", "name": "Herrenrunde Endspiel um den Rioja-Cup, Einzellochspiel", "datum": "28.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 37, "club_name": "GC Jersbek 18", "name": "Herrenrunde: Chapman 4er, Lochwettspiel, Eisbärenpokal 18 oder 9 Loch", "datum": "04.11.2026", "loecher": 9, "spielform": "Chapman-Vierer", "vorgabewirksam": false},
+            {"id": 38, "club_name": "GC Jersbek 18", "name": "Herrenrunde EISEN 7 Indoorgolf", "datum": "06.11.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 39, "club_name": "GC Jersbek 18", "name": "Damen Winterrunde", "datum": "07.11.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 40, "club_name": "GC Jersbek 18", "name": "Martinstagturnier \"11 Gänse\"", "datum": "08.11.2026", "loecher": 18, "spielform": "Scramble", "vorgabewirksam": false},
+            {"id": 41, "club_name": "GC Jersbek 18", "name": "Herrenrunde Teamwettspiel -9 Loch-", "datum": "11.11.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 42, "club_name": "GC Jersbek 18", "name": "Herrenrunde - Lochspiel Bestball für  Eisbärenpokal 18 oder 9 Loch", "datum": "18.11.2026", "loecher": 9, "spielform": "Vierer", "vorgabewirksam": false},
+            {"id": 43, "club_name": "GC Jersbek 18", "name": "Herrenrunde: Chapman 4er, Lochwettspiel, 18 oder 9 Loch  Eisbärenpokal", "datum": "25.11.2026", "loecher": 9, "spielform": "Chapman-Vierer", "vorgabewirksam": false},
+            {"id": 44, "club_name": "GC Jersbek 18", "name": "Herrenrunde Einzellochspiel Stableford 18 oder  9 Löcher Eisbärenpokal", "datum": "02.12.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 45, "club_name": "GC Jersbek 18", "name": "Herrenrunde EISEN 7 Indoorgolf", "datum": "04.12.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 46, "club_name": "GC Jersbek 18", "name": "SenDieGos, Nikolaus-Turnier mit Damen, Florida-Scramble", "datum": "08.12.2026", "loecher": 18, "spielform": "Scramble", "vorgabewirksam": false},
+            {"id": 47, "club_name": "GC Jersbek 18", "name": "Herrenrunde Rolle Rückwärts Chapman 4er nach Stableford", "datum": "09.12.2026", "loecher": 18, "spielform": "Chapman-Vierer", "vorgabewirksam": false},
+            {"id": 48, "club_name": "GC Jersbek 18", "name": "Herrenrunde: Chapman 4er, Lochwettspiel, 18 oder 9 Loch Eisbärenpokal anschl. Weihnachtsessen", "datum": "16.12.2026", "loecher": 9, "spielform": "Chapman-Vierer", "vorgabewirksam": false},
+            {"id": 49, "club_name": "GC Jersbek 1-9", "name": "SenDieGos - Einzel- Stableford 9 Loch- Handicaprelevant", "datum": "06.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 50, "club_name": "GC Jersbek 1-9", "name": "Herrenrunde -Einzelzählspiel mit  Maximumscore - handicaprelevant-- 9 Loch", "datum": "07.10.2026", "loecher": 9, "spielform": "Zählspiel", "vorgabewirksam": true},
+            {"id": 51, "club_name": "GC Jersbek 1-9", "name": "Herrenrunde: Vierball/Bestball, 18-Loch/ 9-Loch", "datum": "14.10.2026", "loecher": 9, "spielform": "Vierer", "vorgabewirksam": false},
+            {"id": 52, "club_name": "GC Jersbek 1-9", "name": "Damennachmittag, Saisonabschluss 9-Loch Vierer Auswahldrive  mit Wunschpartnerin, anschl. gem. Essen,", "datum": "22.10.2026", "loecher": 9, "spielform": "Scramble", "vorgabewirksam": false},
+            {"id": 53, "club_name": "GC Jersbek 1-9", "name": "Herrenrunde: Chapman 4er, Lochwettspiel, Eisbärenpokal 18 oder 9 Loch", "datum": "04.11.2026", "loecher": 9, "spielform": "Chapman-Vierer", "vorgabewirksam": false},
+            {"id": 54, "club_name": "GC Jersbek 1-9", "name": "Herrenrunde Teamwettspiel -9 Loch-", "datum": "11.11.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": true},
+            {"id": 55, "club_name": "GC Jersbek 10-18", "name": "Herrenrunde - Lochspiel Bestball für  Eisbärenpokal 18 oder 9 Loch", "datum": "18.11.2026", "loecher": 9, "spielform": "Vierer", "vorgabewirksam": false},
+            {"id": 56, "club_name": "GC Jersbek 10-18", "name": "Herrenrunde: Chapman 4er, Lochwettspiel, 18 oder 9 Loch  Eisbärenpokal", "datum": "25.11.2026", "loecher": 9, "spielform": "Chapman-Vierer", "vorgabewirksam": false},
+            {"id": 57, "club_name": "GC Jersbek 10-18", "name": "Herrenrunde: Chapman 4er, Lochwettspiel, 18 oder 9 Loch Eisbärenpokal anschl. Weihnachtsessen", "datum": "16.12.2026", "loecher": 9, "spielform": "Chapman-Vierer", "vorgabewirksam": false},
             {"id": 18, "club_name": "GC Pinnau 18 A+B", "name": "Pinnau Monatsbecher A+B", "datum": "18.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
             {"id": 19, "club_name": "GC Pinnau 18 A+B", "name": "Mercedes-Benz After Work Golf Cup Pinnau", "datum": "22.10.2026", "loecher": 9, "spielform": "Stableford", "vorgabewirksam": true},
             {"id": 20, "club_name": "GC Grossensee 18", "name": "Grossensee Monatsbecher", "datum": "04.10.2026", "loecher": 18, "spielform": "Stableford", "vorgabewirksam": true},
@@ -3685,6 +3740,7 @@
                                         <span class="px-1.5 py-0.2 rounded-full bg-amber-100 text-amber-800 text-[10px] font-black">${cTournaments.length}</span>
                                     </span>
                                     <div class="flex items-center gap-2">
+                                        <button type="button" onclick="syncClubPcCaddy(${c.id || 'null'}, '${c.name.replace(/'/g, "\\'")}')" class="text-[11px] text-emerald-700 hover:text-emerald-900 font-bold hover:underline flex items-center gap-0.5" title="Offizielle Turniere live von PC CADDIE synchronisieren">🔄 Live Sync</button>
                                         <button type="button" onclick="openPcCaddyImportModal('${c.name.replace(/'/g, "\\'")}')" class="text-[11px] text-indigo-600 hover:text-indigo-800 font-bold hover:underline" title="PC CADDIE / iCal Turnierkalender importieren">📥 Import</button>
                                         <button type="button" onclick="openTurnierModal('${c.name.replace(/'/g, "\\'")}')" class="text-[11px] text-amber-600 hover:text-amber-800 font-bold hover:underline">+ Mehr</button>
                                     </div>
@@ -3722,7 +3778,8 @@
                             <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
                                 <span class="text-[11px]">Keine Turniere hinterlegt</span>
                                 <div class="flex items-center gap-2">
-                                    <button type="button" onclick="openPcCaddyImportModal('${c.name.replace(/'/g, "\\'")}')" class="text-[11px] text-indigo-600 hover:text-indigo-800 font-bold hover:underline">📥 PC CADDIE Import</button>
+                                    <button type="button" onclick="syncClubPcCaddy(${c.id || 'null'}, '${c.name.replace(/'/g, "\\'")}')" class="text-[11px] text-emerald-700 hover:text-emerald-900 font-bold hover:underline flex items-center gap-0.5" title="Offizielle Turniere live von PC CADDIE synchronisieren">🔄 Live Sync</button>
+                                    <button type="button" onclick="openPcCaddyImportModal('${c.name.replace(/'/g, "\\'")}')" class="text-[11px] text-indigo-600 hover:text-indigo-800 font-bold hover:underline">📥 Import</button>
                                     <button type="button" onclick="openTurnierModal('${c.name.replace(/'/g, "\\'")}')" class="text-[11px] text-sand-600 hover:text-sand-700 font-bold hover:underline">+ Manuell</button>
                                 </div>
                             </div>
@@ -3815,6 +3872,9 @@
                                 <a href="${c.pccaddie_url || ('https://www.google.com/search?q=' + encodeURIComponent(c.name + ' turnierkalender pccaddie'))}" target="_blank" rel="noopener noreferrer" class="py-2 px-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 font-bold text-xs transition-all flex items-center gap-1" title="Offiziellen PC CADDIE / Golf.de Turnierkalender im Browser öffnen">
                                     <span>🌐 PC CADDIE</span>
                                 </a>
+                                <button type="button" onclick="syncClubPcCaddy(${c.id || 'null'}, '${c.name.replace(/'/g, "\\'")}')" class="py-2 px-2.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold text-xs transition-all flex items-center gap-1" title="Turniere live von PC CADDIE synchronisieren">
+                                    <span>🔄 Sync</span>
+                                </button>
                                 <button type="button" onclick="openPcCaddyImportModal('${c.name.replace(/'/g, "\\'")}')" class="py-2 px-2.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-bold text-xs transition-all" title="PC CADDIE / iCal Kalender importieren">
                                     📥
                                 </button>
@@ -3887,6 +3947,9 @@
                                 <a href="${c.pccaddie_url || ('https://www.google.com/search?q=' + encodeURIComponent(c.name + ' turnierkalender pccaddie'))}" target="_blank" rel="noopener noreferrer" class="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors inline-block" title="PC CADDIE öffnen">
                                     🌐
                                 </a>
+                                <button onclick="syncClubPcCaddy(${c.id || 'null'}, '${c.name.replace(/'/g, "\\'")}')" class="px-2 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold text-xs transition-colors inline-block" title="PC CADDIE Live-Synchronisation">
+                                    🔄
+                                </button>
                                 <button onclick="openPcCaddyImportModal('${c.name.replace(/'/g, "\\'")}')" class="px-2 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs transition-colors" title="PC CADDIE Turniere importieren">
                                     📥
                                 </button>
@@ -4210,6 +4273,64 @@
                 statusBox.innerHTML = `⚠️ ${err.message || 'Fehler beim Import.'}`;
             } finally {
                 if(submitBtn) submitBtn.disabled = false;
+            }
+        }
+
+        function triggerModalLiveSync() {
+            const select = document.getElementById('pccaddy-import-club-select');
+            const selectedOption = select?.selectedOptions?.[0];
+            const clubId = selectedOption?.dataset?.clubId || (select ? select.value : '');
+            const clubName = selectedOption?.dataset?.clubName || (select ? select.value : '');
+            if(!clubId && !clubName) {
+                showToast("Bitte wähle zuerst einen Ziel-Golfclub aus.", "⚠️");
+                return;
+            }
+            syncClubPcCaddy(clubId, clubName);
+        }
+
+        async function syncClubPcCaddy(clubId, clubName) {
+            let targetClub = null;
+            if(clubId) {
+                targetClub = clubs.find(c => String(c.id) === String(clubId));
+            }
+            if(!targetClub && clubName) {
+                targetClub = clubs.find(c => c.name === clubName);
+            }
+
+            const cId = targetClub?.id || clubId;
+            const cName = targetClub?.name || clubName || "Golfclub";
+
+            if(!cId) {
+                showToast("Club konnte nicht identifiziert werden.", "⚠️");
+                return;
+            }
+
+            showToast(`🔄 PC CADDIE Live-Abruf für '${cName}'...`, "⏳");
+
+            try {
+                const res = await apiFetch(`/api/clubs/${cId}/sync-pccaddy`, 'POST');
+                if(!res.ok) {
+                    throw new Error(res.data?.fehler || "Abruf von PC CADDIE fehlgeschlagen.");
+                }
+
+                // Daten neu laden
+                const resClubs = await apiFetch('/api/clubs');
+                if(resClubs.ok && Array.isArray(resClubs.data)) clubs = resClubs.data;
+                const resTurniere = await apiFetch('/api/turniere');
+                if(resTurniere.ok && Array.isArray(resTurniere.data)) turniere = resTurniere.data;
+
+                saveData();
+                renderClubsExplorer();
+                showToast(res.data?.nachricht || `Turniere für '${cName}' erfolgreich aktualisiert!`, "✅");
+
+                // Modal schließen falls geöffnet
+                const modal = document.getElementById('pccaddy-import-modal');
+                if(modal && !modal.classList.contains('hidden')) {
+                    closePcCaddyImportModal();
+                }
+            } catch(err) {
+                console.error("Fehler bei PC CADDIE Live-Sync:", err);
+                showToast(err.message || "Fehler beim Abruf von PC CADDIE.", "⚠️");
             }
         }
 
