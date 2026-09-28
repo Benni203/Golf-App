@@ -1,9 +1,25 @@
-// BirdieTrack Service Worker v1.2.0
-const CACHE_NAME = 'birdietrack-v1.2.0';
+// BirdieTrack Service Worker v1.3.0
+const CACHE_NAME = 'birdietrack-v1.3.0';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
-  '/manifest.webmanifest'
+  '/manifest.webmanifest',
+  '/js/data.js',
+  '/js/state.js',
+  '/js/api.js',
+  '/js/whs.js',
+  '/js/auth.js',
+  '/js/storage.js',
+  '/js/dashboard.js',
+  '/js/rounds.js',
+  '/js/clubs.js',
+  '/js/tournaments.js',
+  '/js/scorecard.js',
+  '/js/calculator.js',
+  '/js/rangefinder.js',
+  '/js/analytics.js',
+  '/js/social.js',
+  '/js/app.js'
 ];
 
 self.addEventListener('install', (event) => {
