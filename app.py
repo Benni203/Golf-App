@@ -49,9 +49,11 @@ limiter = Limiter(
 
 @app.errorhandler(429)
 def ratelimit_handler(e):
+    retry_after = getattr(e, 'retry_after', None) or 30
     return jsonify({
-        "fehler": "Zu viele Anfragen. Bitte warte einen Moment, bevor du es erneut versuchst.",
-        "detail": str(e.description)
+        "fehler": f"Zu viele Anfragen. Bitte warte {retry_after} Sekunden, bevor du es erneut versuchst.",
+        "detail": str(e.description),
+        "retry_after": retry_after
     }), 429
 
 @app.after_request
@@ -975,6 +977,26 @@ def get_current_user():
         return None
     return User.query.filter_by(api_token=token).first()
 
+# --- VERSIONIERUNG & SYSTEMINFO ---
+APP_VERSION = "1.2.0"
+
+@app.route('/api/version', methods=['GET'])
+def get_version():
+    """Gibt aktuelle Versionsinformationen der Anwendung zurück."""
+    return jsonify({
+        "version": APP_VERSION,
+        "name": "BirdieTrack Pro Golf Manager",
+        "release_date": "2026-09-28",
+        "environment": "production",
+        "features": [
+            "PC CADDIE & Golf.de Live-Turniersynchronisation",
+            "Professionelle Benutzerauthentifizierung mit Sichtbarkeits-Toggle",
+            "WHS Handicap Rechner & 20-Runden Differential Tracker",
+            "GPS Distanz-Audit & Digitale Signaturen",
+            "DSGVO Datenexport & Kontoverwaltung"
+        ]
+    }), 200
+
 # --- 4. API ROUTEN: AUTH ---
 
 @app.route('/api/register', methods=['POST'])
@@ -984,13 +1006,13 @@ def register():
     daten = request.get_json(silent=True) or {}
     username = daten.get('username', '').strip()
     email = daten.get('email', '').strip().lower()
-    password = daten.get('password', '').strip()
+    password = daten.get('password', '')
 
     if not username or len(username) < 3:
         return jsonify({"fehler": "Benutzername muss mindestens 3 Zeichen lang sein."}), 400
     if not email or '@' not in email or '.' not in email:
         return jsonify({"fehler": "Bitte eine gültige E-Mail-Adresse angeben."}), 400
-    if not password or len(password) < 4:
+    if not password or len(password.strip()) < 4:
         return jsonify({"fehler": "Passwort muss mindestens 4 Zeichen lang sein."}), 400
 
     if User.query.filter(func.lower(User.username) == username.lower()).first():
@@ -999,7 +1021,7 @@ def register():
     if User.query.filter(func.lower(User.email) == email).first():
         return jsonify({"fehler": "Diese E-Mail-Adresse wird bereits verwendet."}), 409
 
-    hashed_pw = generate_password_hash(password)
+    hashed_pw = generate_password_hash(password.strip())
     token = secrets.token_hex(32)
 
     neuer_user = User(username=username, email=email, password_hash=hashed_pw, api_token=token)
@@ -1018,7 +1040,7 @@ def login():
     """Prüft Logindaten (E-Mail oder Benutzername) und gibt neuen/aktuellen Token zurück."""
     daten = request.get_json(silent=True) or {}
     identifier = (daten.get('identifier') or daten.get('username') or daten.get('email') or '').strip().lower()
-    password = daten.get('password', '').strip()
+    password = daten.get('password', '')
 
     if not identifier or not password:
         return jsonify({"fehler": "Bitte E-Mail/Benutzername und Passwort eingeben."}), 400
@@ -1027,7 +1049,11 @@ def login():
         (func.lower(User.username) == identifier) | (func.lower(User.email) == identifier)
     ).first()
 
-    if user and check_password_hash(user.password_hash, password):
+    pw_ok = False
+    if user and user.password_hash:
+        pw_ok = check_password_hash(user.password_hash, password) or check_password_hash(user.password_hash, password.strip())
+
+    if user and pw_ok:
         user.api_token = secrets.token_hex(32)
         db.session.commit()
 
@@ -1133,6 +1159,36 @@ def get_me():
     return jsonify({
         "user": user.to_dict()
     }), 200
+
+@app.route('/api/user/change-password', methods=['POST'])
+@limiter.limit("5 per minute")
+def change_password():
+    """Erlaubt einem angemeldeten Benutzer, sein Passwort direkt zu ändern."""
+    user = get_current_user()
+    if not user:
+        return jsonify({"fehler": "Authentifizierung erforderlich."}), 401
+
+    daten = request.get_json(silent=True) or {}
+    old_password = daten.get('old_password', '')
+    new_password = daten.get('new_password', '')
+
+    if not old_password or not new_password:
+        return jsonify({"fehler": "Bitte aktuelles und neues Passwort eingeben."}), 400
+
+    pw_ok = False
+    if user.password_hash:
+        pw_ok = check_password_hash(user.password_hash, old_password) or check_password_hash(user.password_hash, old_password.strip())
+
+    if not pw_ok:
+        return jsonify({"fehler": "Das aktuelle Passwort ist nicht korrekt."}), 400
+
+    if len(new_password.strip()) < 4:
+        return jsonify({"fehler": "Das neue Passwort muss mindestens 4 Zeichen lang sein."}), 400
+
+    user.password_hash = generate_password_hash(new_password.strip())
+    db.session.commit()
+
+    return jsonify({"nachricht": "Passwort erfolgreich geändert!"}), 200
 
 # --- DSGVO & PRO-STATS ENDPOINTS ---
 
@@ -1436,6 +1492,36 @@ def clubs_endpoint():
         db.session.add(neuer_club)
         db.session.commit()
         return jsonify({"nachricht": "Club erfolgreich gespeichert.", "club": neuer_club.to_dict()}), 201
+
+@app.route('/api/clubs/<int:club_id>', methods=['PUT'])
+def update_club(club_id):
+    """Aktualisiert einen benutzerdefinierten Club."""
+    user = get_current_user()
+    if not user:
+        return jsonify({"fehler": "Authentifizierung erforderlich."}), 401
+
+    club = Club.query.filter_by(id=club_id, user_id=user.id).first()
+    if not club:
+        return jsonify({"fehler": "Club nicht gefunden oder keine Berechtigung zum Bearbeiten."}), 404
+
+    daten = request.get_json(silent=True) or {}
+    name = daten.get('name', '').strip()
+    if not name:
+        return jsonify({"fehler": "Name des Clubs erforderlich."}), 400
+
+    club.name = name
+    club.tee = daten.get('tee', club.tee or 'gelb')
+    club.region = daten.get('region', club.region or 'Eigene Clubs')
+    club.city = daten.get('city', club.city or '')
+    club.par18 = daten.get('par18') or None
+    club.cr18 = daten.get('cr18') or None
+    club.sr18 = daten.get('sr18') or None
+    club.par9 = daten.get('par9') or None
+    club.cr9 = daten.get('cr9') or None
+    club.sr9 = daten.get('sr9') or None
+
+    db.session.commit()
+    return jsonify({"nachricht": "Club erfolgreich aktualisiert.", "club": club.to_dict()}), 200
 
 @app.route('/api/clubs/<int:club_id>', methods=['DELETE'])
 def delete_club(club_id):

@@ -1,5 +1,5 @@
-// BirdieTrack Service Worker v1.0.0
-const CACHE_NAME = 'birdietrack-v1';
+// BirdieTrack Service Worker v1.2.0
+const CACHE_NAME = 'birdietrack-v1.2.0';
 const STATIC_ASSETS = [
   '/',
   '/index.html',

@@ -133,6 +133,7 @@
                         <div class="flex items-center gap-2">
                             <span class="text-xl font-extrabold tracking-tight text-slate-900">Birdie<span class="text-golf-600">Track</span></span>
                             <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-golf-100 text-golf-800 border border-golf-200">WHS Pro</span>
+                            <button type="button" onclick="event.stopPropagation(); openVersionModal();" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition-colors shadow-2xs" title="Versionsinformationen & Changelog anzeigen">v1.2.0</button>
                         </div>
                         <p class="text-xs text-slate-500 font-medium hidden sm:block">World Handicap System Tracker & Rechner</p>
                     </div>
@@ -1252,6 +1253,8 @@
                 <a href="javascript:void(0)" onclick="openPrivacyModal()" class="hover:text-golf-700 transition-colors">Datenschutz (DSGVO)</a>
                 <a href="javascript:void(0)" onclick="openImprintModal()" class="hover:text-golf-700 transition-colors">Impressum</a>
                 <span class="text-slate-300">|</span>
+                <button type="button" onclick="openVersionModal()" class="text-slate-500 hover:text-golf-700 transition-colors underline font-medium">v1.2.0</button>
+                <span class="text-slate-300">|</span>
                 <span class="text-slate-400">© 2026 BirdieTrack</span>
             </div>
         </div>
@@ -1281,97 +1284,140 @@
                 </button>
             </div>
 
-            <!-- Form -->
-            <form id="auth-form" onsubmit="handleAuthSubmit(event)" class="p-6 space-y-4">
-                <!-- Error & Success Messages -->
+            <!-- Message Container -->
+            <div class="px-6 pt-4 pb-0">
                 <div id="auth-error" class="hidden p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold"></div>
                 <div id="auth-info" class="hidden p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold"></div>
+            </div>
 
-                <!-- 1. LOGIN FIELDS -->
-                <div id="auth-login-fields" class="space-y-4">
-                    <div class="space-y-1">
-                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600">E-Mail oder Benutzername</label>
-                        <input type="text" id="auth-login-identifier" placeholder="z.B. name@golf.de oder benni_golf" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-golf-200 focus:border-golf-500 transition-all">
-                    </div>
-                    <div class="space-y-1">
-                        <div class="flex items-center justify-between">
-                            <label class="block text-xs font-bold uppercase tracking-wider text-slate-600">Passwort</label>
-                            <button type="button" onclick="switchAuthTab('forgot')" class="text-xs text-golf-600 hover:text-golf-800 font-semibold hover:underline">Passwort vergessen?</button>
-                        </div>
-                        <input type="password" id="auth-login-password" placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-golf-200 focus:border-golf-500 transition-all">
-                    </div>
+            <!-- 1. LOGIN FORM -->
+            <form id="auth-login-form" onsubmit="handleLoginSubmit(event)" autocomplete="on" class="p-6 space-y-4">
+                <div class="space-y-1">
+                    <label for="auth-login-identifier" class="block text-xs font-bold uppercase tracking-wider text-slate-600">E-Mail oder Benutzername</label>
+                    <input type="text" id="auth-login-identifier" name="username" autocomplete="username" required placeholder="z.B. name@golf.de oder benni_golf" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-golf-200 focus:border-golf-500 transition-all">
                 </div>
-
-                <!-- 2. REGISTER FIELDS -->
-                <div id="auth-register-fields" class="hidden space-y-3">
-                    <div class="space-y-1">
-                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600">Benutzername</label>
-                        <input type="text" id="auth-reg-username" placeholder="z.B. benni_golf" minlength="3" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-golf-200 focus:border-golf-500 transition-all">
+                <div class="space-y-1">
+                    <div class="flex items-center justify-between">
+                        <label for="auth-login-password" class="block text-xs font-bold uppercase tracking-wider text-slate-600">Passwort</label>
+                        <button type="button" onclick="switchAuthTab('forgot')" class="text-xs text-golf-600 hover:text-golf-800 font-semibold hover:underline">Passwort vergessen?</button>
                     </div>
-                    <div class="space-y-1">
-                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600">E-Mail-Adresse</label>
-                        <input type="email" id="auth-reg-email" placeholder="name@beispiel.de" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-golf-200 focus:border-golf-500 transition-all">
-                        <span class="text-[11px] text-slate-400">Wird für den Login und zum Zurücksetzen des Passworts verwendet.</span>
-                    </div>
-                    <div class="space-y-1">
-                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600">Passwort</label>
-                        <input type="password" id="auth-reg-password" placeholder="••••••••" minlength="4" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-golf-200 focus:border-golf-500 transition-all">
-                    </div>
-                    <div class="space-y-1">
-                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600">Passwort wiederholen</label>
-                        <input type="password" id="auth-reg-password-confirm" placeholder="••••••••" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-golf-200 focus:border-golf-500 transition-all">
-                    </div>
-                    <label class="flex items-center gap-2 cursor-pointer text-xs text-slate-600 pt-1">
-                        <input type="checkbox" id="auth-migrate-local" class="rounded text-golf-600 focus:ring-golf-500">
-                        <span>Meine bisherigen lokalen Runden in mein neues Konto übernehmen</span>
-                    </label>
-                </div>
-
-                <!-- 3. FORGOT PASSWORD FIELDS -->
-                <div id="auth-forgot-fields" class="hidden space-y-4">
-                    <div class="text-xs text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-200 leading-relaxed">
-                        Gib deine registrierte <strong>E-Mail-Adresse</strong> oder deinen <strong>Benutzernamen</strong> ein. Wir erstellen einen 6-stelligen Bestätigungscode zum Zurücksetzen deines Passworts.
-                    </div>
-                    <div class="space-y-1">
-                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600">E-Mail oder Benutzername</label>
-                        <input type="text" id="auth-forgot-identifier" placeholder="z.B. name@golf.de oder benni_golf" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-golf-200 focus:border-golf-500 transition-all">
-                    </div>
-                </div>
-
-                <!-- 4. RESET PASSWORD FIELDS -->
-                <div id="auth-reset-fields" class="hidden space-y-3">
-                    <div class="text-xs text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-200 leading-relaxed">
-                        Gib deinen <strong>6-stelligen Code</strong> ein und lege dein neues Passwort fest.
-                    </div>
-                    <div class="space-y-1">
-                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600">E-Mail oder Benutzername</label>
-                        <input type="text" id="auth-reset-identifier" placeholder="name@beispiel.de" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm bg-slate-50 text-slate-700">
-                    </div>
-                    <div class="space-y-1">
-                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600">6-stelliger Bestätigungscode</label>
-                        <input type="text" id="auth-reset-code" placeholder="123456" maxlength="6" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-center text-lg font-mono font-bold tracking-widest text-golf-800 focus:ring-2 focus:ring-golf-200 focus:border-golf-500">
-                    </div>
-                    <div class="space-y-1">
-                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600">Neues Passwort</label>
-                        <input type="password" id="auth-reset-password" placeholder="••••••••" minlength="4" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-golf-200 focus:border-golf-500 transition-all">
-                    </div>
-                    <div class="space-y-1">
-                        <label class="block text-xs font-bold uppercase tracking-wider text-slate-600">Neues Passwort wiederholen</label>
-                        <input type="password" id="auth-reset-password-confirm" placeholder="••••••••" minlength="4" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-golf-200 focus:border-golf-500 transition-all">
-                    </div>
-                </div>
-
-                <!-- Footer / Action Buttons -->
-                <div class="pt-4 flex items-center justify-between gap-3 border-t border-slate-100">
-                    <div id="auth-back-container" class="hidden">
-                        <button type="button" onclick="switchAuthTab('login')" class="text-xs font-semibold text-golf-600 hover:text-golf-800 flex items-center gap-1">
-                            &larr; Zurück zum Login
+                    <div class="relative">
+                        <input type="password" id="auth-login-password" name="password" autocomplete="current-password" required placeholder="••••••••" class="w-full px-3.5 py-2.5 pr-10 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-golf-200 focus:border-golf-500 transition-all">
+                        <button type="button" onclick="togglePasswordVisibility('auth-login-password', 'eye-login-pw')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-sm focus:outline-none" title="Passwort anzeigen / verbergen">
+                            <span id="eye-login-pw">👁️</span>
                         </button>
                     </div>
-                    <div class="flex items-center gap-3 ml-auto">
+                </div>
+                <div class="pt-4 flex items-center justify-end gap-3 border-t border-slate-100">
+                    <button type="button" onclick="closeAuthModal()" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors">Abbrechen</button>
+                    <button type="submit" id="auth-login-submit-btn" class="px-5 py-2.5 rounded-xl bg-golf-600 hover:bg-golf-700 text-white text-xs font-bold shadow-md shadow-golf-600/20 transition-all">
+                        Anmelden
+                    </button>
+                </div>
+            </form>
+
+            <!-- 2. REGISTER FORM -->
+            <form id="auth-register-form" onsubmit="handleRegisterSubmit(event)" autocomplete="on" class="p-6 space-y-3 hidden">
+                <div class="space-y-1">
+                    <label for="auth-reg-username" class="block text-xs font-bold uppercase tracking-wider text-slate-600">Benutzername</label>
+                    <input type="text" id="auth-reg-username" name="username" autocomplete="username" minlength="3" required placeholder="z.B. benni_golf" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-golf-200 focus:border-golf-500 transition-all">
+                </div>
+                <div class="space-y-1">
+                    <label for="auth-reg-email" class="block text-xs font-bold uppercase tracking-wider text-slate-600">E-Mail-Adresse</label>
+                    <input type="email" id="auth-reg-email" name="email" autocomplete="email" required placeholder="name@beispiel.de" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-golf-200 focus:border-golf-500 transition-all">
+                    <span class="text-[11px] text-slate-400">Wird für den Login und zum Zurücksetzen des Passworts verwendet.</span>
+                </div>
+                <div class="space-y-1">
+                    <label for="auth-reg-password" class="block text-xs font-bold uppercase tracking-wider text-slate-600">Passwort</label>
+                    <div class="relative">
+                        <input type="password" id="auth-reg-password" name="new-password" autocomplete="new-password" minlength="4" required placeholder="••••••••" class="w-full px-3.5 py-2.5 pr-10 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-golf-200 focus:border-golf-500 transition-all">
+                        <button type="button" onclick="togglePasswordVisibility('auth-reg-password', 'eye-reg-pw')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-sm focus:outline-none" title="Passwort anzeigen / verbergen">
+                            <span id="eye-reg-pw">👁️</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="space-y-1">
+                    <label for="auth-reg-password-confirm" class="block text-xs font-bold uppercase tracking-wider text-slate-600">Passwort wiederholen</label>
+                    <div class="relative">
+                        <input type="password" id="auth-reg-password-confirm" name="confirm-password" autocomplete="new-password" minlength="4" required placeholder="••••••••" class="w-full px-3.5 py-2.5 pr-10 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-golf-200 focus:border-golf-500 transition-all">
+                        <button type="button" onclick="togglePasswordVisibility('auth-reg-password-confirm', 'eye-reg-confirm')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-sm focus:outline-none" title="Passwort anzeigen / verbergen">
+                            <span id="eye-reg-confirm">👁️</span>
+                        </button>
+                    </div>
+                </div>
+                <label class="flex items-center gap-2 cursor-pointer text-xs text-slate-600 pt-1">
+                    <input type="checkbox" id="auth-migrate-local" class="rounded text-golf-600 focus:ring-golf-500">
+                    <span>Meine bisherigen lokalen Runden in mein neues Konto übernehmen</span>
+                </label>
+                <div class="pt-4 flex items-center justify-end gap-3 border-t border-slate-100">
+                    <button type="button" onclick="closeAuthModal()" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors">Abbrechen</button>
+                    <button type="submit" id="auth-reg-submit-btn" class="px-5 py-2.5 rounded-xl bg-golf-600 hover:bg-golf-700 text-white text-xs font-bold shadow-md shadow-golf-600/20 transition-all">
+                        Konto erstellen
+                    </button>
+                </div>
+            </form>
+
+            <!-- 3. FORGOT PASSWORD FORM -->
+            <form id="auth-forgot-form" onsubmit="handleForgotSubmit(event)" autocomplete="on" class="p-6 space-y-4 hidden">
+                <div class="text-xs text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-200 leading-relaxed">
+                    Gib deine registrierte <strong>E-Mail-Adresse</strong> oder deinen <strong>Benutzernamen</strong> ein. Wir erstellen einen 6-stelligen Bestätigungscode zum Zurücksetzen deines Passworts.
+                </div>
+                <div class="space-y-1">
+                    <label for="auth-forgot-identifier" class="block text-xs font-bold uppercase tracking-wider text-slate-600">E-Mail oder Benutzername</label>
+                    <input type="text" id="auth-forgot-identifier" name="identifier" autocomplete="username email" required placeholder="z.B. name@golf.de oder benni_golf" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-golf-200 focus:border-golf-500 transition-all">
+                </div>
+                <div class="pt-4 flex items-center justify-between gap-3 border-t border-slate-100">
+                    <button type="button" onclick="switchAuthTab('login')" class="text-xs font-semibold text-golf-600 hover:text-golf-800 flex items-center gap-1">
+                        &larr; Zurück zum Login
+                    </button>
+                    <div class="flex items-center gap-3">
                         <button type="button" onclick="closeAuthModal()" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors">Abbrechen</button>
-                        <button type="submit" id="auth-submit-btn" class="px-5 py-2.5 rounded-xl bg-golf-600 hover:bg-golf-700 text-white text-xs font-bold shadow-md shadow-golf-600/20 transition-all">
-                            Anmelden
+                        <button type="submit" id="auth-forgot-submit-btn" class="px-5 py-2.5 rounded-xl bg-golf-600 hover:bg-golf-700 text-white text-xs font-bold shadow-md shadow-golf-600/20 transition-all">
+                            Code anfordern
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- 4. RESET PASSWORD FORM -->
+            <form id="auth-reset-form" onsubmit="handleResetSubmit(event)" autocomplete="on" class="p-6 space-y-3 hidden">
+                <div class="text-xs text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-200 leading-relaxed">
+                    Gib deinen <strong>6-stelligen Code</strong> ein und lege dein neues Passwort fest.
+                </div>
+                <div class="space-y-1">
+                    <label for="auth-reset-identifier" class="block text-xs font-bold uppercase tracking-wider text-slate-600">E-Mail oder Benutzername</label>
+                    <input type="text" id="auth-reset-identifier" name="identifier" autocomplete="username email" required placeholder="name@beispiel.de" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm bg-slate-50 text-slate-700">
+                </div>
+                <div class="space-y-1">
+                    <label for="auth-reset-code" class="block text-xs font-bold uppercase tracking-wider text-slate-600">6-stelliger Bestätigungscode</label>
+                    <input type="text" id="auth-reset-code" name="code" autocomplete="one-time-code" placeholder="123456" maxlength="6" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-center text-lg font-mono font-bold tracking-widest text-golf-800 focus:ring-2 focus:ring-golf-200 focus:border-golf-500">
+                </div>
+                <div class="space-y-1">
+                    <label for="auth-reset-password" class="block text-xs font-bold uppercase tracking-wider text-slate-600">Neues Passwort</label>
+                    <div class="relative">
+                        <input type="password" id="auth-reset-password" name="new-password" autocomplete="new-password" minlength="4" required placeholder="••••••••" class="w-full px-3.5 py-2.5 pr-10 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-golf-200 focus:border-golf-500 transition-all">
+                        <button type="button" onclick="togglePasswordVisibility('auth-reset-password', 'eye-reset-pw')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-sm focus:outline-none" title="Passwort anzeigen / verbergen">
+                            <span id="eye-reset-pw">👁️</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="space-y-1">
+                    <label for="auth-reset-password-confirm" class="block text-xs font-bold uppercase tracking-wider text-slate-600">Neues Passwort wiederholen</label>
+                    <div class="relative">
+                        <input type="password" id="auth-reset-password-confirm" name="confirm-password" autocomplete="new-password" minlength="4" required placeholder="••••••••" class="w-full px-3.5 py-2.5 pr-10 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-golf-200 focus:border-golf-500 transition-all">
+                        <button type="button" onclick="togglePasswordVisibility('auth-reset-password-confirm', 'eye-reset-confirm')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-sm focus:outline-none" title="Passwort anzeigen / verbergen">
+                            <span id="eye-reset-confirm">👁️</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="pt-4 flex items-center justify-between gap-3 border-t border-slate-100">
+                    <button type="button" onclick="switchAuthTab('login')" class="text-xs font-semibold text-golf-600 hover:text-golf-800 flex items-center gap-1">
+                        &larr; Zurück zum Login
+                    </button>
+                    <div class="flex items-center gap-3">
+                        <button type="button" onclick="closeAuthModal()" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors">Abbrechen</button>
+                        <button type="submit" id="auth-reset-submit-btn" class="px-5 py-2.5 rounded-xl bg-golf-600 hover:bg-golf-700 text-white text-xs font-bold shadow-md shadow-golf-600/20 transition-all">
+                            Passwort speichern & anmelden
                         </button>
                     </div>
                 </div>
@@ -2175,7 +2221,7 @@
 
             <div class="p-5 space-y-5 overflow-y-auto text-xs text-slate-700">
                 <!-- Account Info Cards -->
-                <div class="grid grid-cols-2 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
                     <div>
                         <span class="text-[10px] uppercase font-bold text-slate-400">Rundenzahl</span>
                         <div id="pm-rounds-count" class="text-base font-black text-slate-800 font-mono">0</div>
@@ -2191,6 +2237,13 @@
                     <div>
                         <span class="text-[10px] uppercase font-bold text-slate-400">Rolle</span>
                         <div id="pm-role" class="text-xs font-bold text-purple-700">Golfer</div>
+                    </div>
+                    <div class="col-span-2 sm:col-span-2 cursor-pointer group" onclick="openVersionModal()" title="Versionsinformationen & Changelog anzeigen">
+                        <span class="text-[10px] uppercase font-bold text-slate-400 group-hover:text-golf-600 transition-colors">App-Version</span>
+                        <div id="pm-version" class="text-xs font-bold text-slate-700 font-mono flex items-center gap-1.5 group-hover:text-golf-600">
+                            <span>v1.2.0</span>
+                            <span class="text-[9px] text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-full border border-emerald-200">Aktuell & Verifiziert</span>
+                        </div>
                     </div>
                 </div>
 
@@ -2216,12 +2269,56 @@
                         Deine Verbindung ist per HTTPS verschlüsselt und durch Brute-Force Rate Limiting sowie moderne HTTP-Sicherheitsheader geschützt.
                     </p>
                     <div class="flex items-center gap-2 pt-1">
-                        <button type="button" onclick="closeProfileModal(); openAuthModal('forgot');" class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold hover:bg-slate-100">
-                            Passwort ändern
+                        <button type="button" onclick="toggleProfilePasswordForm()" id="btn-toggle-pm-pw" class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 font-bold hover:bg-slate-100 flex items-center gap-1">
+                            <span>🔑 Passwort direkt ändern</span>
                         </button>
                         <button type="button" onclick="closeProfileModal(); handleLogout();" class="px-3 py-1.5 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold">
                             Abmelden
                         </button>
+                    </div>
+
+                    <!-- Direct Change Password Form (POST /api/user/change-password) -->
+                    <div id="pm-password-container" class="hidden mt-3 pt-3 border-t border-slate-200 space-y-2.5">
+                        <div id="pm-pw-error" class="hidden p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-[11px] font-semibold"></div>
+                        <div id="pm-pw-success" class="hidden p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-semibold"></div>
+
+                        <form id="pm-password-form" onsubmit="handleProfilePasswordChange(event)" autocomplete="on" class="space-y-2.5">
+                            <div class="space-y-1">
+                                <label for="pm-old-password" class="block text-[11px] font-bold text-slate-600">Aktuelles Passwort</label>
+                                <div class="relative">
+                                    <input type="password" id="pm-old-password" name="current-password" autocomplete="current-password" required placeholder="••••••••" class="w-full px-3 py-1.5 pr-8 rounded-lg border border-slate-200 text-xs">
+                                    <button type="button" onclick="togglePasswordVisibility('pm-old-password', 'pm-eye-old')" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs">
+                                        <span id="pm-eye-old">👁️</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="space-y-1">
+                                <label for="pm-new-password" class="block text-[11px] font-bold text-slate-600">Neues Passwort (min. 4 Zeichen)</label>
+                                <div class="relative">
+                                    <input type="password" id="pm-new-password" name="new-password" autocomplete="new-password" minlength="4" required placeholder="••••••••" class="w-full px-3 py-1.5 pr-8 rounded-lg border border-slate-200 text-xs">
+                                    <button type="button" onclick="togglePasswordVisibility('pm-new-password', 'pm-eye-new')" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs">
+                                        <span id="pm-eye-new">👁️</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="space-y-1">
+                                <label for="pm-new-password-confirm" class="block text-[11px] font-bold text-slate-600">Neues Passwort bestätigen</label>
+                                <div class="relative">
+                                    <input type="password" id="pm-new-password-confirm" name="confirm-password" autocomplete="new-password" minlength="4" required placeholder="••••••••" class="w-full px-3 py-1.5 pr-8 rounded-lg border border-slate-200 text-xs">
+                                    <button type="button" onclick="togglePasswordVisibility('pm-new-password-confirm', 'pm-eye-confirm')" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs">
+                                        <span id="pm-eye-confirm">👁️</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 pt-1">
+                                <button type="submit" id="pm-pw-submit-btn" class="px-3 py-1.5 rounded-lg bg-golf-600 hover:bg-golf-700 text-white font-bold text-xs shadow-xs transition-all">
+                                    Passwort aktualisieren
+                                </button>
+                                <button type="button" onclick="toggleProfilePasswordForm()" class="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold">
+                                    Abbrechen
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
 
@@ -2255,6 +2352,89 @@
                     <a href="javascript:void(0)" onclick="closeProfileModal(); openImprintModal();" class="underline hover:text-slate-800">Impressum</a>
                 </div>
                 <button type="button" onclick="closeProfileModal()" class="px-4 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-200">Schließen</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODAL: APP VERSION & CHANGELOG (v1.2.0) -->
+    <!-- ========================================== -->
+    <div id="version-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto hidden">
+        <div class="bg-white rounded-t-3xl sm:rounded-2xl max-w-lg w-full shadow-2xl border border-slate-200 overflow-hidden my-0 sm:my-auto max-h-[94dvh] sm:max-h-[90vh] flex flex-col">
+            <div class="p-4 sm:p-5 border-b border-slate-200 bg-gradient-to-r from-slate-900 via-golf-950 to-slate-900 text-white flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-golf-600/30 border border-golf-400/30 flex items-center justify-center text-xl">
+                        🚀
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-white flex items-center gap-2">
+                            <span>BirdieTrack</span>
+                            <span class="text-xs px-2 py-0.5 rounded-full bg-golf-600 text-white font-mono font-bold" id="version-modal-number">v1.2.0</span>
+                        </h3>
+                        <p class="text-xs text-golf-200">World Handicap System Tracker & Rechner</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeVersionModal()" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center font-bold text-lg">&times;</button>
+            </div>
+            <div class="p-5 space-y-4 overflow-y-auto text-xs text-slate-700">
+                <div class="p-3.5 bg-golf-50/70 border border-golf-200 rounded-xl">
+                    <div class="font-bold text-golf-900 text-sm">Aktuelle Version: v1.2.0 (Herbst 2026)</div>
+                    <p class="text-[11px] text-golf-800 mt-1 leading-relaxed">
+                        Professionelles Authentifizierungs-Upgrade, isolierte HTML-Formulare zur Verhinderung von Passwort-Manager-Konflikten, Passwort-Sichtbarkeitstoggles, direktes Passwort-Ändern im Profil, WHS 2026 Handicap-Berechnung und Behebung interaktiver UI-Buttons.
+                    </p>
+                </div>
+
+                <div class="space-y-3">
+                    <h4 class="font-bold text-slate-900 uppercase tracking-wider text-[11px]">Versionshistorie & Changelog</h4>
+
+                    <!-- v1.2.0 -->
+                    <div class="border-l-2 border-golf-600 pl-3 space-y-1">
+                        <div class="font-bold text-slate-900 flex items-center gap-2">
+                            <span class="text-golf-700 font-mono font-bold">v1.2.0</span>
+                            <span class="text-[10px] text-slate-400 font-normal">September 2026</span>
+                            <span class="text-[9px] text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200 font-bold">Aktuell</span>
+                        </div>
+                        <ul class="list-disc list-inside text-[11px] text-slate-600 space-y-0.5">
+                            <li>Vollständige Überarbeitung des Logins mit 4 getrennten HTML-Formularen</li>
+                            <li>Unterstützung für moderne Passwort-Manager (Apple Keychain, Google Passwords, 1Password)</li>
+                            <li>Passwort anzeigen/verbergen (Eye-Toggle) auf allen Authentifizierungsfeldern</li>
+                            <li>Direkte Passwortänderung im Profil per <code>POST /api/user/change-password</code></li>
+                            <li>Fehlerbehebungen: Club-Aktualisierung (PUT), interaktive Turnierfilter in Tabellenansicht</li>
+                            <li>Automatische Sitzungsprüfung beim App-Start über <code>/api/me</code></li>
+                        </ul>
+                    </div>
+
+                    <!-- v1.1.0 -->
+                    <div class="border-l-2 border-slate-300 pl-3 space-y-1">
+                        <div class="font-bold text-slate-900 flex items-center gap-2">
+                            <span class="text-slate-700 font-mono font-semibold">v1.1.0</span>
+                            <span class="text-[10px] text-slate-400 font-normal">September 2026</span>
+                        </div>
+                        <ul class="list-disc list-inside text-[11px] text-slate-600 space-y-0.5">
+                            <li>PC CADDIE://online Live-Synchronisation für Golfclubs (inkl. GC Jersbek)</li>
+                            <li>Scorekarten-Zuordnung mit dynamischen Spielvorgaben je Golfclub</li>
+                            <li>GPS-gestützte Standorterfassung & digitale Signaturpads</li>
+                            <li>PWA Offline-Fähigkeit mit Service Worker Cache</li>
+                        </ul>
+                    </div>
+
+                    <!-- v1.0.0 -->
+                    <div class="border-l-2 border-slate-300 pl-3 space-y-1">
+                        <div class="font-bold text-slate-900 flex items-center gap-2">
+                            <span class="text-slate-700 font-mono font-semibold">v1.0.0</span>
+                            <span class="text-[10px] text-slate-400 font-normal">August 2026</span>
+                        </div>
+                        <ul class="list-disc list-inside text-[11px] text-slate-600 space-y-0.5">
+                            <li>Offizieller WHS Handicap-Index Rechner (Best 8 aus 20)</li>
+                            <li>9-Loch Score Differential Berechnung nach WHS 2024/2026</li>
+                            <li>DSGVO Datenexport & Kontoverwaltung</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between">
+                <span class="text-[11px] text-slate-500 font-mono">Build 2026.09.28 • API v1.2.0</span>
+                <button type="button" onclick="closeVersionModal()" class="px-4 py-1.5 rounded-xl bg-golf-600 hover:bg-golf-700 text-white text-xs font-bold shadow-xs">Schließen</button>
             </div>
         </div>
     </div>
@@ -2674,6 +2854,24 @@
             if(savedAuth && savedAuth.token && savedAuth.user) {
                 authToken = savedAuth.token;
                 currentUser = savedAuth.user;
+
+                // Live-Verify token with backend to avoid stale or invalid session
+                try {
+                    const checkMe = await apiFetch('/api/me');
+                    if(checkMe.ok && checkMe.data && checkMe.data.id) {
+                        currentUser = checkMe.data;
+                        localStorage.setItem('golf_auth', JSON.stringify({ token: authToken, user: currentUser }));
+                    } else if(checkMe.status === 401) {
+                        authToken = null;
+                        currentUser = null;
+                        localStorage.removeItem('golf_auth');
+                    }
+                } catch(e) {
+                    console.warn("Auth token verification error:", e);
+                }
+            }
+
+            if(currentUser && authToken) {
                 renderAuthHeader();
 
                 // Load user's data from Flask Backend
@@ -2819,12 +3017,33 @@
         }
 
         function openAuthModal(tab = 'login') {
+            const errBox = document.getElementById('auth-error');
+            const infoBox = document.getElementById('auth-info');
+            if(errBox) errBox.classList.add('hidden');
+            if(infoBox) infoBox.classList.add('hidden');
             switchAuthTab(tab);
-            document.getElementById('auth-modal').classList.remove('hidden');
+            document.getElementById('auth-modal')?.classList.remove('hidden');
         }
 
         function closeAuthModal() {
-            document.getElementById('auth-modal').classList.add('hidden');
+            document.getElementById('auth-modal')?.classList.add('hidden');
+            const errBox = document.getElementById('auth-error');
+            const infoBox = document.getElementById('auth-info');
+            if(errBox) errBox.classList.add('hidden');
+            if(infoBox) infoBox.classList.add('hidden');
+        }
+
+        function togglePasswordVisibility(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if(!input) return;
+            if(input.type === 'password') {
+                input.type = 'text';
+                if(icon) icon.innerText = '🙈';
+            } else {
+                input.type = 'password';
+                if(icon) icon.innerText = '👁️';
+            }
         }
 
         function switchAuthTab(tab) {
@@ -2835,231 +3054,467 @@
             const title = document.getElementById('auth-modal-title');
             const errBox = document.getElementById('auth-error');
             const infoBox = document.getElementById('auth-info');
-            const submitBtn = document.getElementById('auth-submit-btn');
-            const backContainer = document.getElementById('auth-back-container');
 
-            const loginFields = document.getElementById('auth-login-fields');
-            const registerFields = document.getElementById('auth-register-fields');
-            const forgotFields = document.getElementById('auth-forgot-fields');
-            const resetFields = document.getElementById('auth-reset-fields');
+            const loginForm = document.getElementById('auth-login-form');
+            const registerForm = document.getElementById('auth-register-form');
+            const forgotForm = document.getElementById('auth-forgot-form');
+            const resetForm = document.getElementById('auth-reset-form');
 
-            errBox.classList.add('hidden');
-            if(tab !== 'reset') {
+            if(errBox) errBox.classList.add('hidden');
+            if(tab !== 'reset' && infoBox) {
                 infoBox.classList.add('hidden');
             }
 
-            // Hide all field sections
-            loginFields.classList.add('hidden');
-            registerFields.classList.add('hidden');
-            forgotFields.classList.add('hidden');
-            resetFields.classList.add('hidden');
+            // Hide all 4 forms
+            loginForm?.classList.add('hidden');
+            registerForm?.classList.add('hidden');
+            forgotForm?.classList.add('hidden');
+            resetForm?.classList.add('hidden');
 
             if(tab === 'login') {
-                tabBar.classList.remove('hidden');
-                tabLogin.className = "flex-1 py-3 text-xs font-bold uppercase tracking-wider text-golf-700 border-b-2 border-golf-600 bg-white transition-all";
-                tabRegister.className = "flex-1 py-3 text-xs font-bold uppercase tracking-wider text-slate-500 hover:text-slate-800 transition-all";
-                loginFields.classList.remove('hidden');
-                backContainer.classList.add('hidden');
-                submitBtn.innerText = "Anmelden";
-                title.innerText = "Im Benutzerkonto anmelden";
+                tabBar?.classList.remove('hidden');
+                if(tabLogin) tabLogin.className = "flex-1 py-3 text-xs font-bold uppercase tracking-wider text-golf-700 border-b-2 border-golf-600 bg-white transition-all";
+                if(tabRegister) tabRegister.className = "flex-1 py-3 text-xs font-bold uppercase tracking-wider text-slate-500 hover:text-slate-800 transition-all";
+                loginForm?.classList.remove('hidden');
+                if(title) title.innerText = "Im Benutzerkonto anmelden";
                 setTimeout(() => document.getElementById('auth-login-identifier')?.focus(), 50);
             } else if(tab === 'register') {
-                tabBar.classList.remove('hidden');
-                tabRegister.className = "flex-1 py-3 text-xs font-bold uppercase tracking-wider text-golf-700 border-b-2 border-golf-600 bg-white transition-all";
-                tabLogin.className = "flex-1 py-3 text-xs font-bold uppercase tracking-wider text-slate-500 hover:text-slate-800 transition-all";
-                registerFields.classList.remove('hidden');
-                backContainer.classList.add('hidden');
-                submitBtn.innerText = "Konto erstellen";
-                title.innerText = "Neues Benutzerkonto registrieren";
+                tabBar?.classList.remove('hidden');
+                if(tabRegister) tabRegister.className = "flex-1 py-3 text-xs font-bold uppercase tracking-wider text-golf-700 border-b-2 border-golf-600 bg-white transition-all";
+                if(tabLogin) tabLogin.className = "flex-1 py-3 text-xs font-bold uppercase tracking-wider text-slate-500 hover:text-slate-800 transition-all";
+                registerForm?.classList.remove('hidden');
+                if(title) title.innerText = "Neues Benutzerkonto registrieren";
                 setTimeout(() => document.getElementById('auth-reg-username')?.focus(), 50);
             } else if(tab === 'forgot') {
-                tabBar.classList.add('hidden');
-                forgotFields.classList.remove('hidden');
-                backContainer.classList.remove('hidden');
-                submitBtn.innerText = "Code anfordern";
-                title.innerText = "Passwort vergessen";
+                tabBar?.classList.add('hidden');
+                forgotForm?.classList.remove('hidden');
+                if(title) title.innerText = "Passwort vergessen";
                 const prevIdent = document.getElementById('auth-login-identifier')?.value.trim();
-                if(prevIdent) {
-                    document.getElementById('auth-forgot-identifier').value = prevIdent;
+                const forgotInput = document.getElementById('auth-forgot-identifier');
+                if(prevIdent && forgotInput) {
+                    forgotInput.value = prevIdent;
                 }
-                setTimeout(() => document.getElementById('auth-forgot-identifier')?.focus(), 50);
+                setTimeout(() => forgotInput?.focus(), 50);
             } else if(tab === 'reset') {
-                tabBar.classList.add('hidden');
-                resetFields.classList.remove('hidden');
-                backContainer.classList.remove('hidden');
-                submitBtn.innerText = "Passwort speichern & anmelden";
-                title.innerText = "Neues Passwort festlegen";
+                tabBar?.classList.add('hidden');
+                resetForm?.classList.remove('hidden');
+                if(title) title.innerText = "Neues Passwort festlegen";
                 setTimeout(() => document.getElementById('auth-reset-code')?.focus(), 50);
             }
         }
 
-        async function handleAuthSubmit(e) {
+        async function handleLoginSubmit(e) {
             e.preventDefault();
             const errBox = document.getElementById('auth-error');
-            const infoBox = document.getElementById('auth-info');
-            errBox.classList.add('hidden');
+            const submitBtn = document.getElementById('auth-login-submit-btn');
+            if(errBox) errBox.classList.add('hidden');
 
-            if(currentAuthTab === 'login') {
-                const identifier = document.getElementById('auth-login-identifier').value.trim();
-                const password = document.getElementById('auth-login-password').value.trim();
+            const identifier = document.getElementById('auth-login-identifier').value.trim();
+            const password = document.getElementById('auth-login-password').value;
 
-                if(!identifier || !password) {
+            if(!identifier || !password) {
+                if(errBox) {
                     errBox.innerText = "Bitte E-Mail/Benutzername und Passwort eingeben.";
                     errBox.classList.remove('hidden');
-                    return;
                 }
+                return;
+            }
 
+            const origBtnText = submitBtn ? submitBtn.innerText : "Anmelden";
+            if(submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerText = "Anmelden...";
+            }
+
+            try {
                 const res = await apiFetch('/api/login', 'POST', { identifier, password });
-                if(res.ok) {
+                if(res.ok && res.data && res.data.token) {
                     authToken = res.data.token;
                     currentUser = res.data.user;
                     localStorage.setItem('golf_auth', JSON.stringify({ token: authToken, user: currentUser }));
 
+                    document.getElementById('auth-login-form')?.reset();
                     closeAuthModal();
                     await loadData();
-                    showToast(`Willkommen zurück, ${currentUser.username}!`, "👤");
+                    showToast(`Willkommen zurück, ${currentUser.username}! ⛳`, "👤");
                 } else {
-                    errBox.innerText = res.data?.fehler || "Falsche Anmeldedaten oder Passwort.";
+                    let errMsg = res.data?.fehler || "Falsche Anmeldedaten oder Passwort.";
+                    if(res.status === 429) {
+                        errMsg = res.data?.fehler || "Zu viele Anmeldeversuche. Bitte warte einen Moment und versuche es erneut.";
+                    }
+                    if(errBox) {
+                        errBox.innerText = errMsg;
+                        errBox.classList.remove('hidden');
+                    }
+                }
+            } catch(err) {
+                if(errBox) {
+                    errBox.innerText = "Verbindung zum Server fehlgeschlagen. Bitte prüfe deine Internetverbindung.";
                     errBox.classList.remove('hidden');
                 }
-            } else if(currentAuthTab === 'register') {
-                const username = document.getElementById('auth-reg-username').value.trim();
-                const email = document.getElementById('auth-reg-email').value.trim();
-                const password = document.getElementById('auth-reg-password').value.trim();
-                const passConfirm = document.getElementById('auth-reg-password-confirm').value.trim();
+            } finally {
+                if(submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = origBtnText;
+                }
+            }
+        }
 
-                if(!username || username.length < 3) {
+        async function handleRegisterSubmit(e) {
+            e.preventDefault();
+            const errBox = document.getElementById('auth-error');
+            const submitBtn = document.getElementById('auth-reg-submit-btn');
+            if(errBox) errBox.classList.add('hidden');
+
+            const username = document.getElementById('auth-reg-username').value.trim();
+            const email = document.getElementById('auth-reg-email').value.trim();
+            const password = document.getElementById('auth-reg-password').value;
+            const passConfirm = document.getElementById('auth-reg-password-confirm').value;
+
+            if(!username || username.length < 3) {
+                if(errBox) {
                     errBox.innerText = "Benutzername muss mindestens 3 Zeichen lang sein.";
                     errBox.classList.remove('hidden');
-                    return;
                 }
-                if(!email || !email.includes('@') || !email.includes('.')) {
+                return;
+            }
+            if(!email || !email.includes('@') || !email.includes('.')) {
+                if(errBox) {
                     errBox.innerText = "Bitte eine gültige E-Mail-Adresse angeben.";
                     errBox.classList.remove('hidden');
-                    return;
                 }
-                if(!password || password.length < 4) {
+                return;
+            }
+            if(!password || password.length < 4) {
+                if(errBox) {
                     errBox.innerText = "Passwort muss mindestens 4 Zeichen lang sein.";
                     errBox.classList.remove('hidden');
-                    return;
                 }
-                if(password !== passConfirm) {
+                return;
+            }
+            if(password !== passConfirm) {
+                if(errBox) {
                     errBox.innerText = "Die Passwörter stimmen nicht überein.";
                     errBox.classList.remove('hidden');
-                    return;
                 }
+                return;
+            }
 
+            const origBtnText = submitBtn ? submitBtn.innerText : "Konto erstellen";
+            if(submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerText = "Wird erstellt...";
+            }
+
+            try {
                 const res = await apiFetch('/api/register', 'POST', { username, email, password });
-                if(res.ok) {
+                if(res.ok && res.data && res.data.token) {
                     authToken = res.data.token;
                     currentUser = res.data.user;
                     localStorage.setItem('golf_auth', JSON.stringify({ token: authToken, user: currentUser }));
 
-                    // Optional local data migration to new account
-                    const migrate = document.getElementById('auth-migrate-local').checked;
+                    const migrate = document.getElementById('auth-migrate-local')?.checked;
                     if(migrate && runden.length > 0) {
                         await apiFetch('/api/runden/batch', 'POST', { runden: runden });
                     }
 
+                    document.getElementById('auth-register-form')?.reset();
                     closeAuthModal();
                     await loadData();
                     showToast(`Konto erstellt! Willkommen, ${currentUser.username}! ⛳`, "🎉");
                     if(typeof confetti === 'function') confetti({ particleCount: 70, spread: 60 });
                 } else {
-                    errBox.innerText = res.data?.fehler || "Registrierung fehlgeschlagen. Bitte versuche es erneut.";
+                    if(errBox) {
+                        errBox.innerText = res.data?.fehler || "Registrierung fehlgeschlagen. Bitte versuche es erneut.";
+                        errBox.classList.remove('hidden');
+                    }
+                }
+            } catch(err) {
+                if(errBox) {
+                    errBox.innerText = "Verbindung zum Server fehlgeschlagen.";
                     errBox.classList.remove('hidden');
                 }
-            } else if(currentAuthTab === 'forgot') {
-                const identifier = document.getElementById('auth-forgot-identifier').value.trim();
-                if(!identifier) {
+            } finally {
+                if(submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = origBtnText;
+                }
+            }
+        }
+
+        async function handleForgotSubmit(e) {
+            e.preventDefault();
+            const errBox = document.getElementById('auth-error');
+            const infoBox = document.getElementById('auth-info');
+            const submitBtn = document.getElementById('auth-forgot-submit-btn');
+            if(errBox) errBox.classList.add('hidden');
+
+            const identifier = document.getElementById('auth-forgot-identifier').value.trim();
+            if(!identifier) {
+                if(errBox) {
                     errBox.innerText = "Bitte gib deine E-Mail-Adresse oder deinen Benutzernamen ein.";
                     errBox.classList.remove('hidden');
-                    return;
                 }
+                return;
+            }
 
-                const submitBtn = document.getElementById('auth-submit-btn');
-                const origBtnText = submitBtn.innerText;
+            const origBtnText = submitBtn ? submitBtn.innerText : "Code anfordern";
+            if(submitBtn) {
                 submitBtn.disabled = true;
-                submitBtn.innerText = "Code wird generiert...";
+                submitBtn.innerText = "Wird angefordert...";
+            }
 
-                try {
-                    const res = await apiFetch('/api/forgot-password', 'POST', { email: identifier });
-                    if(res.ok) {
-                        const code = res.data.code;
-                        const userEmailOrName = res.data.email || identifier;
-                        document.getElementById('auth-reset-identifier').value = userEmailOrName;
-                        if(code) {
-                            document.getElementById('auth-reset-code').value = code;
-                        }
+            try {
+                const res = await apiFetch('/api/forgot-password', 'POST', { email: identifier });
+                if(res.ok) {
+                    const code = res.data.code;
+                    const userEmailOrName = res.data.email || identifier;
+                    const resetIdent = document.getElementById('auth-reset-identifier');
+                    const resetCode = document.getElementById('auth-reset-code');
+                    if(resetIdent) resetIdent.value = userEmailOrName;
+                    if(resetCode && code) resetCode.value = code;
 
+                    if(infoBox) {
                         if(res.data.email_gesendet) {
                             infoBox.innerHTML = `Ein Bestätigungscode wurde an <strong>${userEmailOrName}</strong> gesendet.<br><span class="text-xs text-emerald-900 font-mono font-bold">Code: ${code}</span> (30 Min. gültig)`;
                         } else {
                             infoBox.innerHTML = `Dein 6-stelliger Bestätigungscode lautet:<br><span class="inline-block my-1 text-base font-mono font-bold tracking-widest text-golf-800 bg-golf-50 px-2 py-0.5 rounded border border-golf-200">${code}</span><br><span class="text-[11px] text-slate-500 font-normal">Gültig für 30 Minuten. Gib jetzt dein neues Passwort ein.</span>`;
                         }
                         infoBox.classList.remove('hidden');
+                    }
 
-                        switchAuthTab('reset');
-                    } else {
+                    switchAuthTab('reset');
+                } else {
+                    if(errBox) {
                         errBox.innerText = res.data?.fehler || "Anfrage fehlgeschlagen. Überprüfe deine Eingabe.";
                         errBox.classList.remove('hidden');
                     }
-                } finally {
+                }
+            } catch(err) {
+                if(errBox) {
+                    errBox.innerText = "Verbindung fehlgeschlagen.";
+                    errBox.classList.remove('hidden');
+                }
+            } finally {
+                if(submitBtn) {
                     submitBtn.disabled = false;
                     submitBtn.innerText = origBtnText;
                 }
-            } else if(currentAuthTab === 'reset') {
-                const identifier = document.getElementById('auth-reset-identifier').value.trim();
-                const code = document.getElementById('auth-reset-code').value.trim();
-                const newPassword = document.getElementById('auth-reset-password').value.trim();
-                const passConfirm = document.getElementById('auth-reset-password-confirm').value.trim();
+            }
+        }
 
-                if(!identifier || !code || !newPassword) {
+        async function handleResetSubmit(e) {
+            e.preventDefault();
+            const errBox = document.getElementById('auth-error');
+            const submitBtn = document.getElementById('auth-reset-submit-btn');
+            if(errBox) errBox.classList.add('hidden');
+
+            const identifier = document.getElementById('auth-reset-identifier').value.trim();
+            const code = document.getElementById('auth-reset-code').value.trim();
+            const newPassword = document.getElementById('auth-reset-password').value;
+            const passConfirm = document.getElementById('auth-reset-password-confirm').value;
+
+            if(!identifier || !code || !newPassword) {
+                if(errBox) {
                     errBox.innerText = "Bitte fülle alle Pflichtfelder aus (Benutzer/E-Mail, Code und neues Passwort).";
                     errBox.classList.remove('hidden');
-                    return;
                 }
-                if(newPassword.length < 4) {
+                return;
+            }
+            if(newPassword.length < 4) {
+                if(errBox) {
                     errBox.innerText = "Das Passwort muss mindestens 4 Zeichen lang sein.";
                     errBox.classList.remove('hidden');
-                    return;
                 }
-                if(newPassword !== passConfirm) {
+                return;
+            }
+            if(newPassword !== passConfirm) {
+                if(errBox) {
                     errBox.innerText = "Die neuen Passwörter stimmen nicht überein.";
                     errBox.classList.remove('hidden');
-                    return;
                 }
+                return;
+            }
 
+            const origBtnText = submitBtn ? submitBtn.innerText : "Passwort speichern";
+            if(submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerText = "Wird gespeichert...";
+            }
+
+            try {
                 const res = await apiFetch('/api/reset-password', 'POST', {
                     email: identifier,
                     code: code,
                     new_password: newPassword
                 });
 
-                if(res.ok) {
+                if(res.ok && res.data && res.data.token) {
                     authToken = res.data.token;
                     currentUser = res.data.user;
                     localStorage.setItem('golf_auth', JSON.stringify({ token: authToken, user: currentUser }));
 
+                    document.getElementById('auth-reset-form')?.reset();
                     closeAuthModal();
                     await loadData();
                     showToast("Passwort erfolgreich geändert! Du bist jetzt angemeldet. 🏌️‍♂️", "🔑");
                 } else {
-                    errBox.innerText = res.data?.fehler || "Passwort-Zurücksetzen fehlgeschlagen.";
+                    if(errBox) {
+                        errBox.innerText = res.data?.fehler || "Passwort-Zurücksetzen fehlgeschlagen.";
+                        errBox.classList.remove('hidden');
+                    }
+                }
+            } catch(err) {
+                if(errBox) {
+                    errBox.innerText = "Verbindung fehlgeschlagen.";
                     errBox.classList.remove('hidden');
+                }
+            } finally {
+                if(submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = origBtnText;
                 }
             }
         }
 
         async function handleLogout() {
             if(confirm("Möchtest du dich wirklich abmelden?")) {
-                await apiFetch('/api/logout', 'POST');
+                try {
+                    await apiFetch('/api/logout', 'POST');
+                } catch(e) {}
                 authToken = null;
                 currentUser = null;
                 localStorage.removeItem('golf_auth');
+
+                // Clear all auth inputs in the DOM
+                document.getElementById('auth-login-form')?.reset();
+                document.getElementById('auth-register-form')?.reset();
+                document.getElementById('auth-forgot-form')?.reset();
+                document.getElementById('auth-reset-form')?.reset();
+
+                // Reset password input types and eye icons
+                ['auth-login-password', 'auth-reg-password', 'auth-reg-password-confirm', 'auth-reset-password', 'auth-reset-password-confirm'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if(el) el.type = 'password';
+                });
+                ['eye-login-pw', 'eye-reg-pw', 'eye-reg-confirm', 'eye-reset-pw', 'eye-reset-confirm'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if(el) el.innerText = '👁️';
+                });
+
                 renderAuthHeader();
                 await loadData();
                 showToast("Erfolgreich abgemeldet.", "👋");
+            }
+        }
+
+        // --- APP VERSION MODAL ---
+        function openVersionModal() {
+            const modal = document.getElementById('version-modal');
+            if(modal) modal.classList.remove('hidden');
+            apiFetch('/api/version').then(res => {
+                if(res.ok && res.data) {
+                    const numEl = document.getElementById('version-modal-number');
+                    if(numEl) numEl.innerText = `v${res.data.version}`;
+                }
+            }).catch(() => {});
+        }
+
+        function closeVersionModal() {
+            const modal = document.getElementById('version-modal');
+            if(modal) modal.classList.add('hidden');
+        }
+
+        // --- PROFILE DIRECT PASSWORD CHANGE ---
+        function toggleProfilePasswordForm() {
+            const container = document.getElementById('pm-password-container');
+            const errBox = document.getElementById('pm-pw-error');
+            const successBox = document.getElementById('pm-pw-success');
+            if(!container) return;
+            const isHidden = container.classList.contains('hidden');
+            if(isHidden) {
+                container.classList.remove('hidden');
+                if(errBox) errBox.classList.add('hidden');
+                if(successBox) successBox.classList.add('hidden');
+                document.getElementById('pm-password-form')?.reset();
+                setTimeout(() => document.getElementById('pm-old-password')?.focus(), 50);
+            } else {
+                container.classList.add('hidden');
+            }
+        }
+
+        async function handleProfilePasswordChange(e) {
+            e.preventDefault();
+            const oldPassword = document.getElementById('pm-old-password').value;
+            const newPassword = document.getElementById('pm-new-password').value;
+            const confirmPassword = document.getElementById('pm-new-password-confirm').value;
+            const errBox = document.getElementById('pm-pw-error');
+            const successBox = document.getElementById('pm-pw-success');
+            const submitBtn = document.getElementById('pm-pw-submit-btn');
+
+            if(errBox) errBox.classList.add('hidden');
+            if(successBox) successBox.classList.add('hidden');
+
+            if(!oldPassword || !newPassword) {
+                if(errBox) {
+                    errBox.innerText = "Bitte fülle alle Pflichtfelder aus.";
+                    errBox.classList.remove('hidden');
+                }
+                return;
+            }
+            if(newPassword.length < 4) {
+                if(errBox) {
+                    errBox.innerText = "Das neue Passwort muss mindestens 4 Zeichen lang sein.";
+                    errBox.classList.remove('hidden');
+                }
+                return;
+            }
+            if(newPassword !== confirmPassword) {
+                if(errBox) {
+                    errBox.innerText = "Die neuen Passwörter stimmen nicht überein.";
+                    errBox.classList.remove('hidden');
+                }
+                return;
+            }
+
+            const origBtnText = submitBtn ? submitBtn.innerText : "Passwort aktualisieren";
+            if(submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerText = "Wird gespeichert...";
+            }
+
+            try {
+                const res = await apiFetch('/api/user/change-password', 'POST', {
+                    old_password: oldPassword,
+                    new_password: newPassword
+                });
+
+                if(res.ok) {
+                    if(successBox) {
+                        successBox.innerText = res.data?.nachricht || "Passwort erfolgreich aktualisiert!";
+                        successBox.classList.remove('hidden');
+                    }
+                    document.getElementById('pm-password-form')?.reset();
+                    showToast("Passwort erfolgreich aktualisiert! 🔑", "✅");
+                    setTimeout(() => {
+                        toggleProfilePasswordForm();
+                    }, 1800);
+                } else {
+                    if(errBox) {
+                        errBox.innerText = res.data?.fehler || "Passwortänderung fehlgeschlagen.";
+                        errBox.classList.remove('hidden');
+                    }
+                }
+            } catch(err) {
+                if(errBox) {
+                    errBox.innerText = "Verbindungsfehler. Bitte erneut versuchen.";
+                    errBox.classList.remove('hidden');
+                }
+            } finally {
+                if(submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = origBtnText;
+                }
             }
         }
 
@@ -3930,7 +4385,7 @@
                         </td>
                         <td class="py-3 px-4 text-center">
                             ${cTournaments.length > 0 ? `
-                                <button type="button" onclick="openTurnierModal('${c.name.replace(/'/g, "\\'")}')" class="px-2 py-0.5 rounded-full bg-amber-100 hover:bg-amber-200 text-amber-800 text-xs font-bold transition-colors">
+                                <button type="button" onclick="showClubTournaments('${c.name.replace(/'/g, "\\'")}')" class="px-2 py-0.5 rounded-full bg-amber-100 hover:bg-amber-200 text-amber-800 text-xs font-bold transition-colors shadow-2xs" title="Turniere für ${c.name} anzeigen">
                                     🏆 ${cTournaments.length}
                                 </button>
                             ` : '<span class="text-slate-300 text-xs">-</span>'}
@@ -4034,6 +4489,15 @@
                 cardsGrid.classList.add('hidden');
                 tableContainer.classList.remove('hidden');
             }
+        }
+
+        function showClubTournaments(clubName) {
+            clubSearchQuery = clubName;
+            const searchInput = document.getElementById('clubs-search-input');
+            if(searchInput) searchInput.value = clubName;
+            setClubViewMode('cards');
+            renderClubsExplorer();
+            showToast(`Turniere für "${clubName}" angezeigt`, "🏆");
         }
 
         // --- TOURNAMENT MODAL & CRUD ---
@@ -5099,17 +5563,23 @@
 
             const clubObj = { name, region, city, tee, par18, cr18, sr18, par9, cr9, sr9 };
 
-            if(currentUser && authToken) {
-                const res = await apiFetch('/api/clubs', 'POST', clubObj);
-                if(res.ok && res.data.club) {
-                    clubObj.id = res.data.club.id;
+            if(index >= 0 && clubs[index]) {
+                const existing = clubs[index];
+                if(existing.id) {
+                    clubObj.id = existing.id;
+                    if(currentUser && authToken) {
+                        await apiFetch(`/api/clubs/${existing.id}`, 'PUT', clubObj);
+                    }
                 }
-            }
-
-            if(index >= 0) {
-                clubs[index] = clubObj;
+                clubs[index] = { ...existing, ...clubObj };
                 showToast("Golfclub aktualisiert!", "✅");
             } else {
+                if(currentUser && authToken) {
+                    const res = await apiFetch('/api/clubs', 'POST', clubObj);
+                    if(res.ok && res.data.club) {
+                        clubObj.id = res.data.club.id;
+                    }
+                }
                 clubs.push(clubObj);
                 showToast("Neuer Golfclub hinzugefügt!", "⛳");
             }
@@ -6309,6 +6779,12 @@
         }
 
         async function submitTournamentScorecard() {
+            if(!currentUser || !authToken) {
+                showToast("Bitte melde dich an, um deine Scorekarte offiziell einzureichen.", "🔒");
+                openAuthModal('login');
+                return;
+            }
+
             const turnierName = activeScorecardTournament ? activeScorecardTournament.name : (document.getElementById('sc-turnier-name')?.value || 'Freie Runde');
             const clubName = document.getElementById('sc-club-select').value;
             const club = clubs.find(c => c.name === clubName) || clubs[0];
@@ -6872,6 +7348,23 @@
             const pendingContainer = document.getElementById('friends-pending-container');
             const pendingList = document.getElementById('friends-pending-list');
 
+            if(!currentUser || !authToken) {
+                pendingContainer?.classList.add('hidden');
+                if(listContainer) {
+                    listContainer.innerHTML = `
+                        <div class="py-8 text-center text-slate-500 space-y-3">
+                            <div class="text-3xl">👥</div>
+                            <div class="font-bold text-slate-700">Golffreunde & Vergleiche</div>
+                            <p class="text-xs text-slate-500 max-w-xs mx-auto">Melde dich an, um dich mit deinen Golffreunden zu verbinden und Scores auszutauschen.</p>
+                            <button type="button" onclick="openAuthModal('login')" class="px-4 py-2 rounded-xl bg-golf-600 hover:bg-golf-700 text-white font-bold text-xs shadow-xs transition-all">
+                                Jetzt anmelden
+                            </button>
+                        </div>
+                    `;
+                }
+                return;
+            }
+
             listContainer.innerHTML = '<div class="py-4 text-center text-slate-400">Lade Freunde...</div>';
             const res = await apiFetch('/api/friends');
 
@@ -6918,6 +7411,12 @@
         }
 
         async function sendFriendRequest() {
+            if(!currentUser || !authToken) {
+                showToast("Bitte melde dich zuerst an.", "🔒");
+                openAuthModal('login');
+                return;
+            }
+
             const input = document.getElementById('friend-search-input');
             const targetUsername = input.value.trim();
             if(!targetUsername) return;
