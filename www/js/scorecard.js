@@ -22,50 +22,6 @@ const clubHolesTemplates = {
             { hole: 18, par: 5, si: 14, meters_gelb: 490, meters_rot: 425 }
         ]
     },
-    "escheburg": {
-        holes18: [
-            { hole: 1, par: 4, si: 11, meters_gelb: 345, meters_rot: 298 },
-            { hole: 2, par: 4, si: 3, meters_gelb: 380, meters_rot: 330 },
-            { hole: 3, par: 5, si: 5, meters_gelb: 490, meters_rot: 425 },
-            { hole: 4, par: 4, si: 1, meters_gelb: 405, meters_rot: 350 },
-            { hole: 5, par: 4, si: 7, meters_gelb: 360, meters_rot: 310 },
-            { hole: 6, par: 3, si: 15, meters_gelb: 155, meters_rot: 130 },
-            { hole: 7, par: 4, si: 13, meters_gelb: 335, meters_rot: 285 },
-            { hole: 8, par: 3, si: 17, meters_gelb: 140, meters_rot: 120 },
-            { hole: 9, par: 5, si: 9, meters_gelb: 475, meters_rot: 410 },
-            { hole: 10, par: 4, si: 10, meters_gelb: 350, meters_rot: 305 },
-            { hole: 11, par: 4, si: 4, meters_gelb: 375, meters_rot: 325 },
-            { hole: 12, par: 5, si: 6, meters_gelb: 485, meters_rot: 420 },
-            { hole: 13, par: 3, si: 18, meters_gelb: 145, meters_rot: 125 },
-            { hole: 14, par: 4, si: 2, meters_gelb: 395, meters_rot: 340 },
-            { hole: 15, par: 4, si: 8, meters_gelb: 365, meters_rot: 315 },
-            { hole: 16, par: 3, si: 16, meters_gelb: 160, meters_rot: 135 },
-            { hole: 17, par: 5, si: 12, meters_gelb: 480, meters_rot: 415 },
-            { hole: 18, par: 4, si: 14, meters_gelb: 355, meters_rot: 305 }
-        ]
-    },
-    "ahrensburg": {
-        holes18: [
-            { hole: 1, par: 4, si: 11, meters_gelb: 330, meters_rot: 290 },
-            { hole: 2, par: 4, si: 7, meters_gelb: 350, meters_rot: 305 },
-            { hole: 3, par: 3, si: 15, meters_gelb: 155, meters_rot: 135 },
-            { hole: 4, par: 4, si: 1, meters_gelb: 395, meters_rot: 345 },
-            { hole: 5, par: 4, si: 5, meters_gelb: 360, meters_rot: 315 },
-            { hole: 6, par: 5, si: 9, meters_gelb: 470, meters_rot: 410 },
-            { hole: 7, par: 3, si: 17, meters_gelb: 145, meters_rot: 125 },
-            { hole: 8, par: 4, si: 3, meters_gelb: 380, meters_rot: 330 },
-            { hole: 9, par: 4, si: 13, meters_gelb: 340, meters_rot: 295 },
-            { hole: 10, par: 4, si: 8, meters_gelb: 355, meters_rot: 310 },
-            { hole: 11, par: 3, si: 16, meters_gelb: 150, meters_rot: 130 },
-            { hole: 12, par: 4, si: 4, meters_gelb: 375, meters_rot: 325 },
-            { hole: 13, par: 5, si: 6, meters_gelb: 485, meters_rot: 420 },
-            { hole: 14, par: 4, si: 2, meters_gelb: 400, meters_rot: 350 },
-            { hole: 15, par: 3, si: 18, meters_gelb: 135, meters_rot: 115 },
-            { hole: 16, par: 4, si: 12, meters_gelb: 345, meters_rot: 300 },
-            { hole: 17, par: 4, si: 10, meters_gelb: 350, meters_rot: 305 },
-            { hole: 18, par: 4, si: 14, meters_gelb: 360, meters_rot: 315 }
-        ]
-    },
     "falkenstein": {
         holes18: [
             { hole: 1, par: 4, si: 9, meters_gelb: 340, meters_rot: 295 },
@@ -110,6 +66,116 @@ const clubHolesTemplates = {
             { hole: 18, par: 4, si: 14, meters_gelb: 355, meters_rot: 310 }
         ]
     },
+    "escheburg": {
+        holes18: [
+            { hole: 1, par: 4, si: 11, meters_gelb: 345, meters_rot: 298 },
+            { hole: 2, par: 4, si: 3, meters_gelb: 380, meters_rot: 330 },
+            { hole: 3, par: 5, si: 5, meters_gelb: 490, meters_rot: 425 },
+            { hole: 4, par: 4, si: 1, meters_gelb: 405, meters_rot: 350 },
+            { hole: 5, par: 4, si: 7, meters_gelb: 360, meters_rot: 310 },
+            { hole: 6, par: 3, si: 15, meters_gelb: 155, meters_rot: 130 },
+            { hole: 7, par: 4, si: 13, meters_gelb: 335, meters_rot: 285 },
+            { hole: 8, par: 3, si: 17, meters_gelb: 140, meters_rot: 120 },
+            { hole: 9, par: 5, si: 9, meters_gelb: 475, meters_rot: 410 },
+            { hole: 10, par: 4, si: 10, meters_gelb: 350, meters_rot: 305 },
+            { hole: 11, par: 4, si: 4, meters_gelb: 375, meters_rot: 325 },
+            { hole: 12, par: 5, si: 6, meters_gelb: 485, meters_rot: 420 },
+            { hole: 13, par: 3, si: 18, meters_gelb: 145, meters_rot: 125 },
+            { hole: 14, par: 4, si: 2, meters_gelb: 395, meters_rot: 340 },
+            { hole: 15, par: 4, si: 8, meters_gelb: 365, meters_rot: 315 },
+            { hole: 16, par: 3, si: 16, meters_gelb: 160, meters_rot: 135 },
+            { hole: 17, par: 5, si: 12, meters_gelb: 480, meters_rot: 415 },
+            { hole: 18, par: 4, si: 14, meters_gelb: 355, meters_rot: 305 }
+        ]
+    },
+    "ahrensburg": {
+        holes18: [
+            { hole: 1, par: 4, si: 11, meters_gelb: 330, meters_rot: 290 },
+            { hole: 2, par: 4, si: 7, meters_gelb: 350, meters_rot: 305 },
+            { hole: 3, par: 3, si: 15, meters_gelb: 155, meters_rot: 135 },
+            { hole: 4, par: 4, si: 1, meters_gelb: 395, meters_rot: 345 },
+            { hole: 5, par: 4, si: 5, meters_gelb: 360, meters_rot: 315 },
+            { hole: 6, par: 5, si: 9, meters_gelb: 470, meters_rot: 410 },
+            { hole: 7, par: 3, si: 17, meters_gelb: 145, meters_rot: 125 },
+            { hole: 8, par: 4, si: 3, meters_gelb: 380, meters_rot: 330 },
+            { hole: 9, par: 4, si: 13, meters_gelb: 340, meters_rot: 295 },
+            { hole: 10, par: 4, si: 8, meters_gelb: 355, meters_rot: 310 },
+            { hole: 11, par: 4, si: 16, meters_gelb: 360, meters_rot: 315 },
+            { hole: 12, par: 4, si: 4, meters_gelb: 375, meters_rot: 325 },
+            { hole: 13, par: 5, si: 6, meters_gelb: 485, meters_rot: 420 },
+            { hole: 14, par: 4, si: 2, meters_gelb: 400, meters_rot: 350 },
+            { hole: 15, par: 3, si: 18, meters_gelb: 135, meters_rot: 115 },
+            { hole: 16, par: 4, si: 12, meters_gelb: 345, meters_rot: 300 },
+            { hole: 17, par: 4, si: 10, meters_gelb: 350, meters_rot: 305 },
+            { hole: 18, par: 4, si: 14, meters_gelb: 360, meters_rot: 315 }
+        ]
+    },
+    "walddörfer": {
+        holes18: [
+            { hole: 1, par: 4, si: 7, meters_gelb: 360, meters_rot: 315 },
+            { hole: 2, par: 5, si: 3, meters_gelb: 495, meters_rot: 430 },
+            { hole: 3, par: 3, si: 15, meters_gelb: 165, meters_rot: 140 },
+            { hole: 4, par: 4, si: 1, meters_gelb: 380, meters_rot: 330 },
+            { hole: 5, par: 4, si: 9, meters_gelb: 345, meters_rot: 300 },
+            { hole: 6, par: 4, si: 11, meters_gelb: 330, meters_rot: 290 },
+            { hole: 7, par: 3, si: 17, meters_gelb: 150, meters_rot: 125 },
+            { hole: 8, par: 5, si: 5, meters_gelb: 485, meters_rot: 420 },
+            { hole: 9, par: 4, si: 13, meters_gelb: 355, meters_rot: 310 },
+            { hole: 10, par: 4, si: 8, meters_gelb: 370, meters_rot: 320 },
+            { hole: 11, par: 4, si: 4, meters_gelb: 390, meters_rot: 340 },
+            { hole: 12, par: 3, si: 18, meters_gelb: 155, meters_rot: 135 },
+            { hole: 13, par: 5, si: 6, meters_gelb: 505, meters_rot: 440 },
+            { hole: 14, par: 4, si: 2, meters_gelb: 410, meters_rot: 355 },
+            { hole: 15, par: 4, si: 10, meters_gelb: 340, meters_rot: 295 },
+            { hole: 16, par: 3, si: 16, meters_gelb: 160, meters_rot: 135 },
+            { hole: 17, par: 5, si: 12, meters_gelb: 475, meters_rot: 410 },
+            { hole: 18, par: 4, si: 14, meters_gelb: 365, meters_rot: 315 }
+        ]
+    },
+    "kaden (a+b)": {
+        holes18: [
+            { hole: 1, par: 4, si: 7, meters_gelb: 365, meters_rot: 315 },
+            { hole: 2, par: 5, si: 3, meters_gelb: 505, meters_rot: 440 },
+            { hole: 3, par: 3, si: 15, meters_gelb: 165, meters_rot: 140 },
+            { hole: 4, par: 4, si: 1, meters_gelb: 415, meters_rot: 360 },
+            { hole: 5, par: 4, si: 9, meters_gelb: 355, meters_rot: 305 },
+            { hole: 6, par: 4, si: 11, meters_gelb: 340, meters_rot: 295 },
+            { hole: 7, par: 3, si: 17, meters_gelb: 145, meters_rot: 125 },
+            { hole: 8, par: 5, si: 5, meters_gelb: 495, meters_rot: 430 },
+            { hole: 9, par: 4, si: 13, meters_gelb: 330, meters_rot: 285 },
+            { hole: 10, par: 4, si: 8, meters_gelb: 360, meters_rot: 310 },
+            { hole: 11, par: 4, si: 4, meters_gelb: 390, meters_rot: 340 },
+            { hole: 12, par: 3, si: 18, meters_gelb: 140, meters_rot: 120 },
+            { hole: 13, par: 5, si: 6, meters_gelb: 510, meters_rot: 445 },
+            { hole: 14, par: 4, si: 2, meters_gelb: 420, meters_rot: 365 },
+            { hole: 15, par: 4, si: 10, meters_gelb: 350, meters_rot: 300 },
+            { hole: 16, par: 3, si: 16, meters_gelb: 170, meters_rot: 145 },
+            { hole: 17, par: 5, si: 12, meters_gelb: 485, meters_rot: 420 },
+            { hole: 18, par: 4, si: 14, meters_gelb: 375, meters_rot: 325 }
+        ]
+    },
+    "kaden (b+c)": {
+        holes18: [
+            { hole: 1, par: 4, si: 7, meters_gelb: 360, meters_rot: 310 },
+            { hole: 2, par: 4, si: 3, meters_gelb: 390, meters_rot: 340 },
+            { hole: 3, par: 3, si: 17, meters_gelb: 140, meters_rot: 120 },
+            { hole: 4, par: 5, si: 5, meters_gelb: 510, meters_rot: 445 },
+            { hole: 5, par: 4, si: 1, meters_gelb: 420, meters_rot: 365 },
+            { hole: 6, par: 4, si: 9, meters_gelb: 350, meters_rot: 300 },
+            { hole: 7, par: 3, si: 15, meters_gelb: 170, meters_rot: 145 },
+            { hole: 8, par: 5, si: 11, meters_gelb: 485, meters_rot: 420 },
+            { hole: 9, par: 4, si: 13, meters_gelb: 375, meters_rot: 325 },
+            { hole: 10, par: 4, si: 8, meters_gelb: 350, meters_rot: 305 },
+            { hole: 11, par: 4, si: 4, meters_gelb: 380, meters_rot: 330 },
+            { hole: 12, par: 5, si: 6, meters_gelb: 490, meters_rot: 425 },
+            { hole: 13, par: 3, si: 18, meters_gelb: 155, meters_rot: 135 },
+            { hole: 14, par: 4, si: 2, meters_gelb: 405, meters_rot: 350 },
+            { hole: 15, par: 4, si: 10, meters_gelb: 345, meters_rot: 300 },
+            { hole: 16, par: 3, si: 16, meters_gelb: 160, meters_rot: 140 },
+            { hole: 17, par: 5, si: 12, meters_gelb: 515, meters_rot: 450 },
+            { hole: 18, par: 4, si: 14, meters_gelb: 360, meters_rot: 315 }
+        ]
+    },
     "kaden": {
         holes18: [
             { hole: 1, par: 4, si: 7, meters_gelb: 365, meters_rot: 315 },
@@ -131,6 +197,600 @@ const clubHolesTemplates = {
             { hole: 17, par: 5, si: 12, meters_gelb: 485, meters_rot: 420 },
             { hole: 18, par: 4, si: 14, meters_gelb: 375, meters_rot: 325 }
         ]
+    },
+    "holm": {
+        holes18: [
+            { hole: 1, par: 4, si: 11, meters_gelb: 335, meters_rot: 295 },
+            { hole: 2, par: 4, si: 7, meters_gelb: 370, meters_rot: 325 },
+            { hole: 3, par: 3, si: 17, meters_gelb: 145, meters_rot: 125 },
+            { hole: 4, par: 5, si: 3, meters_gelb: 495, meters_rot: 430 },
+            { hole: 5, par: 4, si: 1, meters_gelb: 415, meters_rot: 360 },
+            { hole: 6, par: 4, si: 9, meters_gelb: 350, meters_rot: 305 },
+            { hole: 7, par: 3, si: 15, meters_gelb: 160, meters_rot: 135 },
+            { hole: 8, par: 4, si: 13, meters_gelb: 340, meters_rot: 295 },
+            { hole: 9, par: 5, si: 5, meters_gelb: 480, meters_rot: 420 },
+            { hole: 10, par: 4, si: 8, meters_gelb: 365, meters_rot: 315 },
+            { hole: 11, par: 4, si: 4, meters_gelb: 385, meters_rot: 335 },
+            { hole: 12, par: 3, si: 18, meters_gelb: 135, meters_rot: 115 },
+            { hole: 13, par: 5, si: 6, meters_gelb: 500, meters_rot: 435 },
+            { hole: 14, par: 4, si: 2, meters_gelb: 410, meters_rot: 355 },
+            { hole: 15, par: 4, si: 10, meters_gelb: 355, meters_rot: 310 },
+            { hole: 16, par: 3, si: 16, meters_gelb: 165, meters_rot: 140 },
+            { hole: 17, par: 5, si: 12, meters_gelb: 475, meters_rot: 415 },
+            { hole: 18, par: 4, si: 14, meters_gelb: 360, meters_rot: 310 }
+        ]
+    },
+    "treudelberg": {
+        holes18: [
+            { hole: 1, par: 4, si: 9, meters_gelb: 345, meters_rot: 300 },
+            { hole: 2, par: 4, si: 3, meters_gelb: 380, meters_rot: 330 },
+            { hole: 3, par: 3, si: 17, meters_gelb: 140, meters_rot: 120 },
+            { hole: 4, par: 4, si: 1, meters_gelb: 410, meters_rot: 355 },
+            { hole: 5, par: 5, si: 7, meters_gelb: 485, meters_rot: 420 },
+            { hole: 6, par: 4, si: 11, meters_gelb: 335, meters_rot: 290 },
+            { hole: 7, par: 4, si: 13, meters_gelb: 350, meters_rot: 305 },
+            { hole: 8, par: 3, si: 15, meters_gelb: 165, meters_rot: 140 },
+            { hole: 9, par: 5, si: 5, meters_gelb: 495, meters_rot: 430 },
+            { hole: 10, par: 4, si: 8, meters_gelb: 360, meters_rot: 310 },
+            { hole: 11, par: 5, si: 6, meters_gelb: 490, meters_rot: 425 },
+            { hole: 12, par: 4, si: 4, meters_gelb: 385, meters_rot: 335 },
+            { hole: 13, par: 4, si: 10, meters_gelb: 355, meters_rot: 305 },
+            { hole: 14, par: 4, si: 2, meters_gelb: 415, meters_rot: 360 },
+            { hole: 15, par: 4, si: 12, meters_gelb: 340, meters_rot: 295 },
+            { hole: 16, par: 3, si: 18, meters_gelb: 145, meters_rot: 125 },
+            { hole: 17, par: 5, si: 14, meters_gelb: 480, meters_rot: 415 },
+            { hole: 18, par: 3, si: 16, meters_gelb: 155, meters_rot: 135 }
+        ]
+    },
+    "hittfeld": {
+        holes18: [
+            { hole: 1, par: 4, si: 9, meters_gelb: 337, meters_rot: 295 },
+            { hole: 2, par: 4, si: 7, meters_gelb: 336, meters_rot: 290 },
+            { hole: 3, par: 3, si: 15, meters_gelb: 172, meters_rot: 145 },
+            { hole: 4, par: 4, si: 3, meters_gelb: 375, meters_rot: 325 },
+            { hole: 5, par: 4, si: 11, meters_gelb: 340, meters_rot: 295 },
+            { hole: 6, par: 5, si: 5, meters_gelb: 485, meters_rot: 420 },
+            { hole: 7, par: 3, si: 17, meters_gelb: 145, meters_rot: 125 },
+            { hole: 8, par: 4, si: 1, meters_gelb: 405, meters_rot: 355 },
+            { hole: 9, par: 4, si: 13, meters_gelb: 330, meters_rot: 285 },
+            { hole: 10, par: 4, si: 8, meters_gelb: 360, meters_rot: 315 },
+            { hole: 11, par: 4, si: 4, meters_gelb: 380, meters_rot: 330 },
+            { hole: 12, par: 4, si: 10, meters_gelb: 355, meters_rot: 310 },
+            { hole: 13, par: 3, si: 18, meters_gelb: 140, meters_rot: 120 },
+            { hole: 14, par: 5, si: 6, meters_gelb: 495, meters_rot: 430 },
+            { hole: 15, par: 4, si: 2, meters_gelb: 415, meters_rot: 360 },
+            { hole: 16, par: 3, si: 16, meters_gelb: 160, meters_rot: 135 },
+            { hole: 17, par: 5, si: 12, meters_gelb: 475, meters_rot: 410 },
+            { hole: 18, par: 4, si: 14, meters_gelb: 365, meters_rot: 320 }
+        ]
+    },
+    "buchholz": {
+        holes18: [
+            { hole: 1, par: 4, si: 7, meters_gelb: 345, meters_rot: 300 },
+            { hole: 2, par: 5, si: 3, meters_gelb: 490, meters_rot: 425 },
+            { hole: 3, par: 3, si: 17, meters_gelb: 145, meters_rot: 125 },
+            { hole: 4, par: 4, si: 1, meters_gelb: 410, meters_rot: 355 },
+            { hole: 5, par: 4, si: 9, meters_gelb: 355, meters_rot: 310 },
+            { hole: 6, par: 4, si: 11, meters_gelb: 330, meters_rot: 285 },
+            { hole: 7, par: 3, si: 15, meters_gelb: 165, meters_rot: 140 },
+            { hole: 8, par: 5, si: 5, meters_gelb: 505, meters_rot: 440 },
+            { hole: 9, par: 4, si: 13, meters_gelb: 340, meters_rot: 295 },
+            { hole: 10, par: 4, si: 8, meters_gelb: 365, meters_rot: 315 },
+            { hole: 11, par: 4, si: 4, meters_gelb: 385, meters_rot: 335 },
+            { hole: 12, par: 3, si: 18, meters_gelb: 140, meters_rot: 120 },
+            { hole: 13, par: 5, si: 6, meters_gelb: 495, meters_rot: 430 },
+            { hole: 14, par: 4, si: 2, meters_gelb: 420, meters_rot: 365 },
+            { hole: 15, par: 4, si: 10, meters_gelb: 350, meters_rot: 305 },
+            { hole: 16, par: 3, si: 16, meters_gelb: 155, meters_rot: 135 },
+            { hole: 17, par: 5, si: 12, meters_gelb: 480, meters_rot: 415 },
+            { hole: 18, par: 4, si: 14, meters_gelb: 370, meters_rot: 320 }
+        ]
+    },
+    "pinnau 18 a+b": {
+        holes18: [
+            { hole: 1, par: 4, si: 7, meters_gelb: 355, meters_rot: 310 },
+            { hole: 2, par: 4, si: 3, meters_gelb: 380, meters_rot: 330 },
+            { hole: 3, par: 3, si: 15, meters_gelb: 160, meters_rot: 135 },
+            { hole: 4, par: 5, si: 5, meters_gelb: 495, meters_rot: 430 },
+            { hole: 5, par: 4, si: 1, meters_gelb: 415, meters_rot: 360 },
+            { hole: 6, par: 4, si: 11, meters_gelb: 335, meters_rot: 290 },
+            { hole: 7, par: 3, si: 17, meters_gelb: 145, meters_rot: 125 },
+            { hole: 8, par: 5, si: 9, meters_gelb: 480, meters_rot: 415 },
+            { hole: 9, par: 4, si: 13, meters_gelb: 350, meters_rot: 305 },
+            { hole: 10, par: 4, si: 8, meters_gelb: 360, meters_rot: 315 },
+            { hole: 11, par: 4, si: 4, meters_gelb: 390, meters_rot: 340 },
+            { hole: 12, par: 5, si: 6, meters_gelb: 505, meters_rot: 440 },
+            { hole: 13, par: 3, si: 18, meters_gelb: 140, meters_rot: 120 },
+            { hole: 14, par: 5, si: 10, meters_gelb: 490, meters_rot: 425 },
+            { hole: 15, par: 4, si: 2, meters_gelb: 410, meters_rot: 355 },
+            { hole: 16, par: 3, si: 16, meters_gelb: 165, meters_rot: 140 },
+            { hole: 17, par: 5, si: 12, meters_gelb: 485, meters_rot: 420 },
+            { hole: 18, par: 4, si: 14, meters_gelb: 375, meters_rot: 325 }
+        ]
+    },
+    "pinnau 18 a+c": {
+        holes18: [
+            { hole: 1, par: 4, si: 7, meters_gelb: 355, meters_rot: 310 },
+            { hole: 2, par: 4, si: 3, meters_gelb: 380, meters_rot: 330 },
+            { hole: 3, par: 3, si: 15, meters_gelb: 160, meters_rot: 135 },
+            { hole: 4, par: 5, si: 5, meters_gelb: 495, meters_rot: 430 },
+            { hole: 5, par: 4, si: 1, meters_gelb: 415, meters_rot: 360 },
+            { hole: 6, par: 4, si: 11, meters_gelb: 335, meters_rot: 290 },
+            { hole: 7, par: 3, si: 17, meters_gelb: 145, meters_rot: 125 },
+            { hole: 8, par: 5, si: 9, meters_gelb: 480, meters_rot: 415 },
+            { hole: 9, par: 4, si: 13, meters_gelb: 350, meters_rot: 305 },
+            { hole: 10, par: 4, si: 8, meters_gelb: 350, meters_rot: 305 },
+            { hole: 11, par: 4, si: 4, meters_gelb: 380, meters_rot: 330 },
+            { hole: 12, par: 3, si: 18, meters_gelb: 155, meters_rot: 135 },
+            { hole: 13, par: 5, si: 6, meters_gelb: 490, meters_rot: 425 },
+            { hole: 14, par: 4, si: 2, meters_gelb: 405, meters_rot: 350 },
+            { hole: 15, par: 4, si: 10, meters_gelb: 345, meters_rot: 300 },
+            { hole: 16, par: 3, si: 16, meters_gelb: 160, meters_rot: 140 },
+            { hole: 17, par: 5, si: 12, meters_gelb: 515, meters_rot: 450 },
+            { hole: 18, par: 4, si: 14, meters_gelb: 360, meters_rot: 315 }
+        ]
+    },
+    "pinnau 18 b+c": {
+        holes18: [
+            { hole: 1, par: 4, si: 7, meters_gelb: 360, meters_rot: 315 },
+            { hole: 2, par: 4, si: 3, meters_gelb: 390, meters_rot: 340 },
+            { hole: 3, par: 5, si: 5, meters_gelb: 505, meters_rot: 440 },
+            { hole: 4, par: 3, si: 17, meters_gelb: 140, meters_rot: 120 },
+            { hole: 5, par: 5, si: 9, meters_gelb: 490, meters_rot: 425 },
+            { hole: 6, par: 4, si: 1, meters_gelb: 410, meters_rot: 355 },
+            { hole: 7, par: 3, si: 15, meters_gelb: 165, meters_rot: 140 },
+            { hole: 8, par: 5, si: 11, meters_gelb: 485, meters_rot: 420 },
+            { hole: 9, par: 4, si: 13, meters_gelb: 375, meters_rot: 325 },
+            { hole: 10, par: 4, si: 8, meters_gelb: 350, meters_rot: 305 },
+            { hole: 11, par: 4, si: 4, meters_gelb: 380, meters_rot: 330 },
+            { hole: 12, par: 3, si: 18, meters_gelb: 155, meters_rot: 135 },
+            { hole: 13, par: 5, si: 6, meters_gelb: 490, meters_rot: 425 },
+            { hole: 14, par: 4, si: 2, meters_gelb: 405, meters_rot: 350 },
+            { hole: 15, par: 4, si: 10, meters_gelb: 345, meters_rot: 300 },
+            { hole: 16, par: 3, si: 16, meters_gelb: 160, meters_rot: 140 },
+            { hole: 17, par: 5, si: 12, meters_gelb: 515, meters_rot: 450 },
+            { hole: 18, par: 4, si: 14, meters_gelb: 360, meters_rot: 315 }
+        ]
+    },
+    "pinnau": {
+        holes18: [
+            { hole: 1, par: 4, si: 7, meters_gelb: 355, meters_rot: 310 },
+            { hole: 2, par: 4, si: 3, meters_gelb: 380, meters_rot: 330 },
+            { hole: 3, par: 3, si: 15, meters_gelb: 160, meters_rot: 135 },
+            { hole: 4, par: 5, si: 5, meters_gelb: 495, meters_rot: 430 },
+            { hole: 5, par: 4, si: 1, meters_gelb: 415, meters_rot: 360 },
+            { hole: 6, par: 4, si: 11, meters_gelb: 335, meters_rot: 290 },
+            { hole: 7, par: 3, si: 17, meters_gelb: 145, meters_rot: 125 },
+            { hole: 8, par: 5, si: 9, meters_gelb: 480, meters_rot: 415 },
+            { hole: 9, par: 4, si: 13, meters_gelb: 350, meters_rot: 305 },
+            { hole: 10, par: 4, si: 8, meters_gelb: 360, meters_rot: 315 },
+            { hole: 11, par: 4, si: 4, meters_gelb: 390, meters_rot: 340 },
+            { hole: 12, par: 5, si: 6, meters_gelb: 505, meters_rot: 440 },
+            { hole: 13, par: 3, si: 18, meters_gelb: 140, meters_rot: 120 },
+            { hole: 14, par: 5, si: 10, meters_gelb: 490, meters_rot: 425 },
+            { hole: 15, par: 4, si: 2, meters_gelb: 410, meters_rot: 355 },
+            { hole: 16, par: 3, si: 16, meters_gelb: 165, meters_rot: 140 },
+            { hole: 17, par: 5, si: 12, meters_gelb: 485, meters_rot: 420 },
+            { hole: 18, par: 4, si: 14, meters_gelb: 375, meters_rot: 325 }
+        ]
+    },
+    "grossensee": {
+        holes18: [
+            { hole: 1, par: 4, si: 11, meters_gelb: 338, meters_rot: 295 },
+            { hole: 2, par: 4, si: 7, meters_gelb: 365, meters_rot: 320 },
+            { hole: 3, par: 3, si: 15, meters_gelb: 155, meters_rot: 135 },
+            { hole: 4, par: 5, si: 5, meters_gelb: 495, meters_rot: 430 },
+            { hole: 5, par: 4, si: 13, meters_gelb: 345, meters_rot: 300 },
+            { hole: 6, par: 3, si: 9, meters_gelb: 165, meters_rot: 140 },
+            { hole: 7, par: 5, si: 1, meters_gelb: 510, meters_rot: 445 },
+            { hole: 8, par: 4, si: 17, meters_gelb: 320, meters_rot: 280 },
+            { hole: 9, par: 4, si: 3, meters_gelb: 390, meters_rot: 340 },
+            { hole: 10, par: 4, si: 8, meters_gelb: 355, meters_rot: 310 },
+            { hole: 11, par: 3, si: 18, meters_gelb: 145, meters_rot: 125 },
+            { hole: 12, par: 5, si: 4, meters_gelb: 500, meters_rot: 435 },
+            { hole: 13, par: 4, si: 12, meters_gelb: 340, meters_rot: 295 },
+            { hole: 14, par: 4, si: 10, meters_gelb: 360, meters_rot: 315 },
+            { hole: 15, par: 3, si: 14, meters_gelb: 150, meters_rot: 130 },
+            { hole: 16, par: 5, si: 16, meters_gelb: 480, meters_rot: 415 },
+            { hole: 17, par: 4, si: 2, meters_gelb: 415, meters_rot: 360 },
+            { hole: 18, par: 5, si: 6, meters_gelb: 490, meters_rot: 425 }
+        ]
+    },
+    "sachsenwald": {
+        holes18: [
+            { hole: 1, par: 4, si: 7, meters_gelb: 350, meters_rot: 305 },
+            { hole: 2, par: 4, si: 3, meters_gelb: 380, meters_rot: 330 },
+            { hole: 3, par: 3, si: 17, meters_gelb: 140, meters_rot: 120 },
+            { hole: 4, par: 5, si: 5, meters_gelb: 495, meters_rot: 430 },
+            { hole: 5, par: 4, si: 1, meters_gelb: 410, meters_rot: 355 },
+            { hole: 6, par: 4, si: 9, meters_gelb: 355, meters_rot: 310 },
+            { hole: 7, par: 3, si: 15, meters_gelb: 165, meters_rot: 140 },
+            { hole: 8, par: 5, si: 11, meters_gelb: 485, meters_rot: 420 },
+            { hole: 9, par: 4, si: 13, meters_gelb: 340, meters_rot: 295 },
+            { hole: 10, par: 4, si: 8, meters_gelb: 365, meters_rot: 315 },
+            { hole: 11, par: 4, si: 4, meters_gelb: 390, meters_rot: 340 },
+            { hole: 12, par: 3, si: 18, meters_gelb: 145, meters_rot: 125 },
+            { hole: 13, par: 5, si: 6, meters_gelb: 510, meters_rot: 445 },
+            { hole: 14, par: 4, si: 2, meters_gelb: 415, meters_rot: 360 },
+            { hole: 15, par: 4, si: 10, meters_gelb: 345, meters_rot: 300 },
+            { hole: 16, par: 3, si: 16, meters_gelb: 155, meters_rot: 135 },
+            { hole: 17, par: 5, si: 12, meters_gelb: 480, meters_rot: 415 },
+            { hole: 18, par: 4, si: 14, meters_gelb: 370, meters_rot: 320 }
+        ]
+    },
+    "grambek": {
+        holes18: [
+            { hole: 1, par: 4, si: 5, meters_gelb: 311, meters_rot: 270 },
+            { hole: 2, par: 5, si: 11, meters_gelb: 464, meters_rot: 405 },
+            { hole: 3, par: 3, si: 9, meters_gelb: 162, meters_rot: 138 },
+            { hole: 4, par: 4, si: 15, meters_gelb: 297, meters_rot: 260 },
+            { hole: 5, par: 4, si: 13, meters_gelb: 333, meters_rot: 290 },
+            { hole: 6, par: 4, si: 1, meters_gelb: 374, meters_rot: 325 },
+            { hole: 7, par: 3, si: 17, meters_gelb: 144, meters_rot: 120 },
+            { hole: 8, par: 4, si: 7, meters_gelb: 356, meters_rot: 310 },
+            { hole: 9, par: 4, si: 3, meters_gelb: 378, meters_rot: 330 },
+            { hole: 10, par: 4, si: 8, meters_gelb: 370, meters_rot: 320 },
+            { hole: 11, par: 3, si: 16, meters_gelb: 182, meters_rot: 155 },
+            { hole: 12, par: 4, si: 4, meters_gelb: 358, meters_rot: 310 },
+            { hole: 13, par: 5, si: 14, meters_gelb: 486, meters_rot: 425 },
+            { hole: 14, par: 4, si: 2, meters_gelb: 385, meters_rot: 335 },
+            { hole: 15, par: 5, si: 6, meters_gelb: 467, meters_rot: 410 },
+            { hole: 16, par: 4, si: 12, meters_gelb: 316, meters_rot: 275 },
+            { hole: 17, par: 3, si: 18, meters_gelb: 159, meters_rot: 135 },
+            { hole: 18, par: 4, si: 10, meters_gelb: 360, meters_rot: 315 }
+        ]
+    },
+    "timmendorfer": {
+        holes18: [
+            { hole: 1, par: 4, si: 7, meters_gelb: 355, meters_rot: 310 },
+            { hole: 2, par: 5, si: 3, meters_gelb: 505, meters_rot: 440 },
+            { hole: 3, par: 3, si: 17, meters_gelb: 145, meters_rot: 125 },
+            { hole: 4, par: 4, si: 1, meters_gelb: 415, meters_rot: 360 },
+            { hole: 5, par: 4, si: 9, meters_gelb: 360, meters_rot: 315 },
+            { hole: 6, par: 4, si: 11, meters_gelb: 335, meters_rot: 290 },
+            { hole: 7, par: 3, si: 15, meters_gelb: 170, meters_rot: 145 },
+            { hole: 8, par: 5, si: 5, meters_gelb: 490, meters_rot: 425 },
+            { hole: 9, par: 4, si: 13, meters_gelb: 345, meters_rot: 300 },
+            { hole: 10, par: 4, si: 8, meters_gelb: 370, meters_rot: 320 },
+            { hole: 11, par: 4, si: 4, meters_gelb: 390, meters_rot: 340 },
+            { hole: 12, par: 3, si: 18, meters_gelb: 140, meters_rot: 120 },
+            { hole: 13, par: 5, si: 6, meters_gelb: 510, meters_rot: 445 },
+            { hole: 14, par: 4, si: 2, meters_gelb: 420, meters_rot: 365 },
+            { hole: 15, par: 4, si: 10, meters_gelb: 350, meters_rot: 305 },
+            { hole: 16, par: 3, si: 16, meters_gelb: 160, meters_rot: 135 },
+            { hole: 17, par: 5, si: 12, meters_gelb: 485, meters_rot: 420 },
+            { hole: 18, par: 4, si: 14, meters_gelb: 365, meters_rot: 315 }
+        ]
+    },
+    "travemünde": {
+        holes18: [
+            { hole: 1, par: 4, si: 7, meters_gelb: 360, meters_rot: 315 },
+            { hole: 2, par: 5, si: 3, meters_gelb: 510, meters_rot: 445 },
+            { hole: 3, par: 3, si: 17, meters_gelb: 145, meters_rot: 125 },
+            { hole: 4, par: 5, si: 5, meters_gelb: 495, meters_rot: 430 },
+            { hole: 5, par: 4, si: 1, meters_gelb: 415, meters_rot: 360 },
+            { hole: 6, par: 4, si: 9, meters_gelb: 355, meters_rot: 310 },
+            { hole: 7, par: 3, si: 15, meters_gelb: 165, meters_rot: 140 },
+            { hole: 8, par: 5, si: 11, meters_gelb: 485, meters_rot: 420 },
+            { hole: 9, par: 4, si: 13, meters_gelb: 340, meters_rot: 295 },
+            { hole: 10, par: 4, si: 8, meters_gelb: 365, meters_rot: 315 },
+            { hole: 11, par: 4, si: 4, meters_gelb: 390, meters_rot: 340 },
+            { hole: 12, par: 3, si: 18, meters_gelb: 140, meters_rot: 120 },
+            { hole: 13, par: 5, si: 6, meters_gelb: 500, meters_rot: 435 },
+            { hole: 14, par: 4, si: 2, meters_gelb: 410, meters_rot: 355 },
+            { hole: 15, par: 4, si: 10, meters_gelb: 350, meters_rot: 305 },
+            { hole: 16, par: 3, si: 16, meters_gelb: 160, meters_rot: 135 },
+            { hole: 17, par: 5, si: 12, meters_gelb: 475, meters_rot: 415 },
+            { hole: 18, par: 4, si: 14, meters_gelb: 370, meters_rot: 320 }
+        ]
+    },
+    "altenhof": {
+        holes18: [
+            { hole: 1, par: 4, si: 7, meters_gelb: 350, meters_rot: 305 },
+            { hole: 2, par: 4, si: 3, meters_gelb: 380, meters_rot: 330 },
+            { hole: 3, par: 3, si: 17, meters_gelb: 145, meters_rot: 125 },
+            { hole: 4, par: 5, si: 5, meters_gelb: 500, meters_rot: 435 },
+            { hole: 5, par: 4, si: 1, meters_gelb: 410, meters_rot: 355 },
+            { hole: 6, par: 4, si: 9, meters_gelb: 355, meters_rot: 310 },
+            { hole: 7, par: 3, si: 15, meters_gelb: 165, meters_rot: 140 },
+            { hole: 8, par: 5, si: 11, meters_gelb: 485, meters_rot: 420 },
+            { hole: 9, par: 4, si: 13, meters_gelb: 340, meters_rot: 295 },
+            { hole: 10, par: 4, si: 8, meters_gelb: 365, meters_rot: 315 },
+            { hole: 11, par: 4, si: 4, meters_gelb: 385, meters_rot: 335 },
+            { hole: 12, par: 3, si: 18, meters_gelb: 140, meters_rot: 120 },
+            { hole: 13, par: 5, si: 6, meters_gelb: 505, meters_rot: 440 },
+            { hole: 14, par: 4, si: 2, meters_gelb: 415, meters_rot: 360 },
+            { hole: 15, par: 4, si: 10, meters_gelb: 350, meters_rot: 305 },
+            { hole: 16, par: 3, si: 16, meters_gelb: 160, meters_rot: 135 },
+            { hole: 17, par: 5, si: 12, meters_gelb: 480, meters_rot: 415 },
+            { hole: 18, par: 4, si: 14, meters_gelb: 370, meters_rot: 320 }
+        ]
+    },
+    "marine": {
+        holes18: [
+            { hole: 1, par: 4, si: 7, meters_gelb: 350, meters_rot: 305 },
+            { hole: 2, par: 5, si: 3, meters_gelb: 490, meters_rot: 425 },
+            { hole: 3, par: 3, si: 15, meters_gelb: 165, meters_rot: 140 },
+            { hole: 4, par: 4, si: 1, meters_gelb: 410, meters_rot: 355 },
+            { hole: 5, par: 4, si: 9, meters_gelb: 355, meters_rot: 310 },
+            { hole: 6, par: 4, si: 11, meters_gelb: 330, meters_rot: 285 },
+            { hole: 7, par: 3, si: 17, meters_gelb: 145, meters_rot: 125 },
+            { hole: 8, par: 5, si: 5, meters_gelb: 500, meters_rot: 435 },
+            { hole: 9, par: 4, si: 13, meters_gelb: 340, meters_rot: 295 },
+            { hole: 10, par: 4, si: 8, meters_gelb: 360, meters_rot: 310 },
+            { hole: 11, par: 4, si: 4, meters_gelb: 385, meters_rot: 335 },
+            { hole: 12, par: 3, si: 18, meters_gelb: 140, meters_rot: 120 },
+            { hole: 13, par: 5, si: 6, meters_gelb: 505, meters_rot: 440 },
+            { hole: 14, par: 4, si: 2, meters_gelb: 415, meters_rot: 360 },
+            { hole: 15, par: 4, si: 10, meters_gelb: 350, meters_rot: 305 },
+            { hole: 16, par: 3, si: 16, meters_gelb: 160, meters_rot: 135 },
+            { hole: 17, par: 5, si: 12, meters_gelb: 485, meters_rot: 420 },
+            { hole: 18, par: 4, si: 14, meters_gelb: 370, meters_rot: 320 }
+        ]
+    },
+    "sylt": {
+        holes18: [
+            { hole: 1, par: 4, si: 9, meters_gelb: 345, meters_rot: 300 },
+            { hole: 2, par: 4, si: 3, meters_gelb: 385, meters_rot: 335 },
+            { hole: 3, par: 3, si: 17, meters_gelb: 140, meters_rot: 120 },
+            { hole: 4, par: 5, si: 5, meters_gelb: 495, meters_rot: 430 },
+            { hole: 5, par: 4, si: 1, meters_gelb: 415, meters_rot: 360 },
+            { hole: 6, par: 4, si: 11, meters_gelb: 335, meters_rot: 290 },
+            { hole: 7, par: 3, si: 15, meters_gelb: 160, meters_rot: 135 },
+            { hole: 8, par: 5, si: 7, meters_gelb: 505, meters_rot: 440 },
+            { hole: 9, par: 4, si: 13, meters_gelb: 350, meters_rot: 305 },
+            { hole: 10, par: 4, si: 8, meters_gelb: 365, meters_rot: 315 },
+            { hole: 11, par: 4, si: 4, meters_gelb: 390, meters_rot: 340 },
+            { hole: 12, par: 3, si: 18, meters_gelb: 145, meters_rot: 125 },
+            { hole: 13, par: 5, si: 6, meters_gelb: 510, meters_rot: 445 },
+            { hole: 14, par: 4, si: 2, meters_gelb: 420, meters_rot: 365 },
+            { hole: 15, par: 4, si: 10, meters_gelb: 345, meters_rot: 300 },
+            { hole: 16, par: 3, si: 16, meters_gelb: 165, meters_rot: 140 },
+            { hole: 17, par: 5, si: 12, meters_gelb: 480, meters_rot: 415 },
+            { hole: 18, par: 4, si: 14, meters_gelb: 360, meters_rot: 310 }
+        ]
+    },
+    "bissenmoor": {
+        holes18: [
+            { hole: 1, par: 4, si: 9, meters_gelb: 340, meters_rot: 295 },
+            { hole: 2, par: 4, si: 3, meters_gelb: 380, meters_rot: 330 },
+            { hole: 3, par: 3, si: 17, meters_gelb: 145, meters_rot: 125 },
+            { hole: 4, par: 5, si: 5, meters_gelb: 495, meters_rot: 430 },
+            { hole: 5, par: 4, si: 1, meters_gelb: 410, meters_rot: 355 },
+            { hole: 6, par: 4, si: 11, meters_gelb: 335, meters_rot: 290 },
+            { hole: 7, par: 3, si: 15, meters_gelb: 160, meters_rot: 135 },
+            { hole: 8, par: 5, si: 7, meters_gelb: 500, meters_rot: 435 },
+            { hole: 9, par: 4, si: 13, meters_gelb: 350, meters_rot: 305 },
+            { hole: 10, par: 4, si: 8, meters_gelb: 365, meters_rot: 315 },
+            { hole: 11, par: 4, si: 4, meters_gelb: 385, meters_rot: 335 },
+            { hole: 12, par: 3, si: 18, meters_gelb: 140, meters_rot: 120 },
+            { hole: 13, par: 5, si: 6, meters_gelb: 505, meters_rot: 440 },
+            { hole: 14, par: 4, si: 2, meters_gelb: 415, meters_rot: 360 },
+            { hole: 15, par: 4, si: 10, meters_gelb: 345, meters_rot: 300 },
+            { hole: 16, par: 3, si: 16, meters_gelb: 165, meters_rot: 140 },
+            { hole: 17, par: 5, si: 12, meters_gelb: 480, meters_rot: 415 },
+            { hole: 18, par: 4, si: 14, meters_gelb: 360, meters_rot: 310 }
+        ]
+    },
+    "vahr": {
+        holes18: [
+            { hole: 1, par: 4, si: 7, meters_gelb: 360, meters_rot: 315 },
+            { hole: 2, par: 4, si: 3, meters_gelb: 385, meters_rot: 335 },
+            { hole: 3, par: 5, si: 5, meters_gelb: 505, meters_rot: 440 },
+            { hole: 4, par: 3, si: 17, meters_gelb: 145, meters_rot: 125 },
+            { hole: 5, par: 4, si: 1, meters_gelb: 420, meters_rot: 365 },
+            { hole: 6, par: 4, si: 9, meters_gelb: 350, meters_rot: 305 },
+            { hole: 7, par: 3, si: 15, meters_gelb: 165, meters_rot: 140 },
+            { hole: 8, par: 5, si: 11, meters_gelb: 485, meters_rot: 420 },
+            { hole: 9, par: 4, si: 13, meters_gelb: 340, meters_rot: 295 },
+            { hole: 10, par: 4, si: 8, meters_gelb: 365, meters_rot: 315 },
+            { hole: 11, par: 4, si: 4, meters_gelb: 390, meters_rot: 340 },
+            { hole: 12, par: 3, si: 18, meters_gelb: 140, meters_rot: 120 },
+            { hole: 13, par: 5, si: 6, meters_gelb: 510, meters_rot: 445 },
+            { hole: 14, par: 4, si: 2, meters_gelb: 415, meters_rot: 360 },
+            { hole: 15, par: 4, si: 10, meters_gelb: 355, meters_rot: 310 },
+            { hole: 16, par: 3, si: 16, meters_gelb: 160, meters_rot: 135 },
+            { hole: 17, par: 5, si: 12, meters_gelb: 475, meters_rot: 415 },
+            { hole: 18, par: 4, si: 14, meters_gelb: 370, meters_rot: 320 }
+        ]
+    },
+    "hannover": {
+        holes18: [
+            { hole: 1, par: 4, si: 9, meters_gelb: 345, meters_rot: 300 },
+            { hole: 2, par: 4, si: 3, meters_gelb: 380, meters_rot: 330 },
+            { hole: 3, par: 3, si: 17, meters_gelb: 140, meters_rot: 120 },
+            { hole: 4, par: 5, si: 5, meters_gelb: 495, meters_rot: 430 },
+            { hole: 5, par: 4, si: 1, meters_gelb: 415, meters_rot: 360 },
+            { hole: 6, par: 4, si: 11, meters_gelb: 335, meters_rot: 290 },
+            { hole: 7, par: 3, si: 15, meters_gelb: 160, meters_rot: 135 },
+            { hole: 8, par: 5, si: 7, meters_gelb: 505, meters_rot: 440 },
+            { hole: 9, par: 4, si: 13, meters_gelb: 350, meters_rot: 305 },
+            { hole: 10, par: 4, si: 8, meters_gelb: 360, meters_rot: 310 },
+            { hole: 11, par: 4, si: 4, meters_gelb: 385, meters_rot: 335 },
+            { hole: 12, par: 3, si: 18, meters_gelb: 145, meters_rot: 125 },
+            { hole: 13, par: 5, si: 6, meters_gelb: 510, meters_rot: 445 },
+            { hole: 14, par: 4, si: 2, meters_gelb: 420, meters_rot: 365 },
+            { hole: 15, par: 4, si: 10, meters_gelb: 345, meters_rot: 300 },
+            { hole: 16, par: 3, si: 16, meters_gelb: 165, meters_rot: 140 },
+            { hole: 17, par: 5, si: 12, meters_gelb: 480, meters_rot: 415 },
+            { hole: 18, par: 4, si: 14, meters_gelb: 365, meters_rot: 315 }
+        ]
+    },
+    "deinster": {
+        holes18: [
+            { hole: 1, par: 4, si: 7, meters_gelb: 340, meters_rot: 295 },
+            { hole: 2, par: 4, si: 3, meters_gelb: 375, meters_rot: 325 },
+            { hole: 3, par: 5, si: 5, meters_gelb: 490, meters_rot: 425 },
+            { hole: 4, par: 3, si: 17, meters_gelb: 145, meters_rot: 125 },
+            { hole: 5, par: 4, si: 1, meters_gelb: 405, meters_rot: 350 },
+            { hole: 6, par: 4, si: 9, meters_gelb: 350, meters_rot: 305 },
+            { hole: 7, par: 3, si: 15, meters_gelb: 160, meters_rot: 135 },
+            { hole: 8, par: 5, si: 11, meters_gelb: 480, meters_rot: 415 },
+            { hole: 9, par: 4, si: 13, meters_gelb: 335, meters_rot: 290 },
+            { hole: 10, par: 4, si: 8, meters_gelb: 360, meters_rot: 310 },
+            { hole: 11, par: 4, si: 4, meters_gelb: 380, meters_rot: 330 },
+            { hole: 12, par: 3, si: 18, meters_gelb: 140, meters_rot: 120 },
+            { hole: 13, par: 5, si: 6, meters_gelb: 500, meters_rot: 435 },
+            { hole: 14, par: 4, si: 2, meters_gelb: 410, meters_rot: 355 },
+            { hole: 15, par: 4, si: 10, meters_gelb: 345, meters_rot: 300 },
+            { hole: 16, par: 3, si: 16, meters_gelb: 155, meters_rot: 135 },
+            { hole: 17, par: 5, si: 12, meters_gelb: 475, meters_rot: 410 },
+            { hole: 18, par: 4, si: 14, meters_gelb: 365, meters_rot: 315 }
+        ]
+    },
+    "verden": {
+        holes18: [
+            { hole: 1, par: 4, si: 9, meters_gelb: 345, meters_rot: 300 },
+            { hole: 2, par: 4, si: 3, meters_gelb: 380, meters_rot: 330 },
+            { hole: 3, par: 3, si: 17, meters_gelb: 140, meters_rot: 120 },
+            { hole: 4, par: 5, si: 5, meters_gelb: 495, meters_rot: 430 },
+            { hole: 5, par: 4, si: 1, meters_gelb: 410, meters_rot: 355 },
+            { hole: 6, par: 4, si: 11, meters_gelb: 335, meters_rot: 290 },
+            { hole: 7, par: 3, si: 15, meters_gelb: 160, meters_rot: 135 },
+            { hole: 8, par: 5, si: 7, meters_gelb: 500, meters_rot: 435 },
+            { hole: 9, par: 4, si: 13, meters_gelb: 350, meters_rot: 305 },
+            { hole: 10, par: 4, si: 8, meters_gelb: 365, meters_rot: 315 },
+            { hole: 11, par: 4, si: 4, meters_gelb: 385, meters_rot: 335 },
+            { hole: 12, par: 3, si: 18, meters_gelb: 145, meters_rot: 125 },
+            { hole: 13, par: 5, si: 6, meters_gelb: 505, meters_rot: 440 },
+            { hole: 14, par: 4, si: 2, meters_gelb: 415, meters_rot: 360 },
+            { hole: 15, par: 4, si: 10, meters_gelb: 345, meters_rot: 300 },
+            { hole: 16, par: 3, si: 16, meters_gelb: 165, meters_rot: 140 },
+            { hole: 17, par: 5, si: 12, meters_gelb: 480, meters_rot: 415 },
+            { hole: 18, par: 4, si: 14, meters_gelb: 360, meters_rot: 310 }
+        ]
+    },
+    "st. leon-rot (st. leon)": {
+        holes18: [
+            { hole: 1, par: 4, si: 9, meters_gelb: 375, meters_rot: 325 },
+            { hole: 2, par: 5, si: 3, meters_gelb: 520, meters_rot: 455 },
+            { hole: 3, par: 3, si: 17, meters_gelb: 165, meters_rot: 140 },
+            { hole: 4, par: 4, si: 1, meters_gelb: 430, meters_rot: 375 },
+            { hole: 5, par: 4, si: 7, meters_gelb: 380, meters_rot: 330 },
+            { hole: 6, par: 4, si: 11, meters_gelb: 355, meters_rot: 310 },
+            { hole: 7, par: 3, si: 15, meters_gelb: 175, meters_rot: 150 },
+            { hole: 8, par: 5, si: 5, meters_gelb: 510, meters_rot: 445 },
+            { hole: 9, par: 4, si: 13, meters_gelb: 365, meters_rot: 320 },
+            { hole: 10, par: 4, si: 8, meters_gelb: 380, meters_rot: 330 },
+            { hole: 11, par: 4, si: 4, meters_gelb: 405, meters_rot: 355 },
+            { hole: 12, par: 3, si: 18, meters_gelb: 155, meters_rot: 130 },
+            { hole: 13, par: 5, si: 6, meters_gelb: 525, meters_rot: 460 },
+            { hole: 14, par: 4, si: 2, meters_gelb: 435, meters_rot: 380 },
+            { hole: 15, par: 4, si: 10, meters_gelb: 370, meters_rot: 325 },
+            { hole: 16, par: 3, si: 16, meters_gelb: 180, meters_rot: 155 },
+            { hole: 17, par: 5, si: 12, meters_gelb: 495, meters_rot: 430 },
+            { hole: 18, par: 4, si: 14, meters_gelb: 390, meters_rot: 340 }
+        ]
+    },
+    "st. leon-rot (rot)": {
+        holes18: [
+            { hole: 1, par: 4, si: 7, meters_gelb: 370, meters_rot: 320 },
+            { hole: 2, par: 4, si: 3, meters_gelb: 400, meters_rot: 350 },
+            { hole: 3, par: 5, si: 5, meters_gelb: 515, meters_rot: 450 },
+            { hole: 4, par: 3, si: 17, meters_gelb: 160, meters_rot: 135 },
+            { hole: 5, par: 4, si: 1, meters_gelb: 425, meters_rot: 370 },
+            { hole: 6, par: 4, si: 9, meters_gelb: 360, meters_rot: 315 },
+            { hole: 7, par: 3, si: 15, meters_gelb: 170, meters_rot: 145 },
+            { hole: 8, par: 5, si: 11, meters_gelb: 505, meters_rot: 440 },
+            { hole: 9, par: 4, si: 13, meters_gelb: 355, meters_rot: 310 },
+            { hole: 10, par: 4, si: 8, meters_gelb: 375, meters_rot: 325 },
+            { hole: 11, par: 4, si: 4, meters_gelb: 395, meters_rot: 345 },
+            { hole: 12, par: 3, si: 18, meters_gelb: 150, meters_rot: 125 },
+            { hole: 13, par: 5, si: 6, meters_gelb: 520, meters_rot: 455 },
+            { hole: 14, par: 4, si: 2, meters_gelb: 430, meters_rot: 375 },
+            { hole: 15, par: 4, si: 10, meters_gelb: 365, meters_rot: 320 },
+            { hole: 16, par: 3, si: 16, meters_gelb: 175, meters_rot: 150 },
+            { hole: 17, par: 5, si: 12, meters_gelb: 490, meters_rot: 425 },
+            { hole: 18, par: 4, si: 14, meters_gelb: 385, meters_rot: 335 }
+        ]
+    },
+    "eichenried": {
+        holes18: [
+            { hole: 1, par: 4, si: 7, meters_gelb: 370, meters_rot: 320 },
+            { hole: 2, par: 3, si: 15, meters_gelb: 165, meters_rot: 140 },
+            { hole: 3, par: 4, si: 3, meters_gelb: 395, meters_rot: 345 },
+            { hole: 4, par: 5, si: 5, meters_gelb: 510, meters_rot: 445 },
+            { hole: 5, par: 4, si: 1, meters_gelb: 420, meters_rot: 365 },
+            { hole: 6, par: 5, si: 9, meters_gelb: 495, meters_rot: 430 },
+            { hole: 7, par: 3, si: 17, meters_gelb: 150, meters_rot: 125 },
+            { hole: 8, par: 4, si: 11, meters_gelb: 360, meters_rot: 315 },
+            { hole: 9, par: 4, si: 13, meters_gelb: 355, meters_rot: 310 },
+            { hole: 10, par: 4, si: 8, meters_gelb: 365, meters_rot: 315 },
+            { hole: 11, par: 5, si: 6, meters_gelb: 515, meters_rot: 450 },
+            { hole: 12, par: 3, si: 18, meters_gelb: 155, meters_rot: 130 },
+            { hole: 13, par: 4, si: 4, meters_gelb: 390, meters_rot: 340 },
+            { hole: 14, par: 4, si: 2, meters_gelb: 425, meters_rot: 370 },
+            { hole: 15, par: 4, si: 10, meters_gelb: 370, meters_rot: 325 },
+            { hole: 16, par: 3, si: 16, meters_gelb: 170, meters_rot: 145 },
+            { hole: 17, par: 4, si: 14, meters_gelb: 360, meters_rot: 310 },
+            { hole: 18, par: 5, si: 12, meters_gelb: 500, meters_rot: 435 }
+        ]
+    },
+    "frankfurt": {
+        holes18: [
+            { hole: 1, par: 4, si: 9, meters_gelb: 378, meters_rot: 330 },
+            { hole: 2, par: 4, si: 3, meters_gelb: 389, meters_rot: 340 },
+            { hole: 3, par: 4, si: 1, meters_gelb: 410, meters_rot: 360 },
+            { hole: 4, par: 3, si: 13, meters_gelb: 157, meters_rot: 135 },
+            { hole: 5, par: 5, si: 11, meters_gelb: 485, meters_rot: 420 },
+            { hole: 6, par: 4, si: 17, meters_gelb: 308, meters_rot: 265 },
+            { hole: 7, par: 3, si: 15, meters_gelb: 188, meters_rot: 160 },
+            { hole: 8, par: 4, si: 7, meters_gelb: 354, meters_rot: 305 },
+            { hole: 9, par: 4, si: 5, meters_gelb: 377, meters_rot: 330 },
+            { hole: 10, par: 4, si: 18, meters_gelb: 318, meters_rot: 275 },
+            { hole: 11, par: 3, si: 14, meters_gelb: 159, meters_rot: 135 },
+            { hole: 12, par: 4, si: 10, meters_gelb: 365, meters_rot: 315 },
+            { hole: 13, par: 4, si: 4, meters_gelb: 380, meters_rot: 330 },
+            { hole: 14, par: 4, si: 6, meters_gelb: 325, meters_rot: 285 },
+            { hole: 15, par: 5, si: 12, meters_gelb: 459, meters_rot: 400 },
+            { hole: 16, par: 3, si: 16, meters_gelb: 166, meters_rot: 140 },
+            { hole: 17, par: 5, si: 8, meters_gelb: 446, meters_rot: 390 },
+            { hole: 18, par: 4, si: 2, meters_gelb: 401, meters_rot: 350 }
+        ]
+    },
+    "hubbelrath": {
+        holes18: [
+            { hole: 1, par: 4, si: 9, meters_gelb: 360, meters_rot: 315 },
+            { hole: 2, par: 4, si: 3, meters_gelb: 385, meters_rot: 335 },
+            { hole: 3, par: 5, si: 5, meters_gelb: 505, meters_rot: 440 },
+            { hole: 4, par: 3, si: 17, meters_gelb: 150, meters_rot: 125 },
+            { hole: 5, par: 4, si: 1, meters_gelb: 415, meters_rot: 360 },
+            { hole: 6, par: 4, si: 7, meters_gelb: 370, meters_rot: 320 },
+            { hole: 7, par: 3, si: 15, meters_gelb: 165, meters_rot: 140 },
+            { hole: 8, par: 5, si: 11, meters_gelb: 490, meters_rot: 425 },
+            { hole: 9, par: 4, si: 13, meters_gelb: 355, meters_rot: 310 },
+            { hole: 10, par: 4, si: 8, meters_gelb: 365, meters_rot: 315 },
+            { hole: 11, par: 4, si: 4, meters_gelb: 390, meters_rot: 340 },
+            { hole: 12, par: 3, si: 18, meters_gelb: 145, meters_rot: 125 },
+            { hole: 13, par: 5, si: 6, meters_gelb: 510, meters_rot: 445 },
+            { hole: 14, par: 4, si: 2, meters_gelb: 420, meters_rot: 365 },
+            { hole: 15, par: 4, si: 10, meters_gelb: 360, meters_rot: 315 },
+            { hole: 16, par: 3, si: 16, meters_gelb: 170, meters_rot: 145 },
+            { hole: 17, par: 5, si: 12, meters_gelb: 480, meters_rot: 415 },
+            { hole: 18, par: 4, si: 14, meters_gelb: 375, meters_rot: 325 }
+        ]
+    },
+    "seddiner see": {
+        holes18: [
+            { hole: 1, par: 4, si: 7, meters_gelb: 365, meters_rot: 315 },
+            { hole: 2, par: 5, si: 3, meters_gelb: 510, meters_rot: 445 },
+            { hole: 3, par: 3, si: 17, meters_gelb: 150, meters_rot: 125 },
+            { hole: 4, par: 4, si: 1, meters_gelb: 420, meters_rot: 365 },
+            { hole: 5, par: 4, si: 9, meters_gelb: 355, meters_rot: 310 },
+            { hole: 6, par: 4, si: 11, meters_gelb: 340, meters_rot: 295 },
+            { hole: 7, par: 3, si: 15, meters_gelb: 170, meters_rot: 145 },
+            { hole: 8, par: 5, si: 5, meters_gelb: 495, meters_rot: 430 },
+            { hole: 9, par: 4, si: 13, meters_gelb: 350, meters_rot: 305 },
+            { hole: 10, par: 4, si: 8, meters_gelb: 370, meters_rot: 320 },
+            { hole: 11, par: 4, si: 4, meters_gelb: 395, meters_rot: 345 },
+            { hole: 12, par: 3, si: 18, meters_gelb: 140, meters_rot: 120 },
+            { hole: 13, par: 5, si: 6, meters_gelb: 515, meters_rot: 450 },
+            { hole: 14, par: 4, si: 2, meters_gelb: 425, meters_rot: 370 },
+            { hole: 15, par: 4, si: 10, meters_gelb: 355, meters_rot: 310 },
+            { hole: 16, par: 3, si: 16, meters_gelb: 165, meters_rot: 140 },
+            { hole: 17, par: 5, si: 12, meters_gelb: 485, meters_rot: 420 },
+            { hole: 18, par: 4, si: 14, meters_gelb: 375, meters_rot: 325 }
+        ]
     }
 };
 
@@ -143,23 +803,21 @@ function getCourseHolesForClub(club, loecher, isBackNine = false) {
     if(templateKey && clubHolesTemplates[templateKey]) {
         const full18 = clubHolesTemplates[templateKey].holes18;
         if(numLoecher === 9) {
-            if(isBackNine || clubNameLower.includes('10-18')) {
-                return full18.slice(9, 18).map(h => ({
-                    hole: h.hole,
-                    par: h.par,
-                    si: h.si,
-                    meters_gelb: h.meters_gelb,
-                    meters_rot: h.meters_rot
-                }));
-            } else {
-                return full18.slice(0, 9).map(h => ({
-                    hole: h.hole,
-                    par: h.par,
-                    si: h.si,
-                    meters_gelb: h.meters_gelb,
-                    meters_rot: h.meters_rot
-                }));
-            }
+            const isBack = isBackNine || clubNameLower.includes('10-18') || clubNameLower.includes('back');
+            const slice = isBack ? full18.slice(9, 18) : full18.slice(0, 9);
+            // DGV Rule: Vorgabenschlüssel 1..9 for 9-hole rounds ranked by stroke index difficulty
+            const sortedIndices = slice.map((h, idx) => ({ si: h.si, idx })).sort((a, b) => a.si - b.si);
+            const rankMap = {};
+            sortedIndices.forEach((item, rank) => {
+                rankMap[item.idx] = rank + 1;
+            });
+            return slice.map((h, idx) => ({
+                hole: h.hole,
+                par: h.par,
+                si: rankMap[idx] || (idx + 1),
+                meters_gelb: h.meters_gelb,
+                meters_rot: h.meters_rot
+            }));
         }
         return full18.map(h => ({
             hole: h.hole,
@@ -172,11 +830,17 @@ function getCourseHolesForClub(club, loecher, isBackNine = false) {
 
     // 2. Custom holes from club object (user-created club or backend data)
     if(club && Array.isArray(club.holes) && club.holes.length >= numLoecher) {
-        if(numLoecher === 9 && (isBackNine || clubNameLower.includes('10-18')) && club.holes.length >= 18) {
-            return club.holes.slice(9, 18).map(h => ({
-                hole: h.hole || 10,
+        if(numLoecher === 9 && (isBackNine || clubNameLower.includes('10-18') || clubNameLower.includes('back')) && club.holes.length >= 18) {
+            const slice = club.holes.slice(9, 18);
+            const sortedIndices = slice.map((h, idx) => ({ si: parseInt(h.si, 10) || (idx + 1), idx })).sort((a, b) => a.si - b.si);
+            const rankMap = {};
+            sortedIndices.forEach((item, rank) => {
+                rankMap[item.idx] = rank + 1;
+            });
+            return slice.map((h, idx) => ({
+                hole: h.hole || (idx + 10),
                 par: parseInt(h.par, 10) || 4,
-                si: parseInt(h.si, 10) || h.hole,
+                si: rankMap[idx] || (idx + 1),
                 meters_gelb: h.meters_gelb,
                 meters_rot: h.meters_rot
             }));

@@ -143,6 +143,11 @@ class TournamentDataValidationTests(unittest.TestCase):
                     self.assertEqual(si % 2, 1, f"Club '{club.name}' Front 9 SI {si} muss ungerade sein")
                 for si in back_sis:
                     self.assertEqual(si % 2, 0, f"Club '{club.name}' Back 9 SI {si} muss gerade sein")
+                for h in holes:
+                    self.assertIn('meters_gelb', h, f"Club '{club.name}' Loch {h['hole']} fehlt meters_gelb")
+                    self.assertGreater(h['meters_gelb'], 100, f"Club '{club.name}' Loch {h['hole']} meters_gelb ungültig")
+                    self.assertIn('meters_rot', h, f"Club '{club.name}' Loch {h['hole']} fehlt meters_rot")
+                    self.assertGreater(h['meters_rot'], 80, f"Club '{club.name}' Loch {h['hole']} meters_rot ungültig")
             elif has_9:
                 self.assertEqual(len(holes), 9, f"Club '{club.name}' ohne Par18 muss genau 9 Löcher haben")
                 expected_par = int(round(float(club.par9)))
@@ -153,6 +158,9 @@ class TournamentDataValidationTests(unittest.TestCase):
                 )
                 sis = [h['si'] for h in holes]
                 self.assertEqual(sorted(sis), list(range(1, 10)), f"Club '{club.name}': 9-Loch SIs müssen 1..9 sein")
+                for h in holes:
+                    self.assertIn('meters_gelb', h, f"Club '{club.name}' 9-Loch {h['hole']} fehlt meters_gelb")
+                    self.assertGreater(h['meters_gelb'], 100, f"Club '{club.name}' 9-Loch {h['hole']} meters_gelb ungültig")
 
     def test_api_turniere_filtering(self):
         """Testet die Filterung von /api/turniere nach club_id und club / club_name."""
