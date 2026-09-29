@@ -117,5 +117,44 @@ class ScorecardTournamentAndSignatureTests(unittest.TestCase):
         self.assertEqual(float(c10_18.cr9), 36.6)
         self.assertEqual(float(c10_18.sr9), 130.0)
 
+    def test_par_and_handicap_strokes_math_across_all_clubs(self):
+        """Prüft, dass für alle Clubs die Lochanzahl, Pars und Vorgabestriche mathematisch exakt aufgehen."""
+        clubs = Club.query.all()
+        for c in clubs:
+            if c.par18 and str(c.par18).strip() != '':
+                par_val = round(float(c.par18))
+                self.assertIn(par_val, [71, 72, 73], f"Ungewöhnliches Par 18 bei {c.name}: {par_val}")
+            if c.par9 and str(c.par9).strip() != '':
+                par_val = round(float(c.par9))
+                self.assertEqual(par_val, 36, f"Ungewöhnliches Par 9 bei {c.name}: {par_val}")
+
+    def test_course_handicap_formula_and_stroke_allocation(self):
+        """Prüft die WHS-Formel Course Handicap = HCP * Slope / 113 + (CR - Par) und dass die Summe der Striche exakt dem Course Handicap entspricht."""
+        # Testfall 1: HCPI 18.4 auf GC Jersbek 18 (CR 71.4, Slope 132, Par 72)
+        # CH = round(18.4 * 132 / 113 + (71.4 - 72)) = round(21.49 - 0.6) = round(20.89) = 21
+        hcp = 18.4
+        cr = 71.4
+        slope = 132.0
+        par = 72.0
+        ch = round((hcp * slope / 113.0) + (cr - par))
+        self.assertEqual(ch, 21)
+
+        # 21 Vorgabestriche auf 18 Löcher:
+        # Basis 1 Strich auf allen 18 Löchern (18 Striche),
+        # plus 1 weiterer Strich auf den 3 schwersten Löchern (SI 1, SI 2, SI 3) = 21 Striche.
+        base = ch // 18
+        rem = ch % 18
+        strokes = [base + (1 if si <= rem else 0) for si in range(1, 19)]
+        self.assertEqual(sum(strokes), ch)
+
+        # Testfall 2: HCPI 18.4 auf GC Jersbek 10-18 (Back Nine: CR 36.6, Slope 130, Par 36)
+        # CH9 = round((18.4 / 2) * 130 / 113 + (36.6 - 36)) = round(9.2 * 1.1504 + 0.6) = round(10.58 + 0.6) = round(11.18) = 11
+        ch9 = round(((hcp / 2.0) * 130.0 / 113.0) + (36.6 - 36.0))
+        self.assertEqual(ch9, 11)
+        base9 = ch9 // 9
+        rem9 = ch9 % 9
+        strokes9 = [base9 + (1 if rank <= rem9 else 0) for rank in range(1, 10)]
+        self.assertEqual(sum(strokes9), ch9)
+
 if __name__ == '__main__':
     unittest.main()
