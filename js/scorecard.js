@@ -1546,18 +1546,7 @@ function recalculateScorecardHandicapAndCourse() {
 let showProStats = false;
 
 function toggleProStatsColumns() {
-    showProStats = !showProStats;
-    const btn = document.getElementById('btn-toggle-pro-stats');
-    if(btn) {
-        if(showProStats) {
-            btn.className = "text-xs font-bold text-white bg-golf-600 border border-golf-600 px-2.5 py-1 rounded-lg flex items-center gap-1.5 shadow-xs transition-all";
-            btn.innerHTML = "<span>✅ Pro-Statistiken aktiv (Putts / FIR / GIR)</span>";
-        } else {
-            btn.className = "text-xs text-golf-700 font-bold hover:text-golf-800 bg-golf-50 hover:bg-golf-100 border border-golf-200 px-2.5 py-1 rounded-lg flex items-center gap-1.5 transition-all";
-            btn.innerHTML = "<span>📊 Pro-Statistiken erfassen (Putts / FIR / GIR)</span>";
-        }
-    }
-    initScorecardHolesTable(true);
+    // Pro-Statistiken wurden auf Wunsch des Nutzers entfernt
 }
 
 function initScorecardHolesTable(preserveExisting = false) {
@@ -1583,34 +1572,17 @@ function initScorecardHolesTable(preserveExisting = false) {
     let totalStriche = 0;
 
     if (thead) {
-        if (!showProStats) {
-            thead.innerHTML = `
-                <tr>
-                    <th class="sticky left-0 bg-slate-100 z-20 py-2.5 px-2 text-center w-12 font-bold shadow-[1px_0_0_0_#cbd5e1]">Loch</th>
-                    <th class="py-2.5 px-2 text-center w-12">Par</th>
-                    <th class="py-2.5 px-2 text-center w-14" title="Stroke Index / Vorgaben-Schlüssel">SI</th>
-                    <th class="py-2.5 px-2 text-center w-14" title="Vorgabestriche">Striche</th>
-                    <th class="py-2.5 px-3 text-center w-28">Brutto Schläge</th>
-                    <th class="py-2.5 px-2 text-center w-14">Netto</th>
-                    <th class="py-2.5 px-2 text-center w-16" title="Netto-Stableford Punkte">Stbf. Pkt</th>
-                </tr>
-            `;
-        } else {
-            thead.innerHTML = `
-                <tr>
-                    <th class="sticky left-0 bg-slate-100 z-20 py-2.5 px-2 text-center w-10 font-bold shadow-[1px_0_0_0_#cbd5e1]">Loch</th>
-                    <th class="py-2.5 px-2 text-center w-10">Par</th>
-                    <th class="py-2.5 px-2 text-center w-12" title="Stroke Index">SI</th>
-                    <th class="py-2.5 px-2 text-center w-12" title="Vorgabestriche">Striche</th>
-                    <th class="py-2.5 px-2 text-center w-24">Brutto</th>
-                    <th class="py-2.5 px-2 text-center w-12">Netto</th>
-                    <th class="py-2.5 px-2 text-center w-12" title="Netto-Stableford Punkte">Stbf</th>
-                    <th class="py-2.5 px-2 text-center w-20" title="Putts auf dem Grün">Putts</th>
-                    <th class="py-2.5 px-2 text-center w-24" title="Fairway in Regulation">FIR (Tee)</th>
-                    <th class="py-2.5 px-2 text-center w-16" title="Green in Regulation">GIR</th>
-                </tr>
-            `;
-        }
+        thead.innerHTML = `
+            <tr>
+                <th class="sticky left-0 bg-slate-100 z-20 py-2.5 px-2 text-center w-12 font-bold shadow-[1px_0_0_0_#cbd5e1]">Loch</th>
+                <th class="py-2.5 px-2 text-center w-12">Par</th>
+                <th class="py-2.5 px-2 text-center w-14" title="Stroke Index / Vorgaben-Schlüssel">SI</th>
+                <th class="py-2.5 px-2 text-center w-14" title="Vorgabestriche">Striche</th>
+                <th class="py-2.5 px-3 text-center w-28">Brutto Schläge</th>
+                <th class="py-2.5 px-2 text-center w-14">Netto</th>
+                <th class="py-2.5 px-2 text-center w-16" title="Netto-Stableford Punkte">Stbf. Pkt</th>
+            </tr>
+        `;
     }
 
     // Rank holes by SI for clean stroke allocation on 9 holes
@@ -1639,10 +1611,6 @@ function initScorecardHolesTable(preserveExisting = false) {
         const initialStrokes = prevHole ? prevHole.strokes : par;
         const netto = Math.max(1, initialStrokes - striche);
         const stbf = Math.max(0, par - netto + 2);
-        const putts = prevHole ? prevHole.putts : 2;
-        const fir = prevHole ? prevHole.fir : (par >= 4 ? 'hit' : null);
-        const gir = prevHole && prevHole.girManual ? prevHole.gir : (initialStrokes - putts <= par - 2);
-        const girManual = prevHole ? prevHole.girManual : false;
 
         scHolesData.push({
             hole: holeNr,
@@ -1652,117 +1620,50 @@ function initScorecardHolesTable(preserveExisting = false) {
             strokes: initialStrokes,
             gross: initialStrokes,
             netto: netto,
-            stableford: stbf,
-            putts: putts,
-            fir: fir,
-            gir: gir,
-            girManual: girManual
+            stableford: stbf
         });
 
         const tr = document.createElement('tr');
         tr.id = `sc-row-${i}`;
         tr.className = "hover:bg-slate-50 transition-colors";
         
-        if (!showProStats) {
-            tr.innerHTML = `
-                <td class="sticky left-0 bg-white z-10 py-2 px-2 text-center font-bold text-slate-800 shadow-[1px_0_0_0_#e2e8f0]">${holeNr}</td>
-                <td class="py-2 px-1 text-center">
-                    <select onchange="updateScorecardHolePar(${i}, this.value)" class="text-xs py-0.5 px-1 rounded-md border border-slate-200 bg-white font-bold text-slate-700 cursor-pointer hover:border-golf-500 focus:outline-none focus:ring-1 focus:ring-golf-500" title="Par für Loch ${holeNr} anpassen">
-                        <option value="3" ${par === 3 ? 'selected' : ''}>3</option>
-                        <option value="4" ${par === 4 ? 'selected' : ''}>4</option>
-                        <option value="5" ${par === 5 ? 'selected' : ''}>5</option>
-                        <option value="6" ${par === 6 ? 'selected' : ''}>6</option>
-                    </select>
-                </td>
-                <td class="py-2 px-2 text-center text-slate-400">${si}</td>
-                <td class="py-2 px-2 text-center font-bold text-golf-700">${striche > 0 ? '+'.repeat(Math.min(3, striche)) + (striche > 3 ? striche : '') : '-'}</td>
-                <td class="py-2 px-3 text-center">
-                    <div class="inline-flex items-center gap-1 bg-white border border-slate-200 rounded-lg p-0.5 shadow-xs">
-                        <button type="button" onclick="updateScorecardHole(${i}, -1)" class="w-7 h-7 sm:w-6 sm:h-6 rounded bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 font-black text-xs flex items-center justify-center select-none active:scale-90 touch-manipulation">-</button>
-                        <input type="number" id="sc-stroke-${i}" onchange="onScorecardStrokeInput(${i}, this.value)" value="${initialStrokes}" min="1" max="15" class="w-9 text-center font-black text-sm sm:text-xs text-slate-900 focus:outline-none border-none p-0">
-                        <button type="button" onclick="updateScorecardHole(${i}, 1)" class="w-7 h-7 sm:w-6 sm:h-6 rounded bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 font-black text-xs flex items-center justify-center select-none active:scale-90 touch-manipulation">+</button>
-                    </div>
-                </td>
-                <td class="py-2 px-2 text-center font-bold text-golf-800" id="sc-netto-${i}">${netto}</td>
-                <td class="py-2 px-2 text-center font-bold text-amber-800" id="sc-stbf-${i}">${stbf}</td>
-            `;
-        } else {
-            tr.innerHTML = `
-                <td class="sticky left-0 bg-white z-10 py-2 px-2 text-center font-bold text-slate-800 shadow-[1px_0_0_0_#e2e8f0]">${holeNr}</td>
-                <td class="py-2 px-1 text-center">
-                    <select onchange="updateScorecardHolePar(${i}, this.value)" class="text-xs py-0.5 px-1 rounded-md border border-slate-200 bg-white font-bold text-slate-700 cursor-pointer hover:border-golf-500 focus:outline-none focus:ring-1 focus:ring-golf-500" title="Par für Loch ${holeNr} anpassen">
-                        <option value="3" ${par === 3 ? 'selected' : ''}>3</option>
-                        <option value="4" ${par === 4 ? 'selected' : ''}>4</option>
-                        <option value="5" ${par === 5 ? 'selected' : ''}>5</option>
-                        <option value="6" ${par === 6 ? 'selected' : ''}>6</option>
-                    </select>
-                </td>
-                <td class="py-2 px-2 text-center text-slate-400">${si}</td>
-                <td class="py-2 px-2 text-center font-bold text-golf-700">${striche > 0 ? '+'.repeat(Math.min(3, striche)) + (striche > 3 ? striche : '') : '-'}</td>
-                <td class="py-2 px-2 text-center">
-                    <div class="inline-flex items-center gap-0.5 bg-white border border-slate-200 rounded-lg p-0.5 shadow-xs">
-                        <button type="button" onclick="updateScorecardHole(${i}, -1)" class="w-6 h-6 sm:w-5 sm:h-5 rounded bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 font-black text-xs flex items-center justify-center select-none active:scale-90 touch-manipulation">-</button>
-                        <input type="number" id="sc-stroke-${i}" onchange="onScorecardStrokeInput(${i}, this.value)" value="${initialStrokes}" min="1" max="15" class="w-8 text-center font-black text-sm sm:text-xs text-slate-900 focus:outline-none border-none p-0">
-                        <button type="button" onclick="updateScorecardHole(${i}, 1)" class="w-6 h-6 sm:w-5 sm:h-5 rounded bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 font-black text-xs flex items-center justify-center select-none active:scale-90 touch-manipulation">+</button>
-                    </div>
-                </td>
-                <td class="py-2 px-2 text-center font-bold text-golf-800" id="sc-netto-${i}">${netto}</td>
-                <td class="py-2 px-2 text-center font-bold text-amber-800" id="sc-stbf-${i}">${stbf}</td>
-                <td class="py-2 px-2 text-center">
-                    <div class="inline-flex items-center gap-0.5 bg-white border border-slate-200 rounded-lg p-0.5 shadow-xs">
-                        <button type="button" onclick="updateScorecardPutts(${i}, -1)" class="w-6 h-6 sm:w-5 sm:h-5 rounded bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 font-bold text-xs flex items-center justify-center select-none active:scale-90 touch-manipulation">-</button>
-                        <input type="number" id="sc-putt-${i}" onchange="onScorecardPuttInput(${i}, this.value)" value="${putts}" min="0" max="6" class="w-6 text-center font-bold text-xs text-slate-900 border-none p-0 focus:outline-none">
-                        <button type="button" onclick="updateScorecardPutts(${i}, 1)" class="w-6 h-6 sm:w-5 sm:h-5 rounded bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 font-bold text-xs flex items-center justify-center select-none active:scale-90 touch-manipulation">+</button>
-                    </div>
-                </td>
-                <td class="py-2 px-2 text-center">
-                    ${par >= 4 ? `
-                        <select id="sc-fir-${i}" onchange="onScorecardFirChange(${i}, this.value)" class="text-[11px] sm:text-[10px] font-bold rounded-lg border border-slate-200 py-1 px-1 bg-white text-emerald-800 touch-manipulation">
-                            <option value="hit" ${fir === 'hit' ? 'selected' : ''}>🎯 Fairway</option>
-                            <option value="left" ${fir === 'left' ? 'selected' : ''}>⬅️ Links</option>
-                            <option value="right" ${fir === 'right' ? 'selected' : ''}>➡️ Rechts</option>
-                        </select>
-                    ` : `<span class="text-slate-300 text-[10px]">-</span>`}
-                </td>
-                <td class="py-2 px-2 text-center">
-                    <button type="button" onclick="toggleScorecardGir(${i})" id="sc-gir-btn-${i}" class="px-2 py-1 sm:py-0.5 rounded-lg text-[11px] sm:text-[10px] font-bold touch-manipulation active:scale-95 ${gir ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-slate-100 text-slate-400 border border-slate-200'}">
-                        ${gir ? '✅ GIR' : '❌ Miss'}
-                    </button>
-                </td>
-            `;
-        }
+        tr.innerHTML = `
+            <td class="sticky left-0 bg-white z-10 py-2 px-2 text-center font-bold text-slate-800 shadow-[1px_0_0_0_#e2e8f0]">${holeNr}</td>
+            <td class="py-2 px-1 text-center">
+                <select onchange="updateScorecardHolePar(${i}, this.value)" class="text-xs py-0.5 px-1 rounded-md border border-slate-200 bg-white font-bold text-slate-700 cursor-pointer hover:border-golf-500 focus:outline-none focus:ring-1 focus:ring-golf-500" title="Par für Loch ${holeNr} anpassen">
+                    <option value="3" ${par === 3 ? 'selected' : ''}>3</option>
+                    <option value="4" ${par === 4 ? 'selected' : ''}>4</option>
+                    <option value="5" ${par === 5 ? 'selected' : ''}>5</option>
+                    <option value="6" ${par === 6 ? 'selected' : ''}>6</option>
+                </select>
+            </td>
+            <td class="py-2 px-2 text-center text-slate-400">${si}</td>
+            <td class="py-2 px-2 text-center font-bold text-golf-700">${striche > 0 ? '+'.repeat(Math.min(3, striche)) + (striche > 3 ? striche : '') : '-'}</td>
+            <td class="py-2 px-3 text-center">
+                <div class="inline-flex items-center gap-1 bg-white border border-slate-200 rounded-lg p-0.5 shadow-xs">
+                    <button type="button" onclick="updateScorecardHole(${i}, -1)" class="w-7 h-7 sm:w-6 sm:h-6 rounded bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 font-black text-xs flex items-center justify-center select-none active:scale-90 touch-manipulation">-</button>
+                    <input type="number" id="sc-stroke-${i}" onchange="onScorecardStrokeInput(${i}, this.value)" value="${initialStrokes}" min="1" max="15" class="w-9 text-center font-black text-sm sm:text-xs text-slate-900 focus:outline-none border-none p-0">
+                    <button type="button" onclick="updateScorecardHole(${i}, 1)" class="w-7 h-7 sm:w-6 sm:h-6 rounded bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 font-black text-xs flex items-center justify-center select-none active:scale-90 touch-manipulation">+</button>
+                </div>
+            </td>
+            <td class="py-2 px-2 text-center font-bold text-golf-800" id="sc-netto-${i}">${netto}</td>
+            <td class="py-2 px-2 text-center font-bold text-amber-800" id="sc-stbf-${i}">${stbf}</td>
+        `;
         tbody.appendChild(tr);
     }
 
     if (tfoot) {
-        if (!showProStats) {
-            tfoot.innerHTML = `
-                <tr>
-                    <td class="sticky left-0 bg-slate-50 z-20 py-3 px-2 text-center font-sans font-black shadow-[1px_0_0_0_#cbd5e1]">GESAMT</td>
-                    <td id="sc-total-par" class="py-3 px-2 text-center text-slate-700 font-mono">${totalPar}</td>
-                    <td class="py-3 px-2 text-center text-slate-400 font-mono">-</td>
-                    <td id="sc-total-striche" class="py-3 px-2 text-center text-slate-700 font-mono">${totalStriche}</td>
-                    <td id="sc-total-brutto" class="py-3 px-3 text-center text-slate-900 font-mono font-black text-sm">--</td>
-                    <td id="sc-total-netto" class="py-3 px-2 text-center text-golf-800 font-mono font-black text-sm">--</td>
-                    <td id="sc-total-stableford" class="py-3 px-2 text-center text-amber-800 font-mono font-black text-sm">--</td>
-                </tr>
-            `;
-        } else {
-            tfoot.innerHTML = `
-                <tr>
-                    <td class="sticky left-0 bg-slate-50 z-20 py-3 px-2 text-center font-sans font-black shadow-[1px_0_0_0_#cbd5e1]">GESAMT</td>
-                    <td id="sc-total-par" class="py-3 px-2 text-center text-slate-700 font-mono">${totalPar}</td>
-                    <td class="py-3 px-2 text-center text-slate-400 font-mono">-</td>
-                    <td id="sc-total-striche" class="py-3 px-2 text-center text-slate-700 font-mono">${totalStriche}</td>
-                    <td id="sc-total-brutto" class="py-3 px-2 text-center text-slate-900 font-mono font-black text-sm">--</td>
-                    <td id="sc-total-netto" class="py-3 px-2 text-center text-golf-800 font-mono font-black text-sm">--</td>
-                    <td id="sc-total-stableford" class="py-3 px-2 text-center text-amber-800 font-mono font-black text-sm">--</td>
-                    <td id="sc-total-putts" class="py-3 px-2 text-center text-slate-900 font-mono font-black text-xs">--</td>
-                    <td id="sc-total-fir" class="py-3 px-2 text-center text-emerald-800 font-mono font-bold text-[11px]">--</td>
-                    <td id="sc-total-gir" class="py-3 px-2 text-center text-emerald-800 font-mono font-bold text-[11px]">--</td>
-                </tr>
-            `;
-        }
+        tfoot.innerHTML = `
+            <tr>
+                <td class="sticky left-0 bg-slate-50 z-20 py-3 px-2 text-center font-sans font-black shadow-[1px_0_0_0_#cbd5e1]">GESAMT</td>
+                <td id="sc-total-par" class="py-3 px-2 text-center text-slate-700 font-mono">${totalPar}</td>
+                <td class="py-3 px-2 text-center text-slate-400 font-mono">-</td>
+                <td id="sc-total-striche" class="py-3 px-2 text-center text-slate-700 font-mono">${totalStriche}</td>
+                <td id="sc-total-brutto" class="py-3 px-3 text-center text-slate-900 font-mono font-black text-sm">--</td>
+                <td id="sc-total-netto" class="py-3 px-2 text-center text-golf-800 font-mono font-black text-sm">--</td>
+                <td id="sc-total-stableford" class="py-3 px-2 text-center text-amber-800 font-mono font-black text-sm">--</td>
+            </tr>
+        `;
     }
 
     recalculateScorecardTotals();
@@ -1802,62 +1703,11 @@ function onScorecardStrokeInput(index, value) {
     recalculateScorecardRow(index);
 }
 
-function updateScorecardPutts(index, delta) {
-    const hole = scHolesData[index];
-    if(!hole) return;
-    hole.putts = Math.max(0, Math.min(6, (hole.putts || 2) + delta));
-    const input = document.getElementById(`sc-putt-${index}`);
-    if(input) input.value = hole.putts;
-    if(!hole.girManual) {
-        hole.gir = (hole.strokes - hole.putts <= hole.par - 2);
-        updateGirBadge(index);
-    }
-    recalculateScorecardTotals();
-}
-
-function onScorecardPuttInput(index, value) {
-    const hole = scHolesData[index];
-    if(!hole) return;
-    const parsed = parseInt(value, 10);
-    hole.putts = isNaN(parsed) ? 2 : Math.max(0, Math.min(6, parsed));
-    const input = document.getElementById(`sc-putt-${index}`);
-    if(input) input.value = hole.putts;
-    if(!hole.girManual) {
-        hole.gir = (hole.strokes - hole.putts <= hole.par - 2);
-        updateGirBadge(index);
-    }
-    recalculateScorecardTotals();
-}
-
-function onScorecardFirChange(index, value) {
-    const hole = scHolesData[index];
-    if(!hole) return;
-    hole.fir = value;
-    recalculateScorecardTotals();
-}
-
-function toggleScorecardGir(index) {
-    const hole = scHolesData[index];
-    if(!hole) return;
-    hole.girManual = true;
-    hole.gir = !hole.gir;
-    updateGirBadge(index);
-    recalculateScorecardTotals();
-}
-
-function updateGirBadge(index) {
-    const hole = scHolesData[index];
-    const btn = document.getElementById(`sc-gir-btn-${index}`);
-    if(btn && hole) {
-        if(hole.gir) {
-            btn.className = "px-2 py-0.5 rounded-lg text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300";
-            btn.innerText = "✅ GIR";
-        } else {
-            btn.className = "px-2 py-0.5 rounded-lg text-[10px] font-bold bg-slate-100 text-slate-400 border border-slate-200";
-            btn.innerText = "❌ Miss";
-        }
-    }
-}
+function updateScorecardPutts(index, delta) {}
+function onScorecardPuttInput(index, value) {}
+function onScorecardFirChange(index, value) {}
+function toggleScorecardGir(index) {}
+function updateGirBadge(index) {}
 
 function recalculateScorecardRow(index) {
     const hole = scHolesData[index];
@@ -1865,11 +1715,6 @@ function recalculateScorecardRow(index) {
     hole.netto = Math.max(1, hole.strokes - hole.striche);
     hole.stableford = Math.max(0, hole.par - hole.netto + 2);
     hole.gross = hole.strokes;
-
-    if(!hole.girManual) {
-        hole.gir = (hole.strokes - (hole.putts || 2) <= hole.par - 2);
-        updateGirBadge(index);
-    }
 
     const nettoEl = document.getElementById(`sc-netto-${index}`);
     const stbfEl = document.getElementById(`sc-stbf-${index}`);
@@ -1883,21 +1728,11 @@ function recalculateScorecardTotals() {
     let totalBrutto = 0;
     let totalNetto = 0;
     let totalStableford = 0;
-    let totalPutts = 0;
-    let firHits = 0;
-    let firOpp = 0;
-    let girHits = 0;
 
     scHolesData.forEach(h => {
         totalBrutto += h.strokes;
         totalNetto += h.netto;
         totalStableford += h.stableford;
-        totalPutts += (h.putts !== undefined ? h.putts : 2);
-        if(h.par >= 4) {
-            firOpp++;
-            if(h.fir === 'hit' || h.fir === 'center' || h.fir === true) firHits++;
-        }
-        if(h.gir) girHits++;
     });
 
     const bruttoEl = document.getElementById('sc-total-brutto');
@@ -1906,15 +1741,6 @@ function recalculateScorecardTotals() {
     if(bruttoEl) bruttoEl.innerText = totalBrutto;
     if(nettoEl) nettoEl.innerText = totalNetto;
     if(stbfEl) stbfEl.innerText = totalStableford;
-
-    if(showProStats) {
-        const puttsEl = document.getElementById('sc-total-putts');
-        const firEl = document.getElementById('sc-total-fir');
-        const girEl = document.getElementById('sc-total-gir');
-        if(puttsEl) puttsEl.innerText = totalPutts;
-        if(firEl) firEl.innerText = firOpp > 0 ? `${firHits}/${firOpp}` : '-';
-        if(girEl) girEl.innerText = `${girHits}/${scHolesData.length}`;
-    }
 
     const loecher = scHolesData.length;
     const expectedStbf = loecher === 18 ? 36 : 18;

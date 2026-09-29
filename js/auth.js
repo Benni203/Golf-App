@@ -140,17 +140,31 @@ async function handleLoginSubmit(e) {
         const res = await apiFetch('/api/login', 'POST', { identifier, password });
         if(res.ok && res.data && res.data.token) {
             authToken = res.data.token;
-            currentUser = res.data.user;
+            currentUser = res.data.user || {
+                id: res.data.id,
+                username: res.data.username || identifier,
+                email: res.data.email || '',
+                is_admin: Boolean(res.data.is_admin)
+            };
             localStorage.setItem('golf_auth', JSON.stringify({ token: authToken, user: currentUser }));
 
             document.getElementById('auth-login-form')?.reset();
             closeAuthModal();
+            renderAuthHeader();
             await loadData();
             showToast(`Willkommen zurück, ${currentUser.username}! ⛳`, "👤");
         } else {
-            let errMsg = res.data?.fehler || "Falsche Anmeldedaten oder Passwort.";
-            if(res.status === 429) {
-                errMsg = res.data?.fehler || "Zu viele Anmeldeversuche. Bitte warte einen Moment und versuche es erneut.";
+            let errMsg = res.data?.fehler;
+            if(!errMsg) {
+                if(res.status === 401) {
+                    errMsg = "Falscher Benutzername/E-Mail oder falsches Passwort.";
+                } else if(res.status === 429) {
+                    errMsg = "Zu viele Anmeldeversuche. Bitte warte einen Moment und versuche es erneut.";
+                } else if(res.status === 0 || !res.status) {
+                    errMsg = "Der Server konnte nicht erreicht werden. Bitte stelle sicher, dass die Anwendung läuft.";
+                } else {
+                    errMsg = `Anmeldung fehlgeschlagen (Status ${res.status}). Bitte überprüfe deine Daten.`;
+                }
             }
             if(errBox) {
                 errBox.innerText = errMsg;

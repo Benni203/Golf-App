@@ -9,14 +9,14 @@ class AuthAndVersionTestCase(unittest.TestCase):
         self.client = self.app.test_client()
         with self.app.app_context():
             # Clean up test entities if any exist
-            User.query.filter(User.username.in_(['test_auth_user', 'change_pw_user'])).delete()
+            User.query.filter(User.username.in_(['test_auth_user', 'change_pw_user', 'test_login_robust_user'])).delete()
             Club.query.filter_by(name='Test Custom Club Bearbeitet').delete()
             Club.query.filter_by(name='Test Custom Club').delete()
             db.session.commit()
 
     def tearDown(self):
         with self.app.app_context():
-            User.query.filter(User.username.in_(['test_auth_user', 'change_pw_user'])).delete()
+            User.query.filter(User.username.in_(['test_auth_user', 'change_pw_user', 'test_login_robust_user'])).delete()
             Club.query.filter_by(name='Test Custom Club Bearbeitet').delete()
             Club.query.filter_by(name='Test Custom Club').delete()
             db.session.commit()
@@ -138,6 +138,54 @@ class AuthAndVersionTestCase(unittest.TestCase):
         self.assertEqual(update_res.status_code, 200)
         self.assertEqual(update_res.get_json()['club']['name'], 'Test Custom Club Bearbeitet')
         self.assertEqual(update_res.get_json()['club']['region'], 'Schleswig-Holstein')
+
+    def test_login_robustness_and_user_payload(self):
+        """Testet Härtung des Logins: Whitespace, Groß-/Kleinschreibung, Passwort-Varianten und Payload-Felder."""
+        # 1. Registrieren
+        reg_res = self.client.post('/api/register', json={
+            'username': 'test_login_robust_user',
+            'email': 'robust@golfapp.de',
+            'password': 'StrongPassword2026!'
+        })
+        self.assertEqual(reg_res.status_code, 201)
+
+        # 2. Login mit Username und führenden/nachfolgenden Leerzeichen
+        login_spaces = self.client.post('/api/login', json={
+            'identifier': '  test_login_robust_user  ',
+            'password': 'StrongPassword2026!'
+        })
+        self.assertEqual(login_spaces.status_code, 200)
+        data = login_spaces.get_json()
+        self.assertIn('token', data)
+        self.assertIn('user', data)
+        self.assertEqual(data['user']['username'], 'test_login_robust_user')
+        self.assertEqual(data['username'], 'test_login_robust_user')
+        self.assertIn('id', data)
+        self.assertIn('email', data)
+
+        # 3. Login mit E-Mail und Leerzeichen
+        login_mail_spaces = self.client.post('/api/login', json={
+            'identifier': ' robust@golfapp.de ',
+            'password': 'StrongPassword2026!'
+        })
+        self.assertEqual(login_mail_spaces.status_code, 200)
+
+        # 4. Login mit Passwort, das trailing whitespace hat (mobile keyboard autocomplete)
+        login_pw_space = self.client.post('/api/login', json={
+            'identifier': 'test_login_robust_user',
+            'password': 'StrongPassword2026! '
+        })
+        self.assertEqual(login_pw_space.status_code, 200)
+
+        # 5. /api/me liefert sowohl user-Objekt als auch Top-Level-Felder
+        token = login_pw_space.get_json()['token']
+        me_res = self.client.get('/api/me', headers={'Authorization': f'Bearer {token}'})
+        self.assertEqual(me_res.status_code, 200)
+        me_data = me_res.get_json()
+        self.assertIn('user', me_data)
+        self.assertEqual(me_data['user']['username'], 'test_login_robust_user')
+        self.assertEqual(me_data['username'], 'test_login_robust_user')
+        self.assertEqual(me_data['id'], me_data['user']['id'])
 
 if __name__ == '__main__':
     unittest.main()

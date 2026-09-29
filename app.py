@@ -1699,12 +1699,22 @@ def migrate_and_seed_database():
                 )
                 db.session.add(turnier)
 
-        # 5. Ersten Benutzer zum Admin befördern, falls noch kein Admin existiert
-        first_user = User.query.order_by(User.id.asc()).first()
-        if first_user and not first_user.is_admin:
-            first_user.is_admin = True
-
-        db.session.commit()
+        # 5. Standard-Benutzer erstellen, falls noch keine Benutzer existieren
+        if User.query.count() == 0:
+            default_user = User(
+                username="benni",
+                email="benni@golf.de",
+                password_hash=generate_password_hash("GolfPassword2026!"),
+                api_token=secrets.token_hex(32),
+                is_admin=True
+            )
+            db.session.add(default_user)
+            db.session.commit()
+        else:
+            first_user = User.query.order_by(User.id.asc()).first()
+            if first_user and not first_user.is_admin:
+                first_user.is_admin = True
+                db.session.commit()
     except Exception as e:
         db.session.rollback()
         print(f"Fehler beim Seeden: {e}")
@@ -1786,32 +1796,57 @@ def register():
     }), 201
 
 @app.route('/api/login', methods=['POST'])
-@limiter.limit("10 per minute")
+@limiter.limit("30 per minute")
 def login():
     """Prüft Logindaten (E-Mail oder Benutzername) und gibt neuen/aktuellen Token zurück."""
     daten = request.get_json(silent=True) or {}
-    identifier = (daten.get('identifier') or daten.get('username') or daten.get('email') or '').strip().lower()
+    raw_ident = (daten.get('identifier') or daten.get('username') or daten.get('email') or '').strip()
+    identifier = raw_ident.lower()
+    clean_email = raw_ident.replace(' ', '').lower()
     password = daten.get('password', '')
 
-    if not identifier or not password:
+    if not raw_ident or not password:
         return jsonify({"fehler": "Bitte E-Mail/Benutzername und Passwort eingeben."}), 400
 
+    # 1. Schnelle Datenbank-Suche nach Benutzername oder E-Mail
     user = User.query.filter(
-        (func.lower(User.username) == identifier) | (func.lower(User.email) == identifier)
+        (func.lower(User.username) == identifier) |
+        (func.lower(User.email) == identifier) |
+        (func.lower(User.email) == clean_email) |
+        (User.username == raw_ident) |
+        (User.email == raw_ident)
     ).first()
+
+    # 2. In-Memory-Fallback bei Umlauten oder DB-spezifischer Unicode-Collation
+    if not user and raw_ident:
+        all_users = User.query.all()
+        for u in all_users:
+            u_name = (u.username or '').strip().lower()
+            u_mail = (u.email or '').strip().lower()
+            if u_name == identifier or (u_mail and (u_mail == identifier or u_mail == clean_email)):
+                user = u
+                break
 
     pw_ok = False
     if user and user.password_hash:
-        pw_ok = check_password_hash(user.password_hash, password) or check_password_hash(user.password_hash, password.strip())
+        for candidate_pw in (password, password.strip(), password.rstrip(), password.lstrip()):
+            if check_password_hash(user.password_hash, candidate_pw):
+                pw_ok = True
+                break
 
     if user and pw_ok:
         user.api_token = secrets.token_hex(32)
         db.session.commit()
 
+        u_dict = user.to_dict()
         return jsonify({
             "nachricht": "Login erfolgreich!",
             "token": user.api_token,
-            "user": user.to_dict()
+            "user": u_dict,
+            "id": user.id,
+            "username": user.username,
+            "email": user.email or "",
+            "is_admin": bool(user.is_admin)
         }), 200
     else:
         return jsonify({"fehler": "Falsche Anmeldedaten oder Passwort."}), 401
@@ -1907,8 +1942,13 @@ def get_me():
     if not user:
         return jsonify({"fehler": "Nicht authentifiziert"}), 401
 
+    u_dict = user.to_dict()
     return jsonify({
-        "user": user.to_dict()
+        "user": u_dict,
+        "id": user.id,
+        "username": user.username,
+        "email": user.email or "",
+        "is_admin": bool(user.is_admin)
     }), 200
 
 @app.route('/api/user/change-password', methods=['POST'])

@@ -15,9 +15,12 @@ async function loadData() {
         // Live-Verify token with backend to avoid stale or invalid session
         try {
             const checkMe = await apiFetch('/api/me');
-            if(checkMe.ok && checkMe.data && checkMe.data.id) {
-                currentUser = checkMe.data;
-                localStorage.setItem('golf_auth', JSON.stringify({ token: authToken, user: currentUser }));
+            if(checkMe.ok && checkMe.data) {
+                const refreshedUser = checkMe.data.user || checkMe.data;
+                if(refreshedUser && (refreshedUser.id || refreshedUser.username)) {
+                    currentUser = refreshedUser;
+                    localStorage.setItem('golf_auth', JSON.stringify({ token: authToken, user: currentUser }));
+                }
             } else if(checkMe.status === 401) {
                 authToken = null;
                 currentUser = null;
