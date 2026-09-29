@@ -33,3 +33,6 @@ let scMarkerSigPad = null;
 let scGpsData = null; // { verified, lat, lon, distance_km, token }
 let currentFlightData = null;
 let scHolesData = [];
+let activeScorecardTournament = null;
+let activeZoomSigType = null; // 'player' or 'marker'
+let zoomSigPad = null;

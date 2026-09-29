@@ -1,13 +1,147 @@
 // --- GOLF COURSE HOLES DATA & WHS INTEGRITY ---
-function getCourseHolesForClub(club, loecher) {
+const clubHolesTemplates = {
+    "jersbek": {
+        holes18: [
+            { hole: 1, par: 4, si: 11, meters_gelb: 331, meters_rot: 288 },
+            { hole: 2, par: 5, si: 5, meters_gelb: 478, meters_rot: 412 },
+            { hole: 3, par: 3, si: 15, meters_gelb: 142, meters_rot: 121 },
+            { hole: 4, par: 4, si: 1, meters_gelb: 386, meters_rot: 341 },
+            { hole: 5, par: 4, si: 9, meters_gelb: 329, meters_rot: 290 },
+            { hole: 6, par: 4, si: 7, meters_gelb: 344, meters_rot: 302 },
+            { hole: 7, par: 3, si: 17, meters_gelb: 131, meters_rot: 112 },
+            { hole: 8, par: 5, si: 3, meters_gelb: 492, meters_rot: 428 },
+            { hole: 9, par: 4, si: 13, meters_gelb: 318, meters_rot: 275 },
+            { hole: 10, par: 4, si: 12, meters_gelb: 334, meters_rot: 291 },
+            { hole: 11, par: 4, si: 4, meters_gelb: 372, meters_rot: 324 },
+            { hole: 12, par: 5, si: 6, meters_gelb: 485, meters_rot: 420 },
+            { hole: 13, par: 3, si: 18, meters_gelb: 138, meters_rot: 119 },
+            { hole: 14, par: 4, si: 2, meters_gelb: 396, meters_rot: 348 },
+            { hole: 15, par: 4, si: 10, meters_gelb: 348, meters_rot: 304 },
+            { hole: 16, par: 3, si: 16, meters_gelb: 154, meters_rot: 135 },
+            { hole: 17, par: 5, si: 8, meters_gelb: 480, meters_rot: 418 },
+            { hole: 18, par: 4, si: 14, meters_gelb: 368, meters_rot: 320 }
+        ]
+    },
+    "falkenstein": {
+        holes18: [
+            { hole: 1, par: 4, si: 9, meters_gelb: 340, meters_rot: 295 },
+            { hole: 2, par: 4, si: 5, meters_gelb: 375, meters_rot: 325 },
+            { hole: 3, par: 4, si: 1, meters_gelb: 405, meters_rot: 350 },
+            { hole: 4, par: 3, si: 17, meters_gelb: 145, meters_rot: 125 },
+            { hole: 5, par: 4, si: 11, meters_gelb: 335, meters_rot: 290 },
+            { hole: 6, par: 5, si: 7, meters_gelb: 480, meters_rot: 415 },
+            { hole: 7, par: 3, si: 15, meters_gelb: 160, meters_rot: 135 },
+            { hole: 8, par: 4, si: 3, meters_gelb: 390, meters_rot: 340 },
+            { hole: 9, par: 4, si: 13, meters_gelb: 320, meters_rot: 280 },
+            { hole: 10, par: 3, si: 16, meters_gelb: 155, meters_rot: 130 },
+            { hole: 11, par: 4, si: 4, meters_gelb: 385, meters_rot: 335 },
+            { hole: 12, par: 4, si: 8, meters_gelb: 360, meters_rot: 310 },
+            { hole: 13, par: 3, si: 18, meters_gelb: 135, meters_rot: 115 },
+            { hole: 14, par: 5, si: 6, meters_gelb: 495, meters_rot: 430 },
+            { hole: 15, par: 4, si: 2, meters_gelb: 410, meters_rot: 355 },
+            { hole: 16, par: 4, si: 12, meters_gelb: 345, meters_rot: 300 },
+            { hole: 17, par: 4, si: 10, meters_gelb: 350, meters_rot: 305 },
+            { hole: 18, par: 3, si: 14, meters_gelb: 170, meters_rot: 145 }
+        ]
+    },
+    "wendlohe": {
+        holes18: [
+            { hole: 1, par: 4, si: 7, meters_gelb: 350, meters_rot: 305 },
+            { hole: 2, par: 4, si: 3, meters_gelb: 385, meters_rot: 335 },
+            { hole: 3, par: 5, si: 9, meters_gelb: 475, meters_rot: 410 },
+            { hole: 4, par: 3, si: 17, meters_gelb: 140, meters_rot: 120 },
+            { hole: 5, par: 4, si: 1, meters_gelb: 410, meters_rot: 355 },
+            { hole: 6, par: 4, si: 11, meters_gelb: 330, meters_rot: 285 },
+            { hole: 7, par: 5, si: 5, meters_gelb: 490, meters_rot: 425 },
+            { hole: 8, par: 3, si: 15, meters_gelb: 155, meters_rot: 135 },
+            { hole: 9, par: 4, si: 13, meters_gelb: 325, meters_rot: 280 },
+            { hole: 10, par: 4, si: 8, meters_gelb: 360, meters_rot: 315 },
+            { hole: 11, par: 4, si: 4, meters_gelb: 380, meters_rot: 330 },
+            { hole: 12, par: 3, si: 18, meters_gelb: 135, meters_rot: 115 },
+            { hole: 13, par: 5, si: 6, meters_gelb: 485, meters_rot: 420 },
+            { hole: 14, par: 4, si: 2, meters_gelb: 405, meters_rot: 350 },
+            { hole: 15, par: 4, si: 10, meters_gelb: 345, meters_rot: 300 },
+            { hole: 16, par: 3, si: 16, meters_gelb: 160, meters_rot: 140 },
+            { hole: 17, par: 5, si: 12, meters_gelb: 470, meters_rot: 405 },
+            { hole: 18, par: 4, si: 14, meters_gelb: 355, meters_rot: 310 }
+        ]
+    },
+    "kaden": {
+        holes18: [
+            { hole: 1, par: 4, si: 7, meters_gelb: 365, meters_rot: 315 },
+            { hole: 2, par: 5, si: 3, meters_gelb: 505, meters_rot: 440 },
+            { hole: 3, par: 3, si: 15, meters_gelb: 165, meters_rot: 140 },
+            { hole: 4, par: 4, si: 1, meters_gelb: 415, meters_rot: 360 },
+            { hole: 5, par: 4, si: 9, meters_gelb: 355, meters_rot: 305 },
+            { hole: 6, par: 4, si: 11, meters_gelb: 340, meters_rot: 295 },
+            { hole: 7, par: 3, si: 17, meters_gelb: 145, meters_rot: 125 },
+            { hole: 8, par: 5, si: 5, meters_gelb: 495, meters_rot: 430 },
+            { hole: 9, par: 4, si: 13, meters_gelb: 330, meters_rot: 285 },
+            { hole: 10, par: 4, si: 8, meters_gelb: 360, meters_rot: 310 },
+            { hole: 11, par: 4, si: 4, meters_gelb: 390, meters_rot: 340 },
+            { hole: 12, par: 3, si: 18, meters_gelb: 140, meters_rot: 120 },
+            { hole: 13, par: 5, si: 6, meters_gelb: 510, meters_rot: 445 },
+            { hole: 14, par: 4, si: 2, meters_gelb: 420, meters_rot: 365 },
+            { hole: 15, par: 4, si: 10, meters_gelb: 350, meters_rot: 300 },
+            { hole: 16, par: 3, si: 16, meters_gelb: 170, meters_rot: 145 },
+            { hole: 17, par: 5, si: 12, meters_gelb: 485, meters_rot: 420 },
+            { hole: 18, par: 4, si: 14, meters_gelb: 375, meters_rot: 325 }
+        ]
+    }
+};
+
+function getCourseHolesForClub(club, loecher, isBackNine = false) {
     const numLoecher = parseInt(loecher, 10) || 18;
+    
+    // Check if club already has custom holes
     if(club && Array.isArray(club.holes) && club.holes.length >= numLoecher) {
+        if(numLoecher === 9 && isBackNine && club.holes.length >= 18) {
+            return club.holes.slice(9, 18).map(h => ({
+                hole: h.hole || 10,
+                par: parseInt(h.par, 10) || 4,
+                si: parseInt(h.si, 10) || h.hole
+            }));
+        }
         return club.holes.slice(0, numLoecher).map(h => ({
             hole: h.hole,
             par: parseInt(h.par, 10) || 4,
             si: parseInt(h.si, 10) || h.hole
         }));
     }
+
+    // Match templates
+    const clubNameLower = (club?.name || '').toLowerCase();
+    const templateKey = Object.keys(clubHolesTemplates).find(key => clubNameLower.includes(key));
+    if(templateKey && clubHolesTemplates[templateKey]) {
+        const full18 = clubHolesTemplates[templateKey].holes18;
+        if(numLoecher === 9) {
+            if(isBackNine || clubNameLower.includes('10-18')) {
+                return full18.slice(9, 18).map(h => ({
+                    hole: h.hole,
+                    par: h.par,
+                    si: h.si,
+                    meters_gelb: h.meters_gelb,
+                    meters_rot: h.meters_rot
+                }));
+            } else {
+                return full18.slice(0, 9).map(h => ({
+                    hole: h.hole,
+                    par: h.par,
+                    si: h.si,
+                    meters_gelb: h.meters_gelb,
+                    meters_rot: h.meters_rot
+                }));
+            }
+        }
+        return full18.map(h => ({
+            hole: h.hole,
+            par: h.par,
+            si: h.si,
+            meters_gelb: h.meters_gelb,
+            meters_rot: h.meters_rot
+        }));
+    }
+
     // Dynamic fallback matching official DGV pars
     const is9 = numLoecher === 9;
     const parVal = is9 
@@ -26,8 +160,10 @@ function getCourseHolesForClub(club, loecher) {
     const sis = is9
         ? [1, 2, 3, 4, 5, 6, 7, 8, 9]
         : [7, 3, 15, 1, 11, 5, 17, 9, 13, 8, 4, 16, 2, 12, 18, 6, 10, 14];
+
+    const offset = (is9 && (isBackNine || clubNameLower.includes('10-18'))) ? 9 : 0;
     return pars.slice(0, numLoecher).map((p, idx) => ({
-        hole: idx + 1,
+        hole: idx + 1 + offset,
         par: p,
         si: sis[idx] || (idx + 1)
     }));
@@ -43,21 +179,24 @@ function initScorecardHoles() {
     tbody.innerHTML = '';
     tbody.dataset.club = clubName || '';
 
-    const courseHoles = getCourseHolesForClub(club, loecher);
+    const clubNameLower = (clubName || '').toLowerCase();
+    const isBackNine = (loecher === 9) && clubNameLower.includes('10-18');
+    const courseHoles = getCourseHolesForClub(club, loecher, isBackNine);
     scorecardData = [];
 
     for(let i = 1; i <= loecher; i++) {
-        const holeObj = courseHoles[i - 1] || { hole: i, par: 4, si: i };
+        const holeObj = courseHoles[i - 1] || { hole: i + (isBackNine ? 9 : 0), par: 4, si: i };
+        const holeNum = holeObj.hole || (i + (isBackNine ? 9 : 0));
         const par = holeObj.par;
-        scorecardData.push({ hole: i, par: par, strokes: par, si: holeObj.si });
+        scorecardData.push({ hole: holeNum, par: par, strokes: par, si: holeObj.si });
 
         const tr = document.createElement('tr');
-        tr.id = `scorecard-row-${i}`;
+        tr.id = `scorecard-row-${holeNum}`;
         tr.className = "hover:bg-slate-50";
         tr.innerHTML = `
-            <td class="py-2 px-2 font-bold text-slate-700">Loch ${i} <span class="text-[10px] text-slate-400 font-normal">SI ${holeObj.si}</span></td>
+            <td class="py-2 px-2 font-bold text-slate-700">Loch ${holeNum} <span class="text-[10px] text-slate-400 font-normal">SI ${holeObj.si}</span></td>
             <td class="py-2 px-2">
-                <select onchange="updateHolePar(${i}, this.value)" class="text-xs py-1 px-1.5 rounded-md border border-slate-200 bg-white font-mono">
+                <select onchange="updateHolePar(${holeNum}, this.value)" class="text-xs py-1 px-1.5 rounded-md border border-slate-200 bg-white font-mono">
                     <option value="3" ${par == 3 ? 'selected' : ''}>Par 3</option>
                     <option value="4" ${par == 4 ? 'selected' : ''}>Par 4</option>
                     <option value="5" ${par == 5 ? 'selected' : ''}>Par 5</option>
@@ -65,15 +204,15 @@ function initScorecardHoles() {
             </td>
             <td class="py-2 px-2">
                 <div class="inline-flex items-center gap-1.5">
-                    <button type="button" onclick="adjustHoleScore(${i}, -1)" class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 font-bold text-xs">−</button>
-                    <input type="number" id="hole-score-${i}" min="1" max="15" value="${par}" oninput="updateHoleScore(${i}, this.value)" class="w-12 text-center py-1 rounded-md border border-slate-200 text-sm font-bold font-mono">
-                    <button type="button" onclick="adjustHoleScore(${i}, 1)" class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 font-bold text-xs">+</button>
+                    <button type="button" onclick="adjustHoleScore(${holeNum}, -1)" class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 font-bold text-xs">−</button>
+                    <input type="number" id="hole-score-${holeNum}" min="1" max="15" value="${par}" oninput="updateHoleScore(${holeNum}, this.value)" class="w-12 text-center py-1 rounded-md border border-slate-200 text-sm font-bold font-mono">
+                    <button type="button" onclick="adjustHoleScore(${holeNum}, 1)" class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 font-bold text-xs">+</button>
                 </div>
             </td>
-            <td class="py-2 px-2" id="hole-relative-${i}">
+            <td class="py-2 px-2" id="hole-relative-${holeNum}">
                 <span class="px-2 py-0.5 rounded text-[11px] font-bold score-par">Par</span>
             </td>
-            <td class="py-2 px-2 font-mono text-xs font-bold text-slate-600" id="hole-stb-${i}">2 Pkt</td>
+            <td class="py-2 px-2 font-mono text-xs font-bold text-slate-600" id="hole-stb-${holeNum}">2 Pkt</td>
         `;
         tbody.appendChild(tr);
     }
@@ -148,7 +287,7 @@ function updateScorecardTotals() {
 
 
 // --- 4. SIGNATURE PAD HELPER (HTML5 CANVAS WITH TOUCH & MOUSE) ---
-function initSignaturePad(canvasId) {
+function initSignaturePad(canvasId, strokeWidth = 2.5) {
     const canvas = document.getElementById(canvasId);
     if(!canvas) return null;
     const ctx = canvas.getContext('2d');
@@ -173,15 +312,19 @@ function initSignaturePad(canvasId) {
     function draw(e) {
         if(!drawing) return;
         const pos = getPos(e);
-        ctx.lineWidth = 2.5;
+        ctx.lineWidth = strokeWidth;
         ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
         ctx.strokeStyle = '#0f172a';
         ctx.lineTo(pos.x, pos.y);
         ctx.stroke();
         if(e.cancelable) e.preventDefault();
     }
     function end() {
-        drawing = false;
+        if(drawing) {
+            drawing = false;
+            updateSignatureBadges();
+        }
     }
 
     canvas.addEventListener('mousedown', start);
@@ -195,20 +338,151 @@ function initSignaturePad(canvasId) {
     return {
         clear: () => {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            updateSignatureBadges();
         },
         isEmpty: () => {
             const pixelBuffer = new Uint32Array(ctx.getImageData(0, 0, canvas.width, canvas.height).data.buffer);
             return !pixelBuffer.some(color => color !== 0);
         },
-        toDataURL: () => canvas.toDataURL('image/png')
+        toDataURL: () => canvas.toDataURL('image/png'),
+        getCanvas: () => canvas
     };
+}
+
+function updateSignatureBadges() {
+    const playerBadge = document.getElementById('sc-player-signed-badge');
+    const markerBadge = document.getElementById('sc-marker-signed-badge');
+    if(playerBadge) {
+        if(scPlayerSigPad && !scPlayerSigPad.isEmpty()) {
+            playerBadge.classList.remove('hidden');
+        } else {
+            playerBadge.classList.add('hidden');
+        }
+    }
+    if(markerBadge) {
+        if(scMarkerSigPad && !scMarkerSigPad.isEmpty()) {
+            markerBadge.classList.remove('hidden');
+        } else {
+            markerBadge.classList.add('hidden');
+        }
+    }
 }
 
 function clearPlayerSignature() {
     if(scPlayerSigPad) scPlayerSigPad.clear();
+    updateSignatureBadges();
 }
+
 function clearMarkerSignature() {
     if(scMarkerSigPad) scMarkerSigPad.clear();
+    updateSignatureBadges();
+}
+
+// --- ENLARGED TOUCH SIGNATURE MODAL ---
+function openZoomSignatureModal(type) {
+    activeZoomSigType = type; // 'player' or 'marker'
+    const modal = document.getElementById('signature-zoom-modal');
+    const titleEl = document.getElementById('sig-zoom-title');
+    const roleEl = document.getElementById('sig-zoom-role');
+
+    if(type === 'player') {
+        if(titleEl) titleEl.innerText = "Unterschrift Spieler (Großansicht)";
+        if(roleEl) roleEl.innerText = currentUser?.username || "Spieler";
+    } else {
+        const markerName = document.getElementById('sc-marker-name')?.value.trim() || "Zähler / Marker";
+        if(titleEl) titleEl.innerText = "Unterschrift Zähler (Großansicht)";
+        if(roleEl) roleEl.innerText = markerName;
+    }
+
+    if(modal) modal.classList.remove('hidden');
+
+    setTimeout(() => {
+        if(!zoomSigPad) {
+            zoomSigPad = initSignaturePad('sc-zoom-canvas', 4.0);
+        }
+        if(zoomSigPad) {
+            zoomSigPad.clear();
+            // Preload existing signature into zoom canvas if already present
+            const targetCanvasId = (type === 'player') ? 'sc-player-canvas' : 'sc-marker-canvas';
+            const targetPad = (type === 'player') ? scPlayerSigPad : scMarkerSigPad;
+            const targetCanvas = document.getElementById(targetCanvasId);
+            const zoomCanvas = document.getElementById('sc-zoom-canvas');
+            if(targetPad && !targetPad.isEmpty() && targetCanvas && zoomCanvas) {
+                const zctx = zoomCanvas.getContext('2d');
+                zctx.drawImage(targetCanvas, 0, 0, zoomCanvas.width, zoomCanvas.height);
+            }
+        }
+    }, 50);
+}
+
+function closeZoomSignatureModal() {
+    const modal = document.getElementById('signature-zoom-modal');
+    if(modal) modal.classList.add('hidden');
+}
+
+function clearZoomSignature() {
+    if(zoomSigPad) zoomSigPad.clear();
+}
+
+function confirmZoomSignature() {
+    if(!zoomSigPad || zoomSigPad.isEmpty()) {
+        showToast("Bitte unterschreibe im vergrößerten Feld.", "✍️");
+        return;
+    }
+    const zoomCanvas = document.getElementById('sc-zoom-canvas');
+    const targetCanvasId = (activeZoomSigType === 'player') ? 'sc-player-canvas' : 'sc-marker-canvas';
+    const targetCanvas = document.getElementById(targetCanvasId);
+
+    if(targetCanvas && zoomCanvas) {
+        const tctx = targetCanvas.getContext('2d');
+        tctx.clearRect(0, 0, targetCanvas.width, targetCanvas.height);
+        tctx.drawImage(zoomCanvas, 0, 0, targetCanvas.width, targetCanvas.height);
+    }
+
+    updateSignatureBadges();
+    closeZoomSignatureModal();
+    showToast("Unterschrift erfolgreich übernommen! ✅", "✍️");
+}
+
+function updateScorecardTournamentBanner() {
+    const banner = document.getElementById('sc-tournament-banner');
+    if(!banner) return;
+    if(!activeScorecardTournament) {
+        banner.classList.add('hidden');
+        return;
+    }
+
+    const t = activeScorecardTournament;
+    const titleEl = document.getElementById('sc-tb-title');
+    const spielformEl = document.getElementById('sc-tb-spielform');
+    const vorgabeEl = document.getElementById('sc-tb-vorgabe');
+    const metaEl = document.getElementById('sc-tb-meta');
+
+    if(titleEl) titleEl.innerText = t.name || t.titel || 'Club-Turnier';
+    if(spielformEl) {
+        const sf = t.spielform || 'Stableford';
+        spielformEl.innerText = sf;
+        if(sf.toLowerCase().includes('zähl') || sf.toLowerCase().includes('stroke')) {
+            spielformEl.className = "px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-800 border border-purple-200";
+        } else if(sf.toLowerCase().includes('scramble') || sf.toLowerCase().includes('vierer')) {
+            spielformEl.className = "px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200";
+        } else {
+            spielformEl.className = "px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200";
+        }
+    }
+    if(vorgabeEl) {
+        const isVorgabe = t.vorgabenwirksam !== false && t.vorgabenwirksam !== 'nein';
+        vorgabeEl.innerText = isVorgabe ? 'Vorgabenwirksam' : 'Nicht vorgabenwirksam';
+        vorgabeEl.className = isVorgabe 
+            ? "px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200"
+            : "px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200";
+    }
+    if(metaEl) {
+        const clubStr = t.club_name || document.getElementById('sc-club-select')?.value || '';
+        metaEl.innerText = `${clubStr} • ${t.datum || ''} • ${t.loecher || 18} Löcher`;
+    }
+
+    banner.classList.remove('hidden');
 }
 
 // --- 5. DIGITAL TOURNAMENT SCORECARD LOGIC ---
@@ -232,7 +506,53 @@ function openScorecardModal(turnier = null) {
 
     if(turnier) {
         activeScorecardTournament = turnier;
-        if(turnier.club_name) selectEl.value = turnier.club_name;
+        
+        // Match club by id or fuzzy name
+        const rawClubName = (turnier.club_name || '').trim();
+        const normalize = s => (s || '').toLowerCase()
+            .replace(/^(gc|golfclub|golf-club)\s+/i, '')
+            .replace(/\s*(18|1-9|10-18|nord|süd|ost|west)\b/gi, '')
+            .trim();
+        const normTarget = normalize(rawClubName);
+        
+        let targetClub = null;
+        if(turnier.club_id) {
+            targetClub = clubs.find(c => c.id === turnier.club_id);
+        }
+        if(!targetClub && rawClubName) {
+            targetClub = clubs.find(c => c.name.toLowerCase() === rawClubName.toLowerCase());
+            if(!targetClub) {
+                targetClub = clubs.find(c => normalize(c.name) === normTarget);
+            }
+            if(!targetClub) {
+                targetClub = clubs.find(c => c.name.toLowerCase().includes(normTarget) || normTarget.includes(c.name.toLowerCase()));
+            }
+        }
+
+        // Special handling if tournament is 9 holes and specified 10-18 / Back-Nine
+        const tNameLower = ((turnier.name || turnier.titel || '') + ' ' + (turnier.kurs || '') + ' ' + rawClubName).toLowerCase();
+        const isBackNine = tNameLower.includes('10-18') || tNameLower.includes('back-nine') || tNameLower.includes('back 9');
+        if(isBackNine) {
+            const backNineClub = clubs.find(c => c.name.toLowerCase().includes('10-18') && normalize(c.name) === normTarget);
+            if(backNineClub) targetClub = backNineClub;
+        } else if(turnier.loecher === 9) {
+            const frontNineClub = clubs.find(c => c.name.toLowerCase().includes('1-9') && normalize(c.name) === normTarget);
+            if(frontNineClub) targetClub = frontNineClub;
+        }
+
+        if(targetClub) {
+            selectEl.value = targetClub.name;
+        } else if(turnier.club_name) {
+            const exists = Array.from(selectEl.options).some(o => o.value === turnier.club_name);
+            if(!exists) {
+                const opt = document.createElement('option');
+                opt.value = turnier.club_name;
+                opt.innerText = turnier.club_name;
+                selectEl.appendChild(opt);
+            }
+            selectEl.value = turnier.club_name;
+        }
+
         if(turnier.datum) {
             let parts = turnier.datum.split('.');
             if(parts.length === 3) {
@@ -257,15 +577,17 @@ function openScorecardModal(turnier = null) {
     document.getElementById('sc-gps-badge').innerText = "Ungeprüft";
     document.getElementById('sc-gps-details').innerText = "Klicke auf 'Standort prüfen', um zu verifizieren, dass du dich auf dem Clubgelände befindest.";
 
+    updateScorecardTournamentBanner();
     onScorecardClubChanged(turnier);
     document.getElementById('scorecard-modal').classList.remove('hidden');
 
     // Initialize signature pads
     setTimeout(() => {
-        if(!scPlayerSigPad) scPlayerSigPad = initSignaturePad('sc-player-canvas');
-        if(!scMarkerSigPad) scMarkerSigPad = initSignaturePad('sc-marker-canvas');
+        if(!scPlayerSigPad) scPlayerSigPad = initSignaturePad('sc-player-canvas', 2.5);
+        if(!scMarkerSigPad) scMarkerSigPad = initSignaturePad('sc-marker-canvas', 2.5);
         scPlayerSigPad?.clear();
         scMarkerSigPad?.clear();
+        updateSignatureBadges();
     }, 100);
 }
 
@@ -289,7 +611,10 @@ async function onScorecardClubChanged(preselectedTournament = null) {
         opt18.disabled = isPure9;
         opt18.innerText = isPure9 ? "18 Löcher (Nicht verfügbar)" : "18 Löcher";
     }
-    if(isPure9 || (!has18 && loecherSelect.value === '18')) {
+
+    if(preselectedTournament && preselectedTournament.loecher) {
+        loecherSelect.value = String(preselectedTournament.loecher);
+    } else if(isPure9 || (!has18 && loecherSelect.value === '18')) {
         loecherSelect.value = '9';
     }
 
@@ -322,7 +647,13 @@ async function updateScorecardTournaments(club, preselectedTournament = null) {
     }
 
     if(clubTurniere.length === 0 && club) {
-        clubTurniere = turniere.filter(t => t.club_name === club.name || (club.id && t.club_id === club.id));
+        const baseName = club.name.replace(/\s*(18|1-9|10-18)\b/gi, '').trim().toLowerCase();
+        clubTurniere = turniere.filter(t => {
+            if(t.club_id && club.id && t.club_id === club.id) return true;
+            if(t.club_name === club.name) return true;
+            const tClubBase = (t.club_name || '').replace(/\s*(18|1-9|10-18)\b/gi, '').trim().toLowerCase();
+            return tClubBase === baseName;
+        });
     }
 
     select.innerHTML = '<option value="">Freie Runde / Privatrunde</option>';
@@ -332,7 +663,7 @@ async function updateScorecardTournaments(club, preselectedTournament = null) {
         clubTurniere.forEach(t => {
             const opt = document.createElement('option');
             opt.value = String(t.id);
-            opt.innerText = `🏆 ${t.datum} – ${t.name} (${t.loecher}L, ${t.spielform || 'Stableford'})`;
+            opt.innerText = `🏆 ${t.datum} – ${t.name || t.titel} (${t.loecher}L, ${t.spielform || 'Stableford'})`;
             group.appendChild(opt);
         });
         select.appendChild(group);
@@ -342,21 +673,31 @@ async function updateScorecardTournaments(club, preselectedTournament = null) {
     optCustom.innerText = '✍️ Anderes / Manuelles Turnier...';
     select.appendChild(optCustom);
 
-    if(preselectedTournament) {
-        const found = clubTurniere.find(t => (preselectedTournament.id && t.id === preselectedTournament.id) || t.name === preselectedTournament.name);
+    const targetTournament = preselectedTournament || activeScorecardTournament;
+    if(targetTournament) {
+        const found = clubTurniere.find(t => (targetTournament.id && t.id === targetTournament.id) || t.name === targetTournament.name || t.name === targetTournament.titel);
         if(found) {
             select.value = String(found.id);
             activeScorecardTournament = found;
             if(customInput) {
                 customInput.classList.add('hidden');
-                customInput.value = found.name;
+                customInput.value = found.name || found.titel;
             }
         } else {
-            select.value = '__custom__';
-            activeScorecardTournament = preselectedTournament;
+            const tId = targetTournament.id ? String(targetTournament.id) : `tourn_${Date.now()}`;
+            const opt = document.createElement('option');
+            opt.value = tId;
+            const tName = targetTournament.name || targetTournament.titel || 'Turnier';
+            opt.innerText = `🏆 ${targetTournament.datum || ''} – ${tName} (${targetTournament.loecher || 18}L, ${targetTournament.spielform || 'Stableford'})`;
+            select.insertBefore(opt, optCustom);
+            select.value = tId;
+            activeScorecardTournament = targetTournament;
+            if(!turniere.some(t => t.id === targetTournament.id)) {
+                turniere.push(targetTournament);
+            }
             if(customInput) {
-                customInput.classList.remove('hidden');
-                customInput.value = preselectedTournament.name || '';
+                customInput.classList.add('hidden');
+                customInput.value = tName;
             }
         }
     } else if(activeScorecardTournament && activeScorecardTournament.club_name === club.name) {
@@ -369,6 +710,7 @@ async function updateScorecardTournaments(club, preselectedTournament = null) {
             customInput.value = 'Freie Runde';
         }
     }
+    updateScorecardTournamentBanner();
 }
 
 function onScorecardTournamentSelected() {
@@ -391,26 +733,29 @@ function onScorecardTournamentSelected() {
         }
     } else {
         const turnierId = parseInt(val, 10);
-        const t = turniere.find(item => item.id === turnierId);
+        const t = turniere.find(item => item.id === turnierId) || (activeScorecardTournament && activeScorecardTournament.id === turnierId ? activeScorecardTournament : null);
         if(t) {
             activeScorecardTournament = t;
             if(customInput) {
                 customInput.classList.add('hidden');
-                customInput.value = t.name;
+                customInput.value = t.name || t.titel;
             }
             if(t.datum && t.datum.includes('.')) {
                 const parts = t.datum.split('.');
                 if(parts.length === 3) {
                     document.getElementById('sc-datum').value = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
                 }
+            } else if(t.datum) {
+                document.getElementById('sc-datum').value = t.datum;
             }
             if(t.loecher) {
                 document.getElementById('sc-loecher').value = String(t.loecher);
             }
-            recalculateScorecardHandicapAndCourse();
-            initScorecardHolesTable();
         }
     }
+    updateScorecardTournamentBanner();
+    recalculateScorecardHandicapAndCourse();
+    initScorecardHolesTable();
 }
 
 function onScorecardLoecherChanged() {
@@ -420,8 +765,34 @@ function onScorecardLoecherChanged() {
 
 function recalculateScorecardHandicapAndCourse() {
     const clubName = document.getElementById('sc-club-select').value;
-    const club = clubs.find(c => c.name === clubName) || clubs[0];
+    let club = clubs.find(c => c.name === clubName) || clubs[0];
     const loecher = parseInt(document.getElementById('sc-loecher').value, 10) || 18;
+
+    const clubNameLower = (clubName || '').toLowerCase();
+    const tNameLower = activeScorecardTournament ? ((activeScorecardTournament.name || activeScorecardTournament.titel || '') + ' ' + (activeScorecardTournament.kurs || '')).toLowerCase() : '';
+    const isBackNine = (loecher === 9) && (clubNameLower.includes('10-18') || tNameLower.includes('10-18') || tNameLower.includes('back-nine') || tNameLower.includes('back 9'));
+
+    // If club doesn't have 9-hole data but 9 holes is selected, check sister sub-course (e.g. GC Jersbek 10-18 or GC Jersbek 1-9)
+    if(loecher === 9 && (!club?.cr9 || String(club.cr9).trim() === '')) {
+        const baseName = clubName.replace(/\s*(18|1-9|10-18)\b/gi, '').trim().toLowerCase();
+        const sisterClub = clubs.find(c => {
+            const cLower = c.name.toLowerCase();
+            const cBase = c.name.replace(/\s*(18|1-9|10-18)\b/gi, '').trim().toLowerCase();
+            return cBase === baseName && (isBackNine ? cLower.includes('10-18') : cLower.includes('1-9'));
+        });
+        if(sisterClub && sisterClub.cr9) {
+            club = sisterClub;
+        }
+    } else if(loecher === 18 && (!club?.cr18 || String(club.cr18).trim() === '')) {
+        const baseName = clubName.replace(/\s*(18|1-9|10-18)\b/gi, '').trim().toLowerCase();
+        const sisterClub = clubs.find(c => {
+            const cBase = c.name.replace(/\s*(18|1-9|10-18)\b/gi, '').trim().toLowerCase();
+            return cBase === baseName && c.cr18;
+        });
+        if(sisterClub && sisterClub.cr18) {
+            club = sisterClub;
+        }
+    }
 
     let cr = 72.0;
     let slope = 113.0;
@@ -482,7 +853,12 @@ function initScorecardHolesTable(preserveExisting = false) {
     const playingHcp = parseInt(document.getElementById('sc-calculated-playing-hcp').innerText, 10) || 0;
     const clubName = document.getElementById('sc-club-select').value;
     const club = clubs.find(c => c.name === clubName) || clubs[0];
-    const courseHoles = getCourseHolesForClub(club, loecher);
+
+    const clubNameLower = (clubName || '').toLowerCase();
+    const tNameLower = activeScorecardTournament ? ((activeScorecardTournament.name || activeScorecardTournament.titel || '') + ' ' + (activeScorecardTournament.kurs || '')).toLowerCase() : '';
+    const isBackNine = (loecher === 9) && (clubNameLower.includes('10-18') || tNameLower.includes('10-18') || tNameLower.includes('back-nine') || tNameLower.includes('back 9'));
+
+    const courseHoles = getCourseHolesForClub(club, loecher, isBackNine);
     const tbody = document.getElementById('sc-holes-table-body');
     const thead = document.getElementById('sc-holes-table-head');
     const tfoot = document.getElementById('sc-holes-table-foot');
@@ -525,8 +901,15 @@ function initScorecardHolesTable(preserveExisting = false) {
         }
     }
 
+    // Rank holes by SI for clean stroke allocation on 9 holes
+    const sortedBySi = courseHoles.map((h, idx) => ({ idx, si: h.si })).sort((a, b) => a.si - b.si);
+    const siRankMap = {};
+    sortedBySi.forEach((item, rank) => {
+        siRankMap[item.idx] = rank + 1;
+    });
+
     for(let i = 0; i < loecher; i++) {
-        const holeObj = courseHoles[i] || { hole: i + 1, par: 4, si: i + 1 };
+        const holeObj = courseHoles[i] || { hole: i + 1 + (isBackNine ? 9 : 0), par: 4, si: i + 1 };
         const holeNr = holeObj.hole;
         const par = holeObj.par;
         const si = holeObj.si;
@@ -534,7 +917,8 @@ function initScorecardHolesTable(preserveExisting = false) {
         // Vorgabestriche calculation according to WHS Course Handicap & Stroke Index
         const baseStriche = Math.floor(playingHcp / loecher);
         const remainder = ((playingHcp % loecher) + loecher) % loecher;
-        const striche = baseStriche + (si <= remainder ? 1 : 0);
+        const rank = (loecher === 9) ? (siRankMap[i] || (i + 1)) : si;
+        const striche = baseStriche + (rank <= remainder ? 1 : 0);
 
         totalPar += par;
         totalStriche += striche;
@@ -795,16 +1179,32 @@ function recalculateScorecardTotals() {
 
     const loecher = scHolesData.length;
     const expectedStbf = loecher === 18 ? 36 : 18;
-    const diff = totalStableford - expectedStbf;
+    const diffStbf = totalStableford - expectedStbf;
     const calloutEl = document.getElementById('sc-callout-text');
+    const spielform = (activeScorecardTournament?.spielform || 'Stableford').toLowerCase();
+    const isZaehlspiel = spielform.includes('zähl') || spielform.includes('stroke') || spielform.includes('maximum');
 
     if(calloutEl) {
-        if(diff > 0) {
-            calloutEl.innerHTML = `<strong class="text-emerald-700">${totalStableford} Netto-Punkte (+${diff})</strong> – Unterspielung! Dein WHS Handicap verbessert sich. 🎉`;
-        } else if(diff === 0) {
-            calloutEl.innerHTML = `<strong class="text-blue-700">${totalStableford} Netto-Punkte</strong> – Handicap genau bestätigt! Solide Runde. ⛳`;
+        if(isZaehlspiel) {
+            const coursePar = parseInt(document.getElementById('sc-display-par')?.innerText, 10) || (loecher === 18 ? 72 : 36);
+            const diffPar = totalNetto - coursePar;
+            const diffStr = diffPar > 0 ? `+${diffPar}` : (diffPar === 0 ? 'Even (Par)' : `${diffPar}`);
+            
+            if(diffPar < 0) {
+                calloutEl.innerHTML = `<strong class="text-purple-700">${totalNetto} Netto-Schläge (${diffStr} gegen Platz-Par ${coursePar})</strong> – Hervorragende Zählspiel-Runde unter Platzstandard! 🏆 (${totalStableford} Netto-Pkt)`;
+            } else if(diffPar === 0) {
+                calloutEl.innerHTML = `<strong class="text-blue-700">${totalNetto} Netto-Schläge (Even Par)</strong> – Genau Platzstandard gespielt! Solide Leistung. ⛳ (${totalStableford} Netto-Pkt)`;
+            } else {
+                calloutEl.innerHTML = `<strong class="text-slate-800">${totalNetto} Netto-Schläge (${diffStr} gegen Platz-Par ${coursePar})</strong> – Zählspiel-Ergebnis erfasst. (${totalStableford} Netto-Punkte)`;
+            }
         } else {
-            calloutEl.innerHTML = `<strong class="text-slate-800">${totalStableford} Netto-Punkte (${diff})</strong> – Pufferbereich / Schonung nach WHS Soft Cap.`;
+            if(diffStbf > 0) {
+                calloutEl.innerHTML = `<strong class="text-emerald-700">${totalStableford} Netto-Punkte (+${diffStbf})</strong> – Unterspielung! Dein WHS Handicap verbessert sich. 🎉`;
+            } else if(diffStbf === 0) {
+                calloutEl.innerHTML = `<strong class="text-blue-700">${totalStableford} Netto-Punkte</strong> – Handicap genau bestätigt! Solide Runde. ⛳`;
+            } else {
+                calloutEl.innerHTML = `<strong class="text-slate-800">${totalStableford} Netto-Punkte (${diffStbf})</strong> – Pufferbereich / Schonung nach WHS Soft Cap.`;
+            }
         }
     }
 }
