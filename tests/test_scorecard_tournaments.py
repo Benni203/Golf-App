@@ -156,5 +156,78 @@ class ScorecardTournamentAndSignatureTests(unittest.TestCase):
         strokes9 = [base9 + (1 if rank <= rem9 else 0) for rank in range(1, 10)]
         self.assertEqual(sum(strokes9), ch9)
 
+    def test_jersbek_hole_pars_and_stroke_indexes(self):
+        """Prüft, dass GC Jersbek die exakten DGV-Parvorgaben besitzt: Loch 5 ist Par 3, Loch 4 ist Par 5, Loch 6 ist Par 5."""
+        c18 = Club.query.filter_by(name="GC Jersbek 18").first()
+        self.assertIsNotNone(c18)
+        holes18 = c18.get_holes_list()
+        self.assertEqual(len(holes18), 18)
+
+        # Hole 5 must be Par 3 (User requirement!)
+        h5 = next((h for h in holes18 if h["hole"] == 5), None)
+        self.assertIsNotNone(h5)
+        self.assertEqual(h5["par"], 3, f"Loch 5 bei GC Jersbek muss Par 3 sein, war aber {h5['par']}!")
+        self.assertEqual(h5["si"], 7)
+
+        # Hole 4 must be Par 5 (remodeled)
+        h4 = next((h for h in holes18 if h["hole"] == 4), None)
+        self.assertIsNotNone(h4)
+        self.assertEqual(h4["par"], 5)
+        self.assertEqual(h4["si"], 11)
+
+        # Hole 6 must be Par 5
+        h6 = next((h for h in holes18 if h["hole"] == 6), None)
+        self.assertIsNotNone(h6)
+        self.assertEqual(h6["par"], 5)
+
+        # Hole 3 must be Par 3
+        h3 = next((h for h in holes18 if h["hole"] == 3), None)
+        self.assertIsNotNone(h3)
+        self.assertEqual(h3["par"], 3)
+
+        # Front 9 sum must be 36
+        front9_par = sum(h["par"] for h in holes18[:9])
+        self.assertEqual(front9_par, 36)
+
+        # Back 9 sum must be 36
+        back9_par = sum(h["par"] for h in holes18[9:])
+        self.assertEqual(back9_par, 36)
+
+        # Total 18 sum must be 72
+        self.assertEqual(sum(h["par"] for h in holes18), 72)
+
+        # Test GC Jersbek 1-9
+        c1_9 = Club.query.filter_by(name="GC Jersbek 1-9").first()
+        self.assertIsNotNone(c1_9)
+        holes1_9 = c1_9.get_holes_list()
+        self.assertEqual(len(holes1_9), 9)
+        self.assertEqual(holes1_9[4]["par"], 3) # Hole 5
+        self.assertEqual(sum(h["par"] for h in holes1_9), 36)
+
+        # Test GC Jersbek 10-18
+        c10_18 = Club.query.filter_by(name="GC Jersbek 10-18").first()
+        self.assertIsNotNone(c10_18)
+        holes10_18 = c10_18.get_holes_list()
+        self.assertEqual(len(holes10_18), 9)
+        self.assertEqual(holes10_18[0]["hole"], 10)
+        self.assertEqual(holes10_18[0]["par"], 5) # Hole 10 is Par 5
+        self.assertEqual(holes10_18[3]["par"], 3) # Hole 13 is Par 3
+        self.assertEqual(holes10_18[7]["par"], 3) # Hole 17 is Par 3
+        self.assertEqual(holes10_18[8]["par"], 5) # Hole 18 is Par 5
+        self.assertEqual(sum(h["par"] for h in holes10_18), 36)
+
+    def test_scorecard_inline_par_functionality(self):
+        """Prüft, dass in js/scorecard.js die Inline-Par-Anpassung und verifizierte Templates vorhanden sind."""
+        for path in ["js/scorecard.js", "www/js/scorecard.js"]:
+            full_path = os.path.join(self.repo_root, path)
+            with open(full_path, "r", encoding="utf-8") as f:
+                content = f.read()
+
+            self.assertIn("function updateScorecardHolePar", content, f"updateScorecardHolePar fehlt in {path}")
+            self.assertIn("{ hole: 5, par: 3,", content, f"Loch 5 Par 3 fehlt in Templates in {path}")
+            self.assertIn("{ hole: 4, par: 5,", content, f"Loch 4 Par 5 fehlt in Templates in {path}")
+            self.assertIn("updateScorecardHolePar(", content, f"Select-Handler fehlt in {path}")
+
 if __name__ == '__main__':
     unittest.main()
+

@@ -2,24 +2,68 @@
 const clubHolesTemplates = {
     "jersbek": {
         holes18: [
-            { hole: 1, par: 4, si: 11, meters_gelb: 331, meters_rot: 288 },
-            { hole: 2, par: 5, si: 5, meters_gelb: 478, meters_rot: 412 },
-            { hole: 3, par: 3, si: 15, meters_gelb: 142, meters_rot: 121 },
-            { hole: 4, par: 4, si: 1, meters_gelb: 386, meters_rot: 341 },
-            { hole: 5, par: 4, si: 9, meters_gelb: 329, meters_rot: 290 },
-            { hole: 6, par: 4, si: 7, meters_gelb: 344, meters_rot: 302 },
-            { hole: 7, par: 3, si: 17, meters_gelb: 131, meters_rot: 112 },
-            { hole: 8, par: 5, si: 3, meters_gelb: 492, meters_rot: 428 },
-            { hole: 9, par: 4, si: 13, meters_gelb: 318, meters_rot: 275 },
-            { hole: 10, par: 4, si: 12, meters_gelb: 334, meters_rot: 291 },
-            { hole: 11, par: 4, si: 4, meters_gelb: 372, meters_rot: 324 },
+            { hole: 1, par: 4, si: 13, meters_gelb: 353, meters_rot: 308 },
+            { hole: 2, par: 4, si: 1, meters_gelb: 424, meters_rot: 374 },
+            { hole: 3, par: 3, si: 5, meters_gelb: 154, meters_rot: 134 },
+            { hole: 4, par: 5, si: 11, meters_gelb: 535, meters_rot: 462 },
+            { hole: 5, par: 3, si: 7, meters_gelb: 165, meters_rot: 142 },
+            { hole: 6, par: 5, si: 9, meters_gelb: 490, meters_rot: 420 },
+            { hole: 7, par: 4, si: 17, meters_gelb: 330, meters_rot: 285 },
+            { hole: 8, par: 4, si: 3, meters_gelb: 385, meters_rot: 340 },
+            { hole: 9, par: 4, si: 15, meters_gelb: 340, meters_rot: 295 },
+            { hole: 10, par: 5, si: 8, meters_gelb: 485, meters_rot: 422 },
+            { hole: 11, par: 4, si: 4, meters_gelb: 365, meters_rot: 320 },
+            { hole: 12, par: 4, si: 12, meters_gelb: 350, meters_rot: 305 },
+            { hole: 13, par: 3, si: 18, meters_gelb: 160, meters_rot: 138 },
+            { hole: 14, par: 4, si: 2, meters_gelb: 380, meters_rot: 335 },
+            { hole: 15, par: 4, si: 10, meters_gelb: 340, meters_rot: 295 },
+            { hole: 16, par: 4, si: 6, meters_gelb: 360, meters_rot: 310 },
+            { hole: 17, par: 3, si: 16, meters_gelb: 150, meters_rot: 130 },
+            { hole: 18, par: 5, si: 14, meters_gelb: 490, meters_rot: 425 }
+        ]
+    },
+    "escheburg": {
+        holes18: [
+            { hole: 1, par: 4, si: 11, meters_gelb: 345, meters_rot: 298 },
+            { hole: 2, par: 4, si: 3, meters_gelb: 380, meters_rot: 330 },
+            { hole: 3, par: 5, si: 5, meters_gelb: 490, meters_rot: 425 },
+            { hole: 4, par: 4, si: 1, meters_gelb: 405, meters_rot: 350 },
+            { hole: 5, par: 4, si: 7, meters_gelb: 360, meters_rot: 310 },
+            { hole: 6, par: 3, si: 15, meters_gelb: 155, meters_rot: 130 },
+            { hole: 7, par: 4, si: 13, meters_gelb: 335, meters_rot: 285 },
+            { hole: 8, par: 3, si: 17, meters_gelb: 140, meters_rot: 120 },
+            { hole: 9, par: 5, si: 9, meters_gelb: 475, meters_rot: 410 },
+            { hole: 10, par: 4, si: 10, meters_gelb: 350, meters_rot: 305 },
+            { hole: 11, par: 4, si: 4, meters_gelb: 375, meters_rot: 325 },
             { hole: 12, par: 5, si: 6, meters_gelb: 485, meters_rot: 420 },
-            { hole: 13, par: 3, si: 18, meters_gelb: 138, meters_rot: 119 },
-            { hole: 14, par: 4, si: 2, meters_gelb: 396, meters_rot: 348 },
-            { hole: 15, par: 4, si: 10, meters_gelb: 348, meters_rot: 304 },
-            { hole: 16, par: 3, si: 16, meters_gelb: 154, meters_rot: 135 },
-            { hole: 17, par: 5, si: 8, meters_gelb: 480, meters_rot: 418 },
-            { hole: 18, par: 4, si: 14, meters_gelb: 368, meters_rot: 320 }
+            { hole: 13, par: 3, si: 18, meters_gelb: 145, meters_rot: 125 },
+            { hole: 14, par: 4, si: 2, meters_gelb: 395, meters_rot: 340 },
+            { hole: 15, par: 4, si: 8, meters_gelb: 365, meters_rot: 315 },
+            { hole: 16, par: 3, si: 16, meters_gelb: 160, meters_rot: 135 },
+            { hole: 17, par: 5, si: 12, meters_gelb: 480, meters_rot: 415 },
+            { hole: 18, par: 4, si: 14, meters_gelb: 355, meters_rot: 305 }
+        ]
+    },
+    "ahrensburg": {
+        holes18: [
+            { hole: 1, par: 4, si: 11, meters_gelb: 330, meters_rot: 290 },
+            { hole: 2, par: 4, si: 7, meters_gelb: 350, meters_rot: 305 },
+            { hole: 3, par: 3, si: 15, meters_gelb: 155, meters_rot: 135 },
+            { hole: 4, par: 4, si: 1, meters_gelb: 395, meters_rot: 345 },
+            { hole: 5, par: 4, si: 5, meters_gelb: 360, meters_rot: 315 },
+            { hole: 6, par: 5, si: 9, meters_gelb: 470, meters_rot: 410 },
+            { hole: 7, par: 3, si: 17, meters_gelb: 145, meters_rot: 125 },
+            { hole: 8, par: 4, si: 3, meters_gelb: 380, meters_rot: 330 },
+            { hole: 9, par: 4, si: 13, meters_gelb: 340, meters_rot: 295 },
+            { hole: 10, par: 4, si: 8, meters_gelb: 355, meters_rot: 310 },
+            { hole: 11, par: 3, si: 16, meters_gelb: 150, meters_rot: 130 },
+            { hole: 12, par: 4, si: 4, meters_gelb: 375, meters_rot: 325 },
+            { hole: 13, par: 5, si: 6, meters_gelb: 485, meters_rot: 420 },
+            { hole: 14, par: 4, si: 2, meters_gelb: 400, meters_rot: 350 },
+            { hole: 15, par: 3, si: 18, meters_gelb: 135, meters_rot: 115 },
+            { hole: 16, par: 4, si: 12, meters_gelb: 345, meters_rot: 300 },
+            { hole: 17, par: 4, si: 10, meters_gelb: 350, meters_rot: 305 },
+            { hole: 18, par: 4, si: 14, meters_gelb: 360, meters_rot: 315 }
         ]
     },
     "falkenstein": {
@@ -33,7 +77,7 @@ const clubHolesTemplates = {
             { hole: 7, par: 3, si: 15, meters_gelb: 160, meters_rot: 135 },
             { hole: 8, par: 4, si: 3, meters_gelb: 390, meters_rot: 340 },
             { hole: 9, par: 4, si: 13, meters_gelb: 320, meters_rot: 280 },
-            { hole: 10, par: 3, si: 16, meters_gelb: 155, meters_rot: 130 },
+            { hole: 10, par: 4, si: 16, meters_gelb: 355, meters_rot: 310 },
             { hole: 11, par: 4, si: 4, meters_gelb: 385, meters_rot: 335 },
             { hole: 12, par: 4, si: 8, meters_gelb: 360, meters_rot: 310 },
             { hole: 13, par: 3, si: 18, meters_gelb: 135, meters_rot: 115 },
@@ -41,7 +85,7 @@ const clubHolesTemplates = {
             { hole: 15, par: 4, si: 2, meters_gelb: 410, meters_rot: 355 },
             { hole: 16, par: 4, si: 12, meters_gelb: 345, meters_rot: 300 },
             { hole: 17, par: 4, si: 10, meters_gelb: 350, meters_rot: 305 },
-            { hole: 18, par: 3, si: 14, meters_gelb: 170, meters_rot: 145 }
+            { hole: 18, par: 4, si: 14, meters_gelb: 370, meters_rot: 325 }
         ]
     },
     "wendlohe": {
@@ -92,25 +136,9 @@ const clubHolesTemplates = {
 
 function getCourseHolesForClub(club, loecher, isBackNine = false) {
     const numLoecher = parseInt(loecher, 10) || 18;
-    
-    // Check if club already has custom holes
-    if(club && Array.isArray(club.holes) && club.holes.length >= numLoecher) {
-        if(numLoecher === 9 && isBackNine && club.holes.length >= 18) {
-            return club.holes.slice(9, 18).map(h => ({
-                hole: h.hole || 10,
-                par: parseInt(h.par, 10) || 4,
-                si: parseInt(h.si, 10) || h.hole
-            }));
-        }
-        return club.holes.slice(0, numLoecher).map(h => ({
-            hole: h.hole,
-            par: parseInt(h.par, 10) || 4,
-            si: parseInt(h.si, 10) || h.hole
-        }));
-    }
-
-    // Match templates
     const clubNameLower = (club?.name || '').toLowerCase();
+
+    // 1. Curated authentic club templates take priority for known golf clubs
     const templateKey = Object.keys(clubHolesTemplates).find(key => clubNameLower.includes(key));
     if(templateKey && clubHolesTemplates[templateKey]) {
         const full18 = clubHolesTemplates[templateKey].holes18;
@@ -142,7 +170,27 @@ function getCourseHolesForClub(club, loecher, isBackNine = false) {
         }));
     }
 
-    // Dynamic fallback matching official DGV pars
+    // 2. Custom holes from club object (user-created club or backend data)
+    if(club && Array.isArray(club.holes) && club.holes.length >= numLoecher) {
+        if(numLoecher === 9 && (isBackNine || clubNameLower.includes('10-18')) && club.holes.length >= 18) {
+            return club.holes.slice(9, 18).map(h => ({
+                hole: h.hole || 10,
+                par: parseInt(h.par, 10) || 4,
+                si: parseInt(h.si, 10) || h.hole,
+                meters_gelb: h.meters_gelb,
+                meters_rot: h.meters_rot
+            }));
+        }
+        return club.holes.slice(0, numLoecher).map(h => ({
+            hole: h.hole,
+            par: parseInt(h.par, 10) || 4,
+            si: parseInt(h.si, 10) || h.hole,
+            meters_gelb: h.meters_gelb,
+            meters_rot: h.meters_rot
+        }));
+    }
+
+    // 3. Dynamic fallback matching official DGV pars
     const is9 = numLoecher === 9;
     const parVal = is9 
         ? (club?.par9 ? Math.round(parseFloat(club.par9)) : 36)
@@ -954,7 +1002,14 @@ function initScorecardHolesTable(preserveExisting = false) {
         if (!showProStats) {
             tr.innerHTML = `
                 <td class="sticky left-0 bg-white z-10 py-2 px-2 text-center font-bold text-slate-800 shadow-[1px_0_0_0_#e2e8f0]">${holeNr}</td>
-                <td class="py-2 px-2 text-center text-slate-600">${par}</td>
+                <td class="py-2 px-1 text-center">
+                    <select onchange="updateScorecardHolePar(${i}, this.value)" class="text-xs py-0.5 px-1 rounded-md border border-slate-200 bg-white font-bold text-slate-700 cursor-pointer hover:border-golf-500 focus:outline-none focus:ring-1 focus:ring-golf-500" title="Par für Loch ${holeNr} anpassen">
+                        <option value="3" ${par === 3 ? 'selected' : ''}>3</option>
+                        <option value="4" ${par === 4 ? 'selected' : ''}>4</option>
+                        <option value="5" ${par === 5 ? 'selected' : ''}>5</option>
+                        <option value="6" ${par === 6 ? 'selected' : ''}>6</option>
+                    </select>
+                </td>
                 <td class="py-2 px-2 text-center text-slate-400">${si}</td>
                 <td class="py-2 px-2 text-center font-bold text-golf-700">${striche > 0 ? '+'.repeat(Math.min(3, striche)) + (striche > 3 ? striche : '') : '-'}</td>
                 <td class="py-2 px-3 text-center">
@@ -970,7 +1025,14 @@ function initScorecardHolesTable(preserveExisting = false) {
         } else {
             tr.innerHTML = `
                 <td class="sticky left-0 bg-white z-10 py-2 px-2 text-center font-bold text-slate-800 shadow-[1px_0_0_0_#e2e8f0]">${holeNr}</td>
-                <td class="py-2 px-2 text-center text-slate-600">${par}</td>
+                <td class="py-2 px-1 text-center">
+                    <select onchange="updateScorecardHolePar(${i}, this.value)" class="text-xs py-0.5 px-1 rounded-md border border-slate-200 bg-white font-bold text-slate-700 cursor-pointer hover:border-golf-500 focus:outline-none focus:ring-1 focus:ring-golf-500" title="Par für Loch ${holeNr} anpassen">
+                        <option value="3" ${par === 3 ? 'selected' : ''}>3</option>
+                        <option value="4" ${par === 4 ? 'selected' : ''}>4</option>
+                        <option value="5" ${par === 5 ? 'selected' : ''}>5</option>
+                        <option value="6" ${par === 6 ? 'selected' : ''}>6</option>
+                    </select>
+                </td>
                 <td class="py-2 px-2 text-center text-slate-400">${si}</td>
                 <td class="py-2 px-2 text-center font-bold text-golf-700">${striche > 0 ? '+'.repeat(Math.min(3, striche)) + (striche > 3 ? striche : '') : '-'}</td>
                 <td class="py-2 px-2 text-center">
@@ -1040,6 +1102,19 @@ function initScorecardHolesTable(preserveExisting = false) {
     }
 
     recalculateScorecardTotals();
+}
+
+function updateScorecardHolePar(index, newPar) {
+    const hole = scHolesData[index];
+    if(!hole) return;
+    const parsed = parseInt(newPar, 10);
+    if(parsed >= 3 && parsed <= 6) {
+        hole.par = parsed;
+        const totalPar = scHolesData.reduce((sum, h) => sum + h.par, 0);
+        const totalParEl = document.getElementById('sc-total-par');
+        if(totalParEl) totalParEl.innerText = totalPar;
+        recalculateScorecardRow(index);
+    }
 }
 
 function updateScorecardHole(index, delta) {

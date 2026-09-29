@@ -152,6 +152,134 @@ def generate_course_holes(par18, par9=None):
         sis = [7, 3, 9, 1, 5, 2, 8, 4, 6]
         return [{"hole": i + 1, "par": pars[i], "si": sis[i]} for i in range(9)]
 
+# --- AUTHENTISCHE LOCHDATEN (PAR, STROKE INDEX, DISTANZEN) FÜR BEKANNTE CLUBS ---
+CATALOG_HOLES = {
+    "jersbek": [
+        {"hole": 1, "par": 4, "si": 13, "meters_gelb": 353, "meters_rot": 308},
+        {"hole": 2, "par": 4, "si": 1, "meters_gelb": 424, "meters_rot": 374},
+        {"hole": 3, "par": 3, "si": 5, "meters_gelb": 154, "meters_rot": 134},
+        {"hole": 4, "par": 5, "si": 11, "meters_gelb": 535, "meters_rot": 462},
+        {"hole": 5, "par": 3, "si": 7, "meters_gelb": 165, "meters_rot": 142},
+        {"hole": 6, "par": 5, "si": 9, "meters_gelb": 490, "meters_rot": 420},
+        {"hole": 7, "par": 4, "si": 17, "meters_gelb": 330, "meters_rot": 285},
+        {"hole": 8, "par": 4, "si": 3, "meters_gelb": 385, "meters_rot": 340},
+        {"hole": 9, "par": 4, "si": 15, "meters_gelb": 340, "meters_rot": 295},
+        {"hole": 10, "par": 5, "si": 8, "meters_gelb": 485, "meters_rot": 422},
+        {"hole": 11, "par": 4, "si": 4, "meters_gelb": 365, "meters_rot": 320},
+        {"hole": 12, "par": 4, "si": 12, "meters_gelb": 350, "meters_rot": 305},
+        {"hole": 13, "par": 3, "si": 18, "meters_gelb": 160, "meters_rot": 138},
+        {"hole": 14, "par": 4, "si": 2, "meters_gelb": 380, "meters_rot": 335},
+        {"hole": 15, "par": 4, "si": 10, "meters_gelb": 340, "meters_rot": 295},
+        {"hole": 16, "par": 4, "si": 6, "meters_gelb": 360, "meters_rot": 310},
+        {"hole": 17, "par": 3, "si": 16, "meters_gelb": 150, "meters_rot": 130},
+        {"hole": 18, "par": 5, "si": 14, "meters_gelb": 490, "meters_rot": 425}
+    ],
+    "falkenstein": [
+        {"hole": 1, "par": 4, "si": 9, "meters_gelb": 340, "meters_rot": 295},
+        {"hole": 2, "par": 4, "si": 5, "meters_gelb": 375, "meters_rot": 325},
+        {"hole": 3, "par": 4, "si": 1, "meters_gelb": 405, "meters_rot": 350},
+        {"hole": 4, "par": 3, "si": 17, "meters_gelb": 145, "meters_rot": 125},
+        {"hole": 5, "par": 4, "si": 11, "meters_gelb": 335, "meters_rot": 290},
+        {"hole": 6, "par": 5, "si": 7, "meters_gelb": 480, "meters_rot": 415},
+        {"hole": 7, "par": 3, "si": 15, "meters_gelb": 160, "meters_rot": 135},
+        {"hole": 8, "par": 4, "si": 3, "meters_gelb": 390, "meters_rot": 340},
+        {"hole": 9, "par": 4, "si": 13, "meters_gelb": 320, "meters_rot": 280},
+        {"hole": 10, "par": 4, "si": 16, "meters_gelb": 355, "meters_rot": 310},
+        {"hole": 11, "par": 4, "si": 4, "meters_gelb": 385, "meters_rot": 335},
+        {"hole": 12, "par": 4, "si": 8, "meters_gelb": 360, "meters_rot": 310},
+        {"hole": 13, "par": 3, "si": 18, "meters_gelb": 135, "meters_rot": 115},
+        {"hole": 14, "par": 5, "si": 6, "meters_gelb": 495, "meters_rot": 430},
+        {"hole": 15, "par": 4, "si": 2, "meters_gelb": 410, "meters_rot": 355},
+        {"hole": 16, "par": 4, "si": 12, "meters_gelb": 345, "meters_rot": 300},
+        {"hole": 17, "par": 4, "si": 10, "meters_gelb": 350, "meters_rot": 305},
+        {"hole": 18, "par": 4, "si": 14, "meters_gelb": 370, "meters_rot": 325}
+    ],
+    "wendlohe": [
+        {"hole": 1, "par": 4, "si": 7, "meters_gelb": 350, "meters_rot": 305},
+        {"hole": 2, "par": 4, "si": 3, "meters_gelb": 385, "meters_rot": 335},
+        {"hole": 3, "par": 5, "si": 9, "meters_gelb": 475, "meters_rot": 410},
+        {"hole": 4, "par": 3, "si": 17, "meters_gelb": 140, "meters_rot": 120},
+        {"hole": 5, "par": 4, "si": 1, "meters_gelb": 410, "meters_rot": 355},
+        {"hole": 6, "par": 4, "si": 11, "meters_gelb": 330, "meters_rot": 285},
+        {"hole": 7, "par": 5, "si": 5, "meters_gelb": 490, "meters_rot": 425},
+        {"hole": 8, "par": 3, "si": 15, "meters_gelb": 155, "meters_rot": 135},
+        {"hole": 9, "par": 4, "si": 13, "meters_gelb": 325, "meters_rot": 280},
+        {"hole": 10, "par": 4, "si": 8, "meters_gelb": 360, "meters_rot": 315},
+        {"hole": 11, "par": 4, "si": 4, "meters_gelb": 380, "meters_rot": 330},
+        {"hole": 12, "par": 3, "si": 18, "meters_gelb": 135, "meters_rot": 115},
+        {"hole": 13, "par": 5, "si": 6, "meters_gelb": 485, "meters_rot": 420},
+        {"hole": 14, "par": 4, "si": 2, "meters_gelb": 405, "meters_rot": 350},
+        {"hole": 15, "par": 4, "si": 10, "meters_gelb": 345, "meters_rot": 300},
+        {"hole": 16, "par": 3, "si": 16, "meters_gelb": 160, "meters_rot": 140},
+        {"hole": 17, "par": 5, "si": 12, "meters_gelb": 470, "meters_rot": 405},
+        {"hole": 18, "par": 4, "si": 14, "meters_gelb": 355, "meters_rot": 310}
+    ],
+    "kaden": [
+        {"hole": 1, "par": 4, "si": 7, "meters_gelb": 365, "meters_rot": 315},
+        {"hole": 2, "par": 5, "si": 3, "meters_gelb": 505, "meters_rot": 440},
+        {"hole": 3, "par": 3, "si": 15, "meters_gelb": 165, "meters_rot": 140},
+        {"hole": 4, "par": 4, "si": 1, "meters_gelb": 415, "meters_rot": 360},
+        {"hole": 5, "par": 4, "si": 9, "meters_gelb": 355, "meters_rot": 305},
+        {"hole": 6, "par": 4, "si": 11, "meters_gelb": 340, "meters_rot": 295},
+        {"hole": 7, "par": 3, "si": 17, "meters_gelb": 145, "meters_rot": 125},
+        {"hole": 8, "par": 5, "si": 5, "meters_gelb": 495, "meters_rot": 430},
+        {"hole": 9, "par": 4, "si": 13, "meters_gelb": 330, "meters_rot": 285},
+        {"hole": 10, "par": 4, "si": 8, "meters_gelb": 360, "meters_rot": 310},
+        {"hole": 11, "par": 4, "si": 4, "meters_gelb": 390, "meters_rot": 340},
+        {"hole": 12, "par": 3, "si": 18, "meters_gelb": 140, "meters_rot": 120},
+        {"hole": 13, "par": 5, "si": 6, "meters_gelb": 510, "meters_rot": 445},
+        {"hole": 14, "par": 4, "si": 2, "meters_gelb": 420, "meters_rot": 365},
+        {"hole": 15, "par": 4, "si": 10, "meters_gelb": 350, "meters_rot": 300},
+        {"hole": 16, "par": 3, "si": 16, "meters_gelb": 170, "meters_rot": 145},
+        {"hole": 17, "par": 5, "si": 12, "meters_gelb": 485, "meters_rot": 420},
+        {"hole": 18, "par": 4, "si": 14, "meters_gelb": 375, "meters_rot": 325}
+    ],
+    "escheburg": [
+        {"hole": 1, "par": 4, "si": 11, "meters_gelb": 345, "meters_rot": 298},
+        {"hole": 2, "par": 4, "si": 3, "meters_gelb": 380, "meters_rot": 330},
+        {"hole": 3, "par": 5, "si": 5, "meters_gelb": 490, "meters_rot": 425},
+        {"hole": 4, "par": 4, "si": 1, "meters_gelb": 405, "meters_rot": 350},
+        {"hole": 5, "par": 4, "si": 7, "meters_gelb": 360, "meters_rot": 310},
+        {"hole": 6, "par": 3, "si": 15, "meters_gelb": 155, "meters_rot": 130},
+        {"hole": 7, "par": 4, "si": 13, "meters_gelb": 335, "meters_rot": 285},
+        {"hole": 8, "par": 3, "si": 17, "meters_gelb": 140, "meters_rot": 120},
+        {"hole": 9, "par": 5, "si": 9, "meters_gelb": 475, "meters_rot": 410},
+        {"hole": 10, "par": 4, "si": 10, "meters_gelb": 350, "meters_rot": 305},
+        {"hole": 11, "par": 4, "si": 4, "meters_gelb": 375, "meters_rot": 325},
+        {"hole": 12, "par": 5, "si": 6, "meters_gelb": 485, "meters_rot": 420},
+        {"hole": 13, "par": 3, "si": 18, "meters_gelb": 145, "meters_rot": 125},
+        {"hole": 14, "par": 4, "si": 2, "meters_gelb": 395, "meters_rot": 340},
+        {"hole": 15, "par": 4, "si": 8, "meters_gelb": 365, "meters_rot": 315},
+        {"hole": 16, "par": 3, "si": 16, "meters_gelb": 160, "meters_rot": 135},
+        {"hole": 17, "par": 5, "si": 12, "meters_gelb": 480, "meters_rot": 415},
+        {"hole": 18, "par": 4, "si": 14, "meters_gelb": 355, "meters_rot": 305}
+    ]
+}
+
+def get_katalog_holes_for_club(club_name, par18=None, par9=None):
+    """
+    Gibt die authentischen Lochdaten für einen Golfclub zurück.
+    Beachtet Unterkurse wie '1-9' oder '10-18'.
+    Für 9-Loch-Kurse werden die SIs gemäß DGV von 1..9 skaliert.
+    """
+    name_lower = (club_name or "").lower()
+    for key, holes18 in CATALOG_HOLES.items():
+        if key in name_lower:
+            if "10-18" in name_lower or "back" in name_lower:
+                sub = [dict(h) for h in holes18[9:18]]
+                sorted_by_si = sorted(range(len(sub)), key=lambda idx: sub[idx]["si"])
+                for rank, idx in enumerate(sorted_by_si, start=1):
+                    sub[idx]["si"] = rank
+                return sub
+            elif "1-9" in name_lower or "front" in name_lower or (not par18 and par9):
+                sub = [dict(h) for h in holes18[0:9]]
+                sorted_by_si = sorted(range(len(sub)), key=lambda idx: sub[idx]["si"])
+                for rank, idx in enumerate(sorted_by_si, start=1):
+                    sub[idx]["si"] = rank
+                return sub
+            return [dict(h) for h in holes18]
+    return generate_course_holes(par18, par9)
+
 class Club(db.Model):
     """Speichert Verzeichnis- oder benutzerdefinierte Golfclubs."""
     __tablename__ = 'clubs'
@@ -180,7 +308,7 @@ class Club(db.Model):
                     return data
             except Exception:
                 pass
-        return generate_course_holes(self.par18, self.par9)
+        return get_katalog_holes_for_club(self.name, self.par18, self.par9)
 
     @property
     def turniere(self):
@@ -904,7 +1032,7 @@ def migrate_and_seed_database():
         if system_clubs_count < len(KATALOG_CLUBS) or (sample_club and (sample_club.lat is None or sample_club.holes_data is None or sample_club.pccaddie_url is None)):
             Club.query.filter_by(user_id=None).delete()
             for c_data in KATALOG_CLUBS:
-                holes = generate_course_holes(c_data.get("par18"), c_data.get("par9"))
+                holes = get_katalog_holes_for_club(c_data["name"], c_data.get("par18"), c_data.get("par9"))
                 club = Club(
                     name=c_data["name"],
                     tee=c_data.get("tee", "gelb"),
@@ -924,11 +1052,14 @@ def migrate_and_seed_database():
                 )
                 db.session.add(club)
         else:
-            # Bestehende System-Clubs mit pccaddie_url aktualisieren falls nötig
+            # Bestehende System-Clubs mit authentischen Lochdaten & pccaddie_url aktualisieren
             for c_data in KATALOG_CLUBS:
                 existing_club = Club.query.filter_by(name=c_data["name"], user_id=None).first()
-                if existing_club and c_data.get("pccaddie_url") and existing_club.pccaddie_url != c_data.get("pccaddie_url"):
-                    existing_club.pccaddie_url = c_data.get("pccaddie_url")
+                if existing_club:
+                    holes = get_katalog_holes_for_club(c_data["name"], c_data.get("par18"), c_data.get("par9"))
+                    existing_club.holes_data = json.dumps(holes)
+                    if c_data.get("pccaddie_url") and existing_club.pccaddie_url != c_data.get("pccaddie_url"):
+                        existing_club.pccaddie_url = c_data.get("pccaddie_url")
 
         # 4. Turniere aktualisieren / seeden
         system_turniere = Turnier.query.filter_by(user_id=None).all()
