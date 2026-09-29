@@ -114,6 +114,61 @@
         .score-par { background: #f1f5f9; color: #334155; border: 1px solid #cbd5e1; }
         .score-bogey { background: #ffedd5; color: #c2410c; border: 1px solid #fb923c; }
         .score-double { background: #fee2e2; color: #b91c1c; border: 2px solid #ef4444; }
+
+        /* Official PGA Tour Scoring Symbols (Feature 4) */
+        .tour-badge { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; font-size: 11px; font-weight: 800; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; line-height: 1; transition: all 0.15s; }
+        .tour-albatross { background: #fef3c7; color: #78350f; border: 2px solid #d97706; box-shadow: 0 0 0 2px #b45309; border-radius: 9999px; }
+        .tour-eagle { background: #fef3c7; color: #92400e; border: 2px solid #f59e0b; box-shadow: 0 0 0 2px #d97706; border-radius: 9999px; }
+        .tour-birdie { background: #fee2e2; color: #991b1b; border: 2px solid #ef4444; border-radius: 9999px; }
+        .tour-par { background: #f8fafc; color: #334155; border: 1px solid #cbd5e1; border-radius: 3px; }
+        .tour-bogey { background: #ffffff; color: #1e293b; border: 1.5px solid #475569; border-radius: 0px; }
+        .tour-double { background: #0f172a; color: #ffffff; border: 1.5px solid #020617; border-radius: 0px; }
+
+        /* Official DGV Scorecard Print Styles (Feature 2) */
+        @media print {
+            body {
+                background: white !important;
+                color: black !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            body > *:not(#printable-scorecard-modal) {
+                display: none !important;
+            }
+            #printable-scorecard-modal {
+                display: block !important;
+                position: static !important;
+                background: transparent !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                width: 100% !important;
+                height: auto !important;
+                inset: auto !important;
+                z-index: auto !important;
+            }
+            #printable-scorecard-modal .no-print {
+                display: none !important;
+            }
+            #printable-scorecard-content {
+                box-shadow: none !important;
+                border: 1px solid #64748b !important;
+                border-radius: 0 !important;
+                max-width: 100% !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 6mm !important;
+                page-break-after: avoid !important;
+                page-break-inside: avoid !important;
+            }
+            @page {
+                size: A4 portrait;
+                margin: 6mm;
+            }
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+        }
     </style>
 </head>
 <body class="h-full flex flex-col bg-slate-50 text-slate-800 antialiased selection:bg-golf-500 selection:text-white pb-safe">
@@ -153,6 +208,14 @@
                         <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-golf-600 text-white flex items-center justify-center font-bold text-xs shadow-sm">
                             ⛳
                         </div>
+                    </div>
+
+                    <!-- Live Offline & Cloud Sync Status Pill (Feature 5) -->
+                    <div id="header-sync-pill" class="flex items-center">
+                        <button type="button" onclick="handleManualSyncClick()" id="header-sync-btn" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold transition-all shadow-2xs group cursor-pointer" title="Cloud-Synchronisation aktiv (Klicken für manuellen Sync)">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" id="header-sync-dot"></span>
+                            <span class="text-[11px] font-semibold hidden md:inline" id="header-sync-text">Live synchronisiert</span>
+                        </button>
                     </div>
 
                     <!-- Live Active Check-In Pill in Header (Hidden when not playing) -->
@@ -735,6 +798,35 @@
                             <option value="best_sd">Bester SD</option>
                             <option value="lowest_gross">Niedrigstes Brutto</option>
                         </select>
+                    </div>
+                </div>
+
+                <!-- PGA Tour Scoring Legend (Feature 4) -->
+                <div class="p-3 sm:p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex flex-wrap items-center justify-between gap-3 text-xs">
+                    <div class="font-bold text-slate-800 flex items-center gap-2">
+                        <span>🏆 PGA Tour Score-Farbkodierung:</span>
+                    </div>
+                    <div class="flex items-center gap-3 sm:gap-4 flex-wrap">
+                        <div class="flex items-center gap-1.5" title="Eagle oder besser: 2 oder mehr Schläge unter Par">
+                            <span class="tour-badge tour-eagle">3</span>
+                            <span class="text-[11px] text-slate-700 font-semibold">Eagle (-2)</span>
+                        </div>
+                        <div class="flex items-center gap-1.5" title="Birdie: 1 Schlag unter Par">
+                            <span class="tour-badge tour-birdie">3</span>
+                            <span class="text-[11px] text-slate-700 font-semibold">Birdie (-1)</span>
+                        </div>
+                        <div class="flex items-center gap-1.5" title="Par: Loch in Par gespielt">
+                            <span class="tour-badge tour-par">4</span>
+                            <span class="text-[11px] text-slate-700 font-semibold">Par (E)</span>
+                        </div>
+                        <div class="flex items-center gap-1.5" title="Bogey: 1 Schlag über Par">
+                            <span class="tour-badge tour-bogey">5</span>
+                            <span class="text-[11px] text-slate-700 font-semibold">Bogey (+1)</span>
+                        </div>
+                        <div class="flex items-center gap-1.5" title="Double Bogey oder mehr: 2 oder mehr Schläge über Par">
+                            <span class="tour-badge tour-double">6</span>
+                            <span class="text-[11px] text-slate-700 font-semibold">Double+ (+2)</span>
+                        </div>
                     </div>
                 </div>
 
@@ -1652,7 +1744,12 @@
                         <p class="text-xs text-golf-200/80">Loch-für-Loch Erfassung nach WHS Vorgabentabelle mit Touch-Unterschrift & GPS-Audit</p>
                     </div>
                 </div>
-                <button type="button" onclick="closeScorecardModal()" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center font-bold text-lg transition-colors">&times;</button>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="openScorecardPrintPreview()" class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs flex items-center gap-1.5 transition-colors border border-white/20 shadow-xs cursor-pointer" title="Offizielle DGV-Scorekarte als PDF exportieren oder drucken">
+                        <span>🖨️ PDF / Drucken</span>
+                    </button>
+                    <button type="button" onclick="closeScorecardModal()" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center font-bold text-lg transition-colors">&times;</button>
+                </div>
             </div>
 
             <!-- Modal Body (Scrollable) -->
@@ -1684,7 +1781,7 @@
                 </div>
 
                 <!-- Top Meta Form -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
                     <div>
                         <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Golfclub</label>
                         <select id="sc-club-select" onchange="onScorecardClubChanged()" class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold bg-white"></select>
@@ -1705,6 +1802,13 @@
                         <select id="sc-loecher" onchange="onScorecardLoecherChanged()" class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold bg-white">
                             <option value="18" id="sc-loecher-opt-18">18 Löcher</option>
                             <option value="9" id="sc-loecher-opt-9">9 Löcher</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">Abschlag (Tee)</label>
+                        <select id="sc-tee-select" onchange="onScorecardTeeChanged()" class="w-full px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold bg-white cursor-pointer hover:border-golf-500 transition-colors" title="Wähle deinen Abschlag für Rating, Distanzen & Spielvorgabe">
+                            <option value="gelb" selected>🟡 Gelb (Herren)</option>
+                            <option value="rot">🔴 Rot (Damen)</option>
                         </select>
                     </div>
                 </div>
@@ -1924,13 +2028,53 @@
             <!-- Modal Footer -->
             <div class="p-4 border-t border-slate-200 bg-slate-50 flex flex-wrap items-center justify-between gap-3 shrink-0">
                 <button type="button" onclick="closeScorecardModal()" class="px-4 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-200 transition-colors">Schließen</button>
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <button type="button" onclick="openScorecardPrintPreview()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs shadow-xs transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer" title="Öffnet die druckbare DGV-Scorekarte für PDF-Export oder Druck">
+                        <span>🖨️ PDF / Drucken</span>
+                    </button>
                     <button type="button" onclick="exportCurrentScorecardPcCaddy()" class="px-4 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 font-bold text-xs shadow-xs transition-all flex items-center gap-1.5 active:scale-95" title="Exportiert CSV-Datei für PC CADDIE">
                         <span>📥 PC CADDIE Export (.csv)</span>
                     </button>
                     <button type="button" onclick="submitTournamentScorecard()" class="px-5 py-2 rounded-xl bg-golf-600 hover:bg-golf-700 text-white font-bold text-xs shadow-sm transition-all flex items-center gap-1.5 active:scale-95">
                         <span>🚀 Scorekarte einreichen</span>
                     </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: OFFIZIELLE DGV PRINT / PDF SCORECARD (Feature 2) -->
+    <div id="printable-scorecard-modal" class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-xs flex items-center justify-center p-2 sm:p-4 overflow-y-auto hidden">
+        <div class="bg-white rounded-2xl max-w-4xl w-full shadow-2xl border border-slate-300 overflow-hidden my-auto max-h-[96dvh] flex flex-col">
+            <!-- Modal Action Bar (Hidden when printing via @media print) -->
+            <div class="no-print p-3 sm:p-4 border-b border-slate-200 bg-slate-900 text-white flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-lg">
+                        🖨️
+                    </div>
+                    <div>
+                        <h4 class="text-sm font-bold text-white flex items-center gap-2">
+                            <span>Offizieller DGV Scorekarten-Druck & PDF-Export</span>
+                            <span class="text-[10px] font-bold px-2 py-0.2 rounded-full bg-emerald-500 text-white uppercase tracking-wider">A4 Druckfertig</span>
+                        </h4>
+                        <p class="text-[11px] text-slate-300">Format DIN A4 Hochformat • Inklusive beider Touch-Unterschriften & DGV GPS-Audit Stempel</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="printScorecardPDF()" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                        <span>Jetzt drucken / Als PDF speichern</span>
+                    </button>
+                    <button type="button" onclick="closeScorecardPrintModal()" class="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition-colors">
+                        Schließen
+                    </button>
+                </div>
+            </div>
+
+            <!-- Scrollable Preview Content / Printable Document Area -->
+            <div class="p-3 sm:p-6 overflow-y-auto flex-1 bg-slate-200/70 flex justify-center">
+                <div id="printable-scorecard-content" class="bg-white text-slate-900 border border-slate-300 shadow-md p-4 sm:p-6 max-w-[210mm] w-full text-xs font-sans">
+                    <!-- Populated dynamically via openScorecardPrintPreview() in js/scorecard.js -->
                 </div>
             </div>
         </div>

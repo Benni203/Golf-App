@@ -62,11 +62,12 @@ window.addEventListener('DOMContentLoaded', () => {
             .catch(err => console.log('Service Worker Registrierung fehlgeschlagen:', err));
     }
 
-    // Online / Offline detection & synchronization
+    // Online / Offline detection & synchronization (Feature 5)
     window.addEventListener('online', () => {
         const banner = document.getElementById('offline-banner');
         if(banner) banner.classList.add('hidden');
         showToast("Wieder online! Verbindung hergestellt. 🌐", "✅");
+        updateHeaderSyncStatus();
         syncOfflineScorecards();
     });
 
@@ -74,6 +75,7 @@ window.addEventListener('DOMContentLoaded', () => {
         const banner = document.getElementById('offline-banner');
         if(banner) banner.classList.remove('hidden');
         showToast("Offline-Modus aktiv – Scorekarten werden lokal gesichert. 📵", "⚠️");
+        updateHeaderSyncStatus();
     });
 
     if(!navigator.onLine) {
@@ -91,5 +93,70 @@ window.addEventListener('DOMContentLoaded', () => {
 
     loadData();
     initScorecardHoles();
+    updateHeaderSyncStatus();
     syncOfflineScorecards();
 });
+
+// --- CLOUD SYNC & OFFLINE STATUS CONTROLLER (Feature 5) ---
+
+function updateHeaderSyncStatus() {
+    const btn = document.getElementById('header-sync-btn');
+    const dot = document.getElementById('header-sync-dot');
+    const text = document.getElementById('header-sync-text');
+    if (!btn || !dot || !text) return;
+
+    const isOnline = navigator.onLine;
+    let queue = [];
+    try {
+        queue = JSON.parse(localStorage.getItem('birdietrack_offline_scorecards') || '[]');
+    } catch(e) {
+        queue = [];
+    }
+
+    if (!isOnline) {
+        btn.className = "flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 text-xs font-bold transition-all shadow-2xs group cursor-pointer";
+        dot.className = "w-2 h-2 rounded-full bg-amber-500 animate-ping";
+        if (queue.length > 0) {
+            text.innerText = `Offline (${queue.length} ungesichert)`;
+            btn.title = `Offline-Modus aktiv: ${queue.length} Scorekarte(n) lokal auf diesem Gerät gesichert.`;
+        } else {
+            text.innerText = "Offline-Modus";
+            btn.title = "Offline-Modus aktiv: Scorekarten werden automatisch lokal gesichert.";
+        }
+    } else if (queue.length > 0) {
+        btn.className = "flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 text-xs font-bold transition-all shadow-2xs group cursor-pointer";
+        dot.className = "w-2 h-2 rounded-full bg-amber-500 animate-pulse";
+        text.innerText = `${queue.length} Sync ausstehend`;
+        btn.title = `${queue.length} Scorekarte(n) ausstehend. Klicke hier für sofortigen Sync mit der Cloud!`;
+    } else {
+        btn.className = "flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold transition-all shadow-2xs group cursor-pointer";
+        dot.className = "w-2 h-2 rounded-full bg-emerald-500";
+        text.innerText = "Live synchronisiert";
+        btn.title = "Cloud-Synchronisation aktiv und auf neuestem Stand (Klicken zum Prüfen)";
+    }
+}
+
+async function handleManualSyncClick() {
+    if (!navigator.onLine) {
+        showToast("Gerät ist aktuell offline. Verbindung prüfen! 📵", "⚠️");
+        return;
+    }
+
+    let queue = [];
+    try {
+        queue = JSON.parse(localStorage.getItem('birdietrack_offline_scorecards') || '[]');
+    } catch(e) {
+        queue = [];
+    }
+
+    if (queue.length > 0) {
+        showToast("Synchronisiere ausstehende Scorekarten... ⏳", "🔄");
+        if (typeof syncOfflineScorecards === 'function') {
+            await syncOfflineScorecards();
+        }
+    } else {
+        updateHeaderSyncStatus();
+        showToast("Alles aktuell! Cloud ist 100% synchronisiert. ⛳", "✅");
+    }
+}
+

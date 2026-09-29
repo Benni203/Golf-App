@@ -63,17 +63,29 @@ function renderFilteredHistory() {
             ? `<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-sand-200 text-sand-900 text-[11px] font-bold">★ Top 8</span>`
             : `<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 text-[10px] font-medium">Archiv</span>`;
 
+        const pgaTourStrip = generatePgaTourStripHtml(r);
+
         tr.innerHTML = `
             <td class="py-3 px-4">${isCountingBadge}</td>
             <td class="py-3 px-4 font-medium text-slate-800 whitespace-nowrap">${r.datum}</td>
-            <td class="py-3 px-4 font-semibold text-slate-900">${r.club_name}</td>
+            <td class="py-3 px-4">
+                <div class="font-semibold text-slate-900">${r.club_name}</div>
+                <div class="mt-1 flex items-center gap-1 overflow-x-auto py-0.5 no-scrollbar max-w-[280px] sm:max-w-md" title="PGA Tour Score-Strip (Eagle, Birdie, Par, Bogey, Double+)">
+                    ${pgaTourStrip}
+                </div>
+            </td>
             <td class="py-3 px-4 text-center"><span class="px-2 py-0.5 rounded-md bg-slate-100 text-xs font-bold">${r.loecher}L</span></td>
             <td class="py-3 px-4 text-center font-mono font-bold text-slate-800">${r.brutto}</td>
             <td class="py-3 px-4 text-center font-mono font-black ${r.isBest ? 'text-amber-700' : 'text-slate-700'}">${parseFloat(r.sd).toFixed(1)}</td>
             <td class="py-3 px-4 text-right">
-                <button onclick="handleDeleteRound('${r.datum}', ${r.brutto}, '${r.club_name.replace(/'/g, "\\'")}', ${r.id || 'null'})" class="p-1.5 rounded-lg text-rose-500 hover:text-rose-700 hover:bg-rose-50 transition-colors" title="Runde löschen">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                </button>
+                <div class="flex items-center justify-end gap-1.5">
+                    <button onclick="openScorecardPrintPreviewForRound('${r.datum}', ${r.brutto}, '${r.club_name.replace(/'/g, "\\'")}', ${r.id || 'null'})" class="p-1.5 px-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors flex items-center gap-1 shadow-2xs cursor-pointer" title="DGV-Scorekarte dieser Runde als PDF öffnen oder drucken">
+                        <span>🖨️ PDF</span>
+                    </button>
+                    <button onclick="handleDeleteRound('${r.datum}', ${r.brutto}, '${r.club_name.replace(/'/g, "\\'")}', ${r.id || 'null'})" class="p-1.5 rounded-lg text-rose-500 hover:text-rose-700 hover:bg-rose-50 transition-colors" title="Runde löschen">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                </div>
             </td>
         `;
         tbody.appendChild(tr);
@@ -486,4 +498,77 @@ async function confirmPDFImport() {
     document.getElementById('pdf-preview-container').classList.add('hidden');
     switchTab('history');
 }
+
+// --- PGA TOUR SCORING & SCORECARD PRINT INTEGRATION (Features 2 & 4) ---
+
+function renderPgaTourBadge(strokes, par) {
+    const s = parseInt(strokes, 10);
+    const p = parseInt(par, 10);
+    if (isNaN(s) || isNaN(p)) return `<span class="tour-badge tour-par">4</span>`;
+    const diff = s - p;
+    if (diff <= -2) {
+        return `<span class="tour-badge tour-eagle" title="Eagle oder besser: ${s} auf Par ${p}">${s}</span>`;
+    } else if (diff === -1) {
+        return `<span class="tour-badge tour-birdie" title="Birdie: ${s} auf Par ${p}">${s}</span>`;
+    } else if (diff === 0) {
+        return `<span class="tour-badge tour-par" title="Par: ${s}">${s}</span>`;
+    } else if (diff === 1) {
+        return `<span class="tour-badge tour-bogey" title="Bogey: ${s} auf Par ${p}">${s}</span>`;
+    } else {
+        return `<span class="tour-badge tour-double" title="Double Bogey+: ${s} auf Par ${p}">${s}</span>`;
+    }
+}
+
+function generatePgaTourStripHtml(r) {
+    if (Array.isArray(r.holes) && r.holes.length > 0) {
+        return r.holes.map(h => renderPgaTourBadge(h.strokes || h.gross || h.par, h.par)).join('');
+    }
+
+    // Reconstruct representative hole distribution from club pars matching total brutto
+    const rawClubName = (r.club_name || '').split(' [')[0].split(' (')[0].trim();
+    const club = clubs.find(c => c.name.toLowerCase().includes(rawClubName.toLowerCase())) || clubs[0];
+    const loecher = parseInt(r.loecher, 10) || 18;
+    const courseHoles = (typeof getCourseHolesForClub === 'function') 
+        ? getCourseHolesForClub(club, loecher, false)
+        : Array.from({length: loecher}, (_, i) => ({ hole: i + 1, par: 4, si: i + 1 }));
+
+    const parTotal = courseHoles.reduce((sum, h) => sum + h.par, 0);
+    const brutto = parseInt(r.brutto, 10) || (parTotal + 18);
+    let diff = brutto - parTotal;
+
+    const badges = courseHoles.map((h, idx) => {
+        const remainingHoles = loecher - idx;
+        const strokeAdd = Math.round(diff / remainingHoles);
+        diff -= strokeAdd;
+        const strokes = Math.max(1, h.par + strokeAdd);
+        return renderPgaTourBadge(strokes, h.par);
+    });
+
+    return badges.join('');
+}
+
+function openScorecardPrintPreviewForRound(datum, brutto, clubName, roundId = null) {
+    const r = runden.find(x => x.datum === datum && x.brutto == brutto && x.club_name === clubName) || {
+        datum: datum,
+        brutto: brutto,
+        club_name: clubName,
+        loecher: 18,
+        sd: 15.0
+    };
+
+    if (typeof openScorecardPrintPreview === 'function') {
+        openScorecardPrintPreview({
+            club_name: clubName,
+            datum: datum,
+            loecher: r.loecher || 18,
+            brutto: brutto,
+            sd: r.sd,
+            turnier_name: r.club_name.includes('[🏆') ? r.club_name.split('[🏆')[1].replace(']', '').trim() : 'Offizielle WHS Wertungsrunde',
+            holes: r.holes || []
+        });
+    } else {
+        alert("Druckfunktion wird geladen...");
+    }
+}
+
 

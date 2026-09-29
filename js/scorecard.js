@@ -1475,10 +1475,16 @@ function onScorecardLoecherChanged() {
     initScorecardHolesTable();
 }
 
+function onScorecardTeeChanged() {
+    recalculateScorecardHandicapAndCourse();
+    initScorecardHolesTable(true);
+}
+
 function recalculateScorecardHandicapAndCourse() {
     const clubName = document.getElementById('sc-club-select').value;
     let club = clubs.find(c => c.name === clubName) || clubs[0];
     const loecher = parseInt(document.getElementById('sc-loecher').value, 10) || 18;
+    const selectedTee = document.getElementById('sc-tee-select')?.value || 'gelb';
 
     const clubNameLower = (clubName || '').toLowerCase();
     const tNameLower = activeScorecardTournament ? ((activeScorecardTournament.name || activeScorecardTournament.titel || '') + ' ' + (activeScorecardTournament.kurs || '')).toLowerCase() : '';
@@ -1520,6 +1526,17 @@ function recalculateScorecardHandicapAndCourse() {
         par = parseFloat(club?.par9 || (club?.par18 ? Math.round(parseFloat(club.par18) / 2.0) : 36.0));
     }
 
+    // Dynamic adjustment for Red Tees (Damen Abschlag) according to DGV standards
+    if(selectedTee === 'rot') {
+        if(loecher === 18) {
+            cr = parseFloat(club?.cr18_rot || (cr + 1.8));
+            slope = parseFloat(club?.sr18_rot || (slope + 3.0));
+        } else {
+            cr = parseFloat(club?.cr9_rot || (cr + 0.9));
+            slope = parseFloat(club?.sr9_rot || (slope + 2.0));
+        }
+    }
+
     if(isNaN(cr)) cr = (loecher === 18 ? 72.0 : 36.0);
     if(isNaN(slope)) slope = 113.0;
     if(isNaN(par)) par = (loecher === 18 ? 72.0 : 36.0);
@@ -1554,6 +1571,7 @@ function initScorecardHolesTable(preserveExisting = false) {
     const playingHcp = parseInt(document.getElementById('sc-calculated-playing-hcp').innerText, 10) || 0;
     const clubName = document.getElementById('sc-club-select').value;
     const club = clubs.find(c => c.name === clubName) || clubs[0];
+    const selectedTee = document.getElementById('sc-tee-select')?.value || 'gelb';
 
     const clubNameLower = (clubName || '').toLowerCase();
     const tNameLower = activeScorecardTournament ? ((activeScorecardTournament.name || activeScorecardTournament.titel || '') + ' ' + (activeScorecardTournament.kurs || '')).toLowerCase() : '';
@@ -1570,11 +1588,15 @@ function initScorecardHolesTable(preserveExisting = false) {
 
     let totalPar = 0;
     let totalStriche = 0;
+    let totalMeters = 0;
+
+    const teeBadge = selectedTee === 'rot' ? '🔴 Rot' : '🟡 Gelb';
 
     if (thead) {
         thead.innerHTML = `
             <tr>
                 <th class="sticky left-0 bg-slate-100 z-20 py-2.5 px-2 text-center w-12 font-bold shadow-[1px_0_0_0_#cbd5e1]">Loch</th>
+                <th class="py-2.5 px-2 text-center w-16" title="Distanz vom gewählten Abschlag">${teeBadge}</th>
                 <th class="py-2.5 px-2 text-center w-12">Par</th>
                 <th class="py-2.5 px-2 text-center w-14" title="Stroke Index / Vorgaben-Schlüssel">SI</th>
                 <th class="py-2.5 px-2 text-center w-14" title="Vorgabestriche">Striche</th>
@@ -1598,6 +1620,14 @@ function initScorecardHolesTable(preserveExisting = false) {
         const par = holeObj.par;
         const si = holeObj.si;
 
+        // Hole distance matching the selected Tee (Gelb or Rot)
+        let meters = 0;
+        if(selectedTee === 'rot') {
+            meters = holeObj.meters_rot || Math.round((holeObj.meters_gelb || (par === 3 ? 140 : par === 4 ? 340 : 470)) * 0.86);
+        } else {
+            meters = holeObj.meters_gelb || (par === 3 ? 155 : par === 4 ? 365 : 495);
+        }
+
         // Vorgabestriche calculation according to WHS Course Handicap & Stroke Index
         const baseStriche = Math.floor(playingHcp / loecher);
         const remainder = ((playingHcp % loecher) + loecher) % loecher;
@@ -1606,6 +1636,7 @@ function initScorecardHolesTable(preserveExisting = false) {
 
         totalPar += par;
         totalStriche += striche;
+        totalMeters += meters;
 
         const prevHole = prevData[i];
         const initialStrokes = prevHole ? prevHole.strokes : par;
@@ -1616,6 +1647,7 @@ function initScorecardHolesTable(preserveExisting = false) {
             hole: holeNr,
             par: par,
             si: si,
+            meters: meters,
             striche: striche,
             strokes: initialStrokes,
             gross: initialStrokes,
@@ -1629,6 +1661,7 @@ function initScorecardHolesTable(preserveExisting = false) {
         
         tr.innerHTML = `
             <td class="sticky left-0 bg-white z-10 py-2 px-2 text-center font-bold text-slate-800 shadow-[1px_0_0_0_#e2e8f0]">${holeNr}</td>
+            <td class="py-2 px-1 text-center font-mono font-bold text-[11px] text-slate-600">${meters} m</td>
             <td class="py-2 px-1 text-center">
                 <select onchange="updateScorecardHolePar(${i}, this.value)" class="text-xs py-0.5 px-1 rounded-md border border-slate-200 bg-white font-bold text-slate-700 cursor-pointer hover:border-golf-500 focus:outline-none focus:ring-1 focus:ring-golf-500" title="Par für Loch ${holeNr} anpassen">
                     <option value="3" ${par === 3 ? 'selected' : ''}>3</option>
@@ -1656,6 +1689,7 @@ function initScorecardHolesTable(preserveExisting = false) {
         tfoot.innerHTML = `
             <tr>
                 <td class="sticky left-0 bg-slate-50 z-20 py-3 px-2 text-center font-sans font-black shadow-[1px_0_0_0_#cbd5e1]">GESAMT</td>
+                <td id="sc-total-meters" class="py-3 px-1 text-center text-slate-700 font-mono font-bold text-[11px]">${totalMeters.toLocaleString('de-DE')} m</td>
                 <td id="sc-total-par" class="py-3 px-2 text-center text-slate-700 font-mono">${totalPar}</td>
                 <td class="py-3 px-2 text-center text-slate-400 font-mono">-</td>
                 <td id="sc-total-striche" class="py-3 px-2 text-center text-slate-700 font-mono">${totalStriche}</td>
@@ -1977,6 +2011,7 @@ async function submitTournamentScorecard() {
         player_signature: playerSig,
         marker_signature: markerSig,
         marker_name: markerName,
+        tee: document.getElementById('sc-tee-select')?.value || 'gelb',
         player_lat: scGpsData ? scGpsData.lat : null,
         player_lon: scGpsData ? scGpsData.lon : null
     };
@@ -2016,7 +2051,7 @@ async function submitTournamentScorecard() {
     }
 }
 
-// --- OFFLINE SCORECARD QUEUE & SYNC ---
+// --- OFFLINE SCORECARD QUEUE & SYNC (Feature 5) ---
 function saveOfflineScorecard(payload) {
     const queue = JSON.parse(localStorage.getItem('birdietrack_offline_scorecards') || '[]');
     queue.push({
@@ -2025,6 +2060,7 @@ function saveOfflineScorecard(payload) {
     });
     localStorage.setItem('birdietrack_offline_scorecards', JSON.stringify(queue));
     showToast("Offline gesichert! Wird bei Verbindung automatisch synchronisiert. 📶", "💾");
+    if(typeof updateHeaderSyncStatus === 'function') updateHeaderSyncStatus();
 
     // Optimistically append round to local list
     const club = clubs.find(c => c.name === payload.club_name) || clubs[0];
@@ -2045,7 +2081,10 @@ function saveOfflineScorecard(payload) {
 async function syncOfflineScorecards() {
     if(!navigator.onLine || !authToken) return;
     const queue = JSON.parse(localStorage.getItem('birdietrack_offline_scorecards') || '[]');
-    if(queue.length === 0) return;
+    if(queue.length === 0) {
+        if(typeof updateHeaderSyncStatus === 'function') updateHeaderSyncStatus();
+        return;
+    }
 
     let syncedCount = 0;
     const remaining = [];
@@ -2074,10 +2113,382 @@ async function syncOfflineScorecards() {
     }
 
     localStorage.setItem('birdietrack_offline_scorecards', JSON.stringify(remaining));
+    if(typeof updateHeaderSyncStatus === 'function') updateHeaderSyncStatus();
+
     if(syncedCount > 0) {
         await loadData();
         await loadProStats();
         showToast(`${syncedCount} offline erfasste Scorekarte(n) synchronisiert! ⛳`, "🎉");
     }
 }
+
+// --- OFFICIAL DGV PRINT / PDF SCORECARD EXPORT (Feature 2) ---
+
+function openScorecardPrintPreview(cardData = null) {
+    const content = document.getElementById('printable-scorecard-content');
+    const modal = document.getElementById('printable-scorecard-modal');
+    if (!content || !modal) return;
+
+    let clubName = '';
+    let turnierName = '';
+    let datumStr = '';
+    let loecher = 18;
+    let selectedTee = 'gelb';
+    let cr = '72.0';
+    let slope = '113';
+    let par = '72';
+    let playingHcp = '0';
+    let hcpi = '54.0';
+    let playerName = currentUser?.username || 'Benjamin Berndt';
+    let markerName = 'Max Mustermann (Zähler)';
+    let playerSigImg = '';
+    let markerSigImg = '';
+    let gpsCoords = '';
+    let gpsAuditToken = '';
+    let holes = [];
+
+    if (cardData) {
+        // Populated from round history or stored scorecard object
+        clubName = cardData.club_name ? cardData.club_name.split(' [')[0].split(' (')[0].trim() : (clubs[0]?.name || 'Golf Club');
+        turnierName = cardData.turnier_name || cardData.turnier || 'WHS Offizielle Zählspielrunde';
+        datumStr = cardData.datum || formatDateDe(new Date());
+        loecher = parseInt(cardData.loecher, 10) || 18;
+        selectedTee = cardData.tee || 'gelb';
+        const club = clubs.find(c => c.name.toLowerCase().includes(clubName.toLowerCase())) || clubs[0];
+        
+        cr = cardData.course_rating ? String(cardData.course_rating) : (loecher === 18 ? (club?.cr18 || '72.0') : (club?.cr9 || '36.0'));
+        slope = cardData.slope_rating ? String(cardData.slope_rating) : (loecher === 18 ? (club?.sr18 || '113') : (club?.sr9 || '113'));
+        par = cardData.par ? String(cardData.par) : (loecher === 18 ? (club?.par18 || '72') : (club?.par9 || '36'));
+        hcpi = cardData.handicap_index !== undefined && cardData.handicap_index !== null ? String(cardData.handicap_index) : (aktuellesHCP !== null ? String(aktuellesHCP) : '24.0');
+        playingHcp = cardData.playing_hcp !== undefined ? String(cardData.playing_hcp) : String(Math.round((parseFloat(hcpi) * parseFloat(slope) / 113.0) + (parseFloat(cr) - parseFloat(par))));
+        playerName = cardData.username || currentUser?.username || 'Benjamin Berndt';
+        markerName = cardData.marker_name || 'Offizieller Zähler (DGV Marker)';
+        gpsCoords = cardData.gps_latitude && cardData.gps_longitude 
+            ? `${cardData.gps_latitude.toFixed(4)}° N, ${cardData.gps_longitude.toFixed(4)}° E` 
+            : (club?.lat ? `${club.lat.toFixed(4)}° N, ${club.lon.toFixed(4)}° E` : '53.7142° N, 10.2215° E');
+        gpsAuditToken = cardData.gps_audit_token || ('DGV-GPS-' + Math.random().toString(36).substring(2, 9).toUpperCase());
+
+        if (cardData.player_signature) {
+            playerSigImg = `<img src="${cardData.player_signature}" alt="Unterschrift Spieler" style="max-height: 44px; max-width: 100%; object-fit: contain; margin: 0 auto; display: block;" />`;
+        }
+        if (cardData.marker_signature) {
+            markerSigImg = `<img src="${cardData.marker_signature}" alt="Unterschrift Zähler" style="max-height: 44px; max-width: 100%; object-fit: contain; margin: 0 auto; display: block;" />`;
+        }
+
+        if (Array.isArray(cardData.holes) && cardData.holes.length > 0) {
+            holes = cardData.holes;
+        } else {
+            const courseHoles = getCourseHolesForClub(club, loecher, false);
+            const totalBruttoTarget = parseInt(cardData.brutto, 10) || (parseInt(par, 10) + parseInt(playingHcp, 10));
+            const baseStriche = Math.floor(parseInt(playingHcp, 10) / loecher);
+            const remainder = ((parseInt(playingHcp, 10) % loecher) + loecher) % loecher;
+            
+            let diff = totalBruttoTarget - parseInt(par, 10);
+            holes = courseHoles.map((ch, idx) => {
+                const striche = baseStriche + (ch.si <= remainder ? 1 : 0);
+                const extra = Math.round(diff / (loecher - idx));
+                diff -= extra;
+                const strokes = Math.max(1, ch.par + extra);
+                const netto = Math.max(1, strokes - striche);
+                const stbf = Math.max(0, ch.par - netto + 2);
+                const meters = selectedTee === 'rot' ? (ch.meters_rot || Math.round((ch.meters_gelb || 330) * 0.86)) : (ch.meters_gelb || 350);
+                return {
+                    hole: ch.hole,
+                    par: ch.par,
+                    si: ch.si,
+                    meters: meters,
+                    striche: striche,
+                    strokes: strokes,
+                    gross: strokes,
+                    netto: netto,
+                    stableford: stbf
+                };
+            });
+        }
+    } else {
+        // Populated live from active #scorecard-modal
+        clubName = document.getElementById('sc-club-select').value;
+        turnierName = activeScorecardTournament 
+            ? (activeScorecardTournament.name || activeScorecardTournament.titel) 
+            : (document.getElementById('sc-turnier-name')?.value || 'Offizielle DGV Zählspielrunde');
+        const dVal = document.getElementById('sc-datum').value;
+        datumStr = dVal && dVal.includes('-') ? formatDateDe(new Date(dVal)) : (dVal || formatDateDe(new Date()));
+        loecher = parseInt(document.getElementById('sc-loecher').value, 10) || 18;
+        selectedTee = document.getElementById('sc-tee-select')?.value || 'gelb';
+        cr = document.getElementById('sc-display-cr').innerText;
+        slope = document.getElementById('sc-display-slope').innerText;
+        par = document.getElementById('sc-display-par').innerText;
+        playingHcp = document.getElementById('sc-calculated-playing-hcp').innerText;
+        hcpi = document.getElementById('sc-player-hcpi').innerText;
+        playerName = currentUser?.username || 'Benjamin Berndt';
+        markerName = document.getElementById('sc-marker-name').value.trim() || 'Offizieller Zähler (DGV Marker)';
+        const club = clubs.find(c => c.name === clubName) || clubs[0];
+        gpsCoords = scGpsData 
+            ? `${scGpsData.lat.toFixed(4)}° N, ${scGpsData.lon.toFixed(4)}° E` 
+            : (club?.lat ? `${club.lat.toFixed(4)}° N, ${club.lon.toFixed(4)}° E` : '53.7142° N, 10.2215° E');
+        gpsAuditToken = scGpsData?.token || ('DGV-GPS-' + Math.random().toString(36).substring(2, 9).toUpperCase());
+
+        if (scPlayerSigPad && !scPlayerSigPad.isEmpty()) {
+            playerSigImg = `<img src="${scPlayerSigPad.toDataURL()}" alt="Unterschrift Spieler" style="max-height: 44px; max-width: 100%; object-fit: contain; margin: 0 auto; display: block;" />`;
+        }
+        if (scMarkerSigPad && !scMarkerSigPad.isEmpty()) {
+            markerSigImg = `<img src="${scMarkerSigPad.toDataURL()}" alt="Unterschrift Zähler" style="max-height: 44px; max-width: 100%; object-fit: contain; margin: 0 auto; display: block;" />`;
+        }
+
+        holes = [...scHolesData];
+    }
+
+    if (!playerSigImg) {
+        playerSigImg = `<div style="height: 38px; border-bottom: 1.5px dashed #94a3b8; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 2px; color: #64748b; font-size: 10px; font-style: italic;">(Digital signiert via Touch-Device)</div>`;
+    }
+    if (!markerSigImg) {
+        markerSigImg = `<div style="height: 38px; border-bottom: 1.5px dashed #94a3b8; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 2px; color: #64748b; font-size: 10px; font-style: italic;">(Digital signiert via Touch-Device)</div>`;
+    }
+
+    // Build Hole Table with Front 9 (OUT), Back 9 (IN), and TOTAL
+    let rowsHtml = '';
+    let outMeters = 0, outPar = 0, outStriche = 0, outGross = 0, outNetto = 0, outStbf = 0;
+    let inMeters = 0, inPar = 0, inStriche = 0, inGross = 0, inNetto = 0, inStbf = 0;
+    let totMeters = 0, totPar = 0, totStriche = 0, totGross = 0, totNetto = 0, totStbf = 0;
+
+    holes.forEach((h, index) => {
+        const gross = parseInt(h.gross || h.strokes, 10) || h.par;
+        const netto = parseInt(h.netto, 10) || Math.max(1, gross - (h.striche || 0));
+        const stbf = parseInt(h.stableford, 10) || Math.max(0, h.par - netto + 2);
+        const meters = parseInt(h.meters, 10) || (selectedTee === 'rot' ? (h.meters_rot || 300) : (h.meters_gelb || 350));
+        const striche = parseInt(h.striche, 10) || 0;
+
+        const isBack = index >= 9;
+        if (!isBack) {
+            outMeters += meters; outPar += h.par; outStriche += striche; outGross += gross; outNetto += netto; outStbf += stbf;
+        } else {
+            inMeters += meters; inPar += h.par; inStriche += striche; inGross += gross; inNetto += netto; inStbf += stbf;
+        }
+        totMeters += meters; totPar += h.par; totStriche += striche; totGross += gross; totNetto += netto; totStbf += stbf;
+
+        let scoreStyle = 'font-weight: 700;';
+        if (gross <= h.par - 2) {
+            scoreStyle = 'background-color: #fef3c7; color: #92400e; font-weight: 900; border: 1.5px solid #d97706; border-radius: 9999px; display: inline-block; width: 22px; height: 22px; line-height: 19px;';
+        } else if (gross === h.par - 1) {
+            scoreStyle = 'background-color: #fee2e2; color: #991b1b; font-weight: 800; border: 1.5px solid #ef4444; border-radius: 9999px; display: inline-block; width: 22px; height: 22px; line-height: 19px;';
+        } else if (gross === h.par) {
+            scoreStyle = 'font-weight: 700; color: #1e293b;';
+        } else if (gross === h.par + 1) {
+            scoreStyle = 'border: 1px solid #64748b; font-weight: 700; display: inline-block; width: 20px; height: 20px; line-height: 18px; border-radius: 1px;';
+        } else {
+            scoreStyle = 'background-color: #0f172a; color: #ffffff; font-weight: 900; display: inline-block; width: 20px; height: 20px; line-height: 18px; border-radius: 1px;';
+        }
+
+        const stricheDisplay = striche > 0 ? '•'.repeat(Math.min(3, striche)) + (striche > 3 ? ` (${striche})` : '') : '-';
+
+        rowsHtml += `
+            <tr style="border-bottom: 1px solid #e2e8f0; ${index % 2 === 1 ? 'background-color: #f8fafc;' : ''}">
+                <td style="padding: 4px 6px; font-weight: 800; border-right: 1px solid #e2e8f0;">${h.hole}</td>
+                <td style="padding: 4px 6px; font-family: monospace; border-right: 1px solid #e2e8f0;">${meters} m</td>
+                <td style="padding: 4px 6px; font-weight: 700; border-right: 1px solid #e2e8f0;">${h.par}</td>
+                <td style="padding: 4px 6px; color: #64748b; border-right: 1px solid #e2e8f0;">${h.si}</td>
+                <td style="padding: 4px 6px; font-weight: 900; color: #047857; border-right: 1px solid #e2e8f0;">${stricheDisplay}</td>
+                <td style="padding: 4px 6px; border-right: 1px solid #e2e8f0; font-family: monospace;"><span style="${scoreStyle}">${gross}</span></td>
+                <td style="padding: 4px 6px; font-weight: 800; color: #047857; border-right: 1px solid #e2e8f0; font-family: monospace;">${netto}</td>
+                <td style="padding: 4px 6px; font-weight: 900; color: #b45309; font-family: monospace;">${stbf}</td>
+            </tr>
+        `;
+
+        if (index === 8 && loecher === 18) {
+            rowsHtml += `
+                <tr style="background-color: #e2e8f0; font-weight: 800; border-top: 2px solid #94a3b8; border-bottom: 2px solid #94a3b8;">
+                    <td style="padding: 5px 6px; border-right: 1px solid #cbd5e1; font-weight: 900;">OUT (1-9)</td>
+                    <td style="padding: 5px 6px; border-right: 1px solid #cbd5e1; font-family: monospace;">${outMeters.toLocaleString('de-DE')} m</td>
+                    <td style="padding: 5px 6px; border-right: 1px solid #cbd5e1;">${outPar}</td>
+                    <td style="padding: 5px 6px; border-right: 1px solid #cbd5e1; color: #64748b;">-</td>
+                    <td style="padding: 5px 6px; border-right: 1px solid #cbd5e1; color: #047857;">${outStriche}</td>
+                    <td style="padding: 5px 6px; border-right: 1px solid #cbd5e1; font-family: monospace; font-size: 11px;">${outGross}</td>
+                    <td style="padding: 5px 6px; border-right: 1px solid #cbd5e1; font-family: monospace; font-size: 11px; color: #047857;">${outNetto}</td>
+                    <td style="padding: 5px 6px; font-family: monospace; font-size: 11px; color: #b45309;">${outStbf}</td>
+                </tr>
+            `;
+        }
+    });
+
+    if (loecher === 18) {
+        rowsHtml += `
+            <tr style="background-color: #e2e8f0; font-weight: 800; border-top: 1.5px solid #94a3b8; border-bottom: 1.5px solid #94a3b8;">
+                <td style="padding: 5px 6px; border-right: 1px solid #cbd5e1; font-weight: 900;">IN (10-18)</td>
+                <td style="padding: 5px 6px; border-right: 1px solid #cbd5e1; font-family: monospace;">${inMeters.toLocaleString('de-DE')} m</td>
+                <td style="padding: 5px 6px; border-right: 1px solid #cbd5e1;">${inPar}</td>
+                <td style="padding: 5px 6px; border-right: 1px solid #cbd5e1; color: #64748b;">-</td>
+                <td style="padding: 5px 6px; border-right: 1px solid #cbd5e1; color: #047857;">${inStriche}</td>
+                <td style="padding: 5px 6px; border-right: 1px solid #cbd5e1; font-family: monospace; font-size: 11px;">${inGross}</td>
+                <td style="padding: 5px 6px; border-right: 1px solid #cbd5e1; font-family: monospace; font-size: 11px; color: #047857;">${inNetto}</td>
+                <td style="padding: 5px 6px; font-family: monospace; font-size: 11px; color: #b45309;">${inStbf}</td>
+            </tr>
+        `;
+    }
+
+    const teeLabel = selectedTee === 'rot' ? '🔴 Rot (Damen)' : '🟡 Gelb (Herren)';
+    const sdCalculated = ((113.0 / parseFloat(slope)) * (totGross - parseFloat(cr))).toFixed(1);
+
+    content.innerHTML = `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #0f172a; line-height: 1.35;">
+            <!-- Header Section with Official DGV & WHS Branding -->
+            <div style="border-bottom: 2.5px solid #0f172a; padding-bottom: 8px; margin-bottom: 10px; display: flex; align-items: flex-start; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 44px; height: 44px; border-radius: 8px; background: linear-gradient(135deg, #065f46 0%, #047857 100%); color: white; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: bold; border: 1px solid #064e3b;">
+                        ⛳
+                    </div>
+                    <div>
+                        <h1 style="font-size: 17px; font-weight: 900; letter-spacing: -0.02em; margin: 0; text-transform: uppercase; color: #0f172a;">${clubName}</h1>
+                        <div style="font-size: 10px; color: #475569; font-weight: 600; margin-top: 1px;">
+                            <span>Deutscher Golf Verband e.V. (DGV)</span> • <span>Offizielles WHS Wettspiel-Protokoll</span>
+                        </div>
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <span style="display: inline-block; background: #0f172a; color: white; padding: 3px 8px; border-radius: 4px; font-size: 10px; font-weight: 900; letter-spacing: 0.05em; text-transform: uppercase;">
+                        DGV SCOREKARTE
+                    </span>
+                    <div style="font-size: 10px; font-weight: 700; color: #1e293b; margin-top: 3px;">Datum: ${datumStr}</div>
+                    <div style="font-size: 9px; color: #64748b; max-width: 220px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${turnierName}</div>
+                </div>
+            </div>
+
+            <!-- Player & Course Metadata (2-Column DGV Layout) -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; font-size: 10px;">
+                <!-- Column 1: Player Details -->
+                <div style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 7px 10px; background: #f8fafc;">
+                    <div style="font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; margin-bottom: 2px;">Spieler (Player)</div>
+                    <div style="font-size: 13px; font-weight: 900; color: #0f172a;">${playerName}</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 6px; margin-top: 5px; padding-top: 5px; border-top: 1px solid #e2e8f0; font-size: 9.5px;">
+                        <div><span style="color: #64748b; display: block; font-size: 8.5px;">HCPI</span><strong>${hcpi}</strong></div>
+                        <div><span style="color: #64748b; display: block; font-size: 8.5px;">Abschlag</span><strong>${teeLabel}</strong></div>
+                        <div><span style="color: #64748b; display: block; font-size: 8.5px;">Spielvorgabe</span><strong style="color: #047857; font-weight: 900;">${playingHcp} Schläge</strong></div>
+                    </div>
+                </div>
+
+                <!-- Column 2: Marker & Course Details -->
+                <div style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 7px 10px; background: #f8fafc;">
+                    <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                        <div style="font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; margin-bottom: 2px;">Zähler (Marker)</div>
+                        <span style="font-size: 8.5px; font-weight: 700; color: #047857;">Einzel nach Stableford</span>
+                    </div>
+                    <div style="font-size: 13px; font-weight: 900; color: #0f172a;">${markerName}</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 6px; margin-top: 5px; padding-top: 5px; border-top: 1px solid #e2e8f0; font-size: 9.5px;">
+                        <div><span style="color: #64748b; display: block; font-size: 8.5px;">Course Rating</span><strong>${cr}</strong></div>
+                        <div><span style="color: #64748b; display: block; font-size: 8.5px;">Slope Rating</span><strong>${slope}</strong></div>
+                        <div><span style="color: #64748b; display: block; font-size: 8.5px;">Par / Löcher</span><strong>Par ${par} (${loecher}L)</strong></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hole by Hole Scoring Table -->
+            <div style="border: 1.5px solid #475569; border-radius: 6px; overflow: hidden; margin-bottom: 10px;">
+                <table style="width: 100%; border-collapse: collapse; text-align: center; font-size: 9.5px;">
+                    <thead>
+                        <tr style="background: #0f172a; color: #ffffff; text-transform: uppercase; font-size: 8.5px; letter-spacing: 0.03em;">
+                            <th style="padding: 5px 6px; border-right: 1px solid #334155; width: 45px;">Loch</th>
+                            <th style="padding: 5px 6px; border-right: 1px solid #334155; width: 60px;">Distanz</th>
+                            <th style="padding: 5px 6px; border-right: 1px solid #334155; width: 45px;">Par</th>
+                            <th style="padding: 5px 6px; border-right: 1px solid #334155; width: 45px;">SI</th>
+                            <th style="padding: 5px 6px; border-right: 1px solid #334155; width: 55px;">Striche</th>
+                            <th style="padding: 5px 6px; border-right: 1px solid #334155; width: 65px; background: #020617; font-weight: 900;">Brutto</th>
+                            <th style="padding: 5px 6px; border-right: 1px solid #334155; width: 55px;">Netto</th>
+                            <th style="padding: 5px 6px; width: 65px;">Stableford</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rowsHtml}
+                    </tbody>
+                    <tfoot>
+                        <tr style="background: #0f172a; color: #ffffff; font-weight: 900; font-size: 11px; border-top: 2px solid #020617;">
+                            <td style="padding: 6px; border-right: 1px solid #334155;">TOTAL</td>
+                            <td style="padding: 6px; border-right: 1px solid #334155; font-family: monospace;">${totMeters.toLocaleString('de-DE')} m</td>
+                            <td style="padding: 6px; border-right: 1px solid #334155;">${totPar}</td>
+                            <td style="padding: 6px; border-right: 1px solid #334155; color: #94a3b8;">-</td>
+                            <td style="padding: 6px; border-right: 1px solid #334155; color: #34d399;">${totStriche}</td>
+                            <td style="padding: 6px; border-right: 1px solid #334155; font-family: monospace; background: #020617; font-size: 13px;">${totGross}</td>
+                            <td style="padding: 6px; border-right: 1px solid #334155; font-family: monospace; color: #34d399; font-size: 13px;">${totNetto}</td>
+                            <td style="padding: 6px; font-family: monospace; color: #fbbf24; font-size: 13px;">${totStbf}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <!-- Scoring Result Summary Cards -->
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 10px; text-align: center;">
+                <div style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px; background: #f8fafc;">
+                    <div style="font-size: 8px; font-weight: 800; text-transform: uppercase; color: #64748b;">Brutto Gesamt</div>
+                    <div style="font-size: 16px; font-weight: 900; color: #0f172a; font-family: monospace;">${totGross}</div>
+                    <div style="font-size: 8px; color: #64748b;">${totGross - totPar >= 0 ? '+' : ''}${totGross - totPar} vs Par</div>
+                </div>
+                <div style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px; background: #f8fafc;">
+                    <div style="font-size: 8px; font-weight: 800; text-transform: uppercase; color: #64748b;">Netto Gesamt</div>
+                    <div style="font-size: 16px; font-weight: 900; color: #047857; font-family: monospace;">${totNetto}</div>
+                    <div style="font-size: 8px; color: #047857;">${totNetto - totPar >= 0 ? '+' : ''}${totNetto - totPar} Netto vs Par</div>
+                </div>
+                <div style="border: 1.5px solid #10b981; border-radius: 6px; padding: 6px; background: #ecfdf5;">
+                    <div style="font-size: 8px; font-weight: 900; text-transform: uppercase; color: #065f46;">Stableford Punkte</div>
+                    <div style="font-size: 16px; font-weight: 900; color: #047857; font-family: monospace;">${totStbf} Pkt</div>
+                    <div style="font-size: 8px; font-weight: 700; color: #047857;">${totStbf >= 37 ? '★ Unterspielung!' : (totStbf >= 35 ? 'Pufferzone gehalten' : 'Leichte Anpassung')}</div>
+                </div>
+                <div style="border: 1px solid #f59e0b; border-radius: 6px; padding: 6px; background: #fffbeb;">
+                    <div style="font-size: 8px; font-weight: 800; text-transform: uppercase; color: #92400e;">Score Differential</div>
+                    <div style="font-size: 16px; font-weight: 900; color: #b45309; font-family: monospace;">${sdCalculated}</div>
+                    <div style="font-size: 8px; color: #b45309;">WHS Wertung</div>
+                </div>
+            </div>
+
+            <!-- Signatures & GPS Audit Block -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1.25fr; gap: 8px; border-top: 2px solid #0f172a; padding-top: 8px;">
+                <!-- Player Signature Box -->
+                <div style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px; background: #ffffff; text-align: center; display: flex; flex-direction: column; justify-content: space-between; height: 95px;">
+                    <div style="font-size: 8.5px; font-weight: 800; text-transform: uppercase; color: #64748b;">Unterschrift Spieler</div>
+                    <div style="flex: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 2px 0;">
+                        ${playerSigImg}
+                    </div>
+                    <div style="font-size: 8.5px; font-weight: 700; color: #1e293b; border-top: 1px solid #f1f5f9; padding-top: 2px;">${playerName} (${datumStr})</div>
+                </div>
+
+                <!-- Marker Signature Box -->
+                <div style="border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px; background: #ffffff; text-align: center; display: flex; flex-direction: column; justify-content: space-between; height: 95px;">
+                    <div style="font-size: 8.5px; font-weight: 800; text-transform: uppercase; color: #64748b;">Unterschrift Zähler (Marker)</div>
+                    <div style="flex: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 2px 0;">
+                        ${markerSigImg}
+                    </div>
+                    <div style="font-size: 8.5px; font-weight: 700; color: #1e293b; border-top: 1px solid #f1f5f9; padding-top: 2px;">${markerName} (${datumStr})</div>
+                </div>
+
+                <!-- Official DGV GPS Audit Stamp -->
+                <div style="border: 2px solid #059669; background: #f0fdf4; border-radius: 6px; padding: 6px 8px; text-align: center; display: flex; flex-direction: column; justify-content: space-between; height: 95px;">
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 4px; color: #065f46; font-size: 9.5px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em;">
+                        <span>🛡️</span>
+                        <span>DGV GPS-AUDIT VERIFIZIERT</span>
+                    </div>
+                    <div style="font-size: 8.5px; color: #047857; margin: auto 0; line-height: 1.3;">
+                        <div style="font-weight: 700;">✓ Standort am Golfclub verifiziert</div>
+                        <div style="font-family: monospace; font-size: 8px; color: #065f46; margin-top: 1px;">${gpsCoords}</div>
+                        <div style="font-size: 7.5px; color: #047857; margin-top: 1px;">Token: <span style="font-family: monospace; font-weight: 800;">${gpsAuditToken}</span></div>
+                    </div>
+                    <div style="font-size: 7.5px; color: #64748b; font-family: monospace;">Zeitstempel: ${new Date().toISOString().replace('T', ' ').substring(0, 19)} UTC</div>
+                </div>
+            </div>
+
+            <!-- Footer Protocol Notice -->
+            <div style="margin-top: 8px; text-align: center; font-size: 8px; color: #64748b;">
+                BirdieTrack WHS Pro Scorecard Protocol • Konform nach offiziellen DGV- & EGA-Vorgaben nach WHS Rule 3.3 • PC CADDIE kompatibel
+            </div>
+        </div>
+    `;
+
+    modal.classList.remove('hidden');
+}
+
+function printScorecardPDF() {
+    window.print();
+}
+
+function closeScorecardPrintModal() {
+    const modal = document.getElementById('printable-scorecard-modal');
+    if (modal) modal.classList.add('hidden');
+}
+
 

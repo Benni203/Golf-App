@@ -1081,6 +1081,7 @@ class Scorecard(db.Model):
     player_signature = db.Column(db.Text, nullable=True)
     marker_signature = db.Column(db.Text, nullable=True)
     marker_name = db.Column(db.String(100), default='')
+    tee = db.Column(db.String(20), default='gelb')
     gps_latitude = db.Column(db.Float, nullable=True)
     gps_longitude = db.Column(db.Float, nullable=True)
     gps_verified = db.Column(db.Boolean, default=False)
@@ -1103,6 +1104,7 @@ class Scorecard(db.Model):
             "club_name": self.club_name,
             "datum": self.datum,
             "loecher": self.loecher,
+            "tee": getattr(self, 'tee', 'gelb') or 'gelb',
             "course_rating": self.course_rating,
             "slope_rating": self.slope_rating,
             "par": self.par,
@@ -1114,6 +1116,8 @@ class Scorecard(db.Model):
             "holes": holes,
             "has_player_signature": bool(self.player_signature),
             "has_marker_signature": bool(self.marker_signature),
+            "player_signature": self.player_signature or "",
+            "marker_signature": self.marker_signature or "",
             "marker_name": self.marker_name or "",
             "gps_verified": bool(self.gps_verified),
             "gps_distance_km": self.gps_distance_km,
@@ -1625,6 +1629,11 @@ def migrate_and_seed_database():
                     cursor.execute("ALTER TABLE users ADD COLUMN reset_token_expires DATETIME")
                 if user_cols and 'is_admin' not in user_cols:
                     cursor.execute("ALTER TABLE users ADD COLUMN is_admin BOOLEAN DEFAULT 0")
+
+                cursor.execute("PRAGMA table_info(scorecards)")
+                sc_cols = [row[1] for row in cursor.fetchall()]
+                if sc_cols and 'tee' not in sc_cols:
+                    cursor.execute("ALTER TABLE scorecards ADD COLUMN tee VARCHAR(20) DEFAULT 'gelb'")
                 conn.connection.commit()
             elif db.engine.name == 'postgresql':
                 from sqlalchemy import text
@@ -1638,6 +1647,7 @@ def migrate_and_seed_database():
                 conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token VARCHAR(64)"))
                 conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expires TIMESTAMP"))
                 conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT FALSE"))
+                conn.execute(text("ALTER TABLE scorecards ADD COLUMN IF NOT EXISTS tee VARCHAR(20) DEFAULT 'gelb'"))
                 conn.commit()
     except Exception as e:
         print(f"Hinweis zur Tabellenmigration: {e}")
@@ -3102,6 +3112,7 @@ def create_scorecard():
         club_name=club_name,
         datum=daten.get('datum', datetime.utcnow().strftime('%d.%m.%Y')),
         loecher=int(daten.get('loecher', 18)),
+        tee=daten.get('tee', 'gelb'),
         course_rating=float(daten.get('course_rating', 72.0)) if daten.get('course_rating') else None,
         slope_rating=float(daten.get('slope_rating', 113.0)) if daten.get('slope_rating') else None,
         par=float(daten.get('par', 72.0)) if daten.get('par') else None,
@@ -3147,6 +3158,15 @@ def create_scorecard():
         "gps_distance_km": dist_km,
         "pccaddy_csv_url": f"/api/scorecards/{card.id}/pccaddy.csv"
     }), 201
+
+@app.route('/api/scorecards', methods=['GET'])
+def list_user_scorecards():
+    """Gibt alle archivierten Scorekarten des aktuellen Benutzers zurück."""
+    user = get_current_user()
+    if not user:
+        return jsonify({"fehler": "Authentifizierung erforderlich."}), 401
+    cards = Scorecard.query.filter_by(user_id=user.id).order_by(Scorecard.id.desc()).all()
+    return jsonify({"scorecards": [c.to_dict() for c in cards]}), 200
 
 @app.route('/api/scorecards/<int:card_id>', methods=['GET'])
 def get_scorecard(card_id):
