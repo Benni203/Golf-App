@@ -137,7 +137,56 @@ async function handleLoginSubmit(e) {
     }
 
     try {
-        const res = await apiFetch('/api/login', 'POST', { identifier, password });
+        let res = await apiFetch('/api/login', 'POST', { identifier, password });
+
+        // RESILIENT SELF-HEALING:
+        // If the server restarted/redeployed its container and lost ephemeral SQLite accounts,
+        // or if the server is offline, check local known accounts to self-heal seamlessly!
+        if (!res.ok && (res.status === 401 || res.status === 404 || res.status === 0)) {
+            const knownAccounts = JSON.parse(localStorage.getItem('birdietrack_known_accounts') || '[]');
+            const lowIdent = identifier.toLowerCase().trim();
+            const matched = knownAccounts.find(a => 
+                (a.username && a.username.toLowerCase().trim() === lowIdent) || 
+                (a.email && a.email.toLowerCase().trim() === lowIdent)
+            );
+
+            if (matched && matched.password === password) {
+                console.log("[AUTH] Lokales Konto gefunden. Automatische Synchronisation mit Server...", matched.username);
+                // Versuche, das Konto auf dem frischen Server-Container wiederherzustellen
+                const reRegRes = await apiFetch('/api/register', 'POST', {
+                    username: matched.username,
+                    email: matched.email,
+                    password: matched.password
+                });
+
+                if (reRegRes.ok && reRegRes.data && reRegRes.data.token) {
+                    res = reRegRes; // Erfolgreich wiederhergestellt & Token erhalten!
+                    showToast(`Konto '${matched.username}' synchronisiert! 🔄`, "✅");
+                } else {
+                    // Falls das Konto doch schon existierte, erneuter Login
+                    const retryLogin = await apiFetch('/api/login', 'POST', { identifier, password });
+                    if (retryLogin.ok) res = retryLogin;
+                }
+            } else if (res.status === 0 && matched && matched.password === password) {
+                // Server komplett offline -> Sicherer Offline-Login
+                authToken = 'offline_token_' + Date.now();
+                currentUser = {
+                    id: 999,
+                    username: matched.username,
+                    email: matched.email,
+                    is_admin: false,
+                    is_offline: true
+                };
+                localStorage.setItem('golf_auth', JSON.stringify({ token: authToken, user: currentUser }));
+                document.getElementById('auth-login-form')?.reset();
+                closeAuthModal();
+                renderAuthHeader();
+                await loadData();
+                showToast(`Offline angemeldet als ${currentUser.username} 📶`, "👤");
+                return;
+            }
+        }
+
         if(res.ok && res.data && res.data.token) {
             authToken = res.data.token;
             currentUser = res.data.user || {
@@ -147,6 +196,25 @@ async function handleLoginSubmit(e) {
                 is_admin: Boolean(res.data.is_admin)
             };
             localStorage.setItem('golf_auth', JSON.stringify({ token: authToken, user: currentUser }));
+
+            // Speichere/aktualisiere das bekannte Konto lokal
+            try {
+                const knownAccounts = JSON.parse(localStorage.getItem('birdietrack_known_accounts') || '[]');
+                const lowUser = currentUser.username.toLowerCase();
+                const existingIdx = knownAccounts.findIndex(a => a.username.toLowerCase() === lowUser || (a.email && a.email.toLowerCase() === (currentUser.email || '').toLowerCase()));
+                const accObj = {
+                    username: currentUser.username,
+                    email: currentUser.email || (identifier.includes('@') ? identifier : ''),
+                    password: password,
+                    updated_at: Date.now()
+                };
+                if (existingIdx >= 0) {
+                    knownAccounts[existingIdx] = accObj;
+                } else {
+                    knownAccounts.push(accObj);
+                }
+                localStorage.setItem('birdietrack_known_accounts', JSON.stringify(knownAccounts));
+            } catch(cacheErr) {}
 
             document.getElementById('auth-login-form')?.reset();
             closeAuthModal();
@@ -161,13 +229,28 @@ async function handleLoginSubmit(e) {
                 } else if(res.status === 429) {
                     errMsg = "Zu viele Anmeldeversuche. Bitte warte einen Moment und versuche es erneut.";
                 } else if(res.status === 0 || !res.status) {
-                    errMsg = "Der Server konnte nicht erreicht werden. Bitte stelle sicher, dass die Anwendung läuft.";
+                    errMsg = "Der Server konnte nicht erreicht werden. Bitte prüfe deine Internetverbindung.";
                 } else {
                     errMsg = `Anmeldung fehlgeschlagen (Status ${res.status}). Bitte überprüfe deine Daten.`;
                 }
             }
+
             if(errBox) {
-                errBox.innerText = errMsg;
+                const isNotFound = errMsg.toLowerCase().includes("nicht gefunden") || errMsg.toLowerCase().includes("kein benutzerkonto");
+                if (isNotFound) {
+                    errBox.innerHTML = `
+                        <div class="space-y-2">
+                            <div>${errMsg}</div>
+                            <div class="pt-1">
+                                <button type="button" onclick="autoFillAndSwitchToRegister('${identifier.replace(/'/g, "\\'")}')" class="px-3 py-1.5 rounded-lg bg-golf-600 hover:bg-golf-700 text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer">
+                                    <span>➕ Jetzt '${identifier}' als neues Konto registrieren</span>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    errBox.innerText = errMsg;
+                }
                 errBox.classList.remove('hidden');
             }
         }
@@ -182,6 +265,34 @@ async function handleLoginSubmit(e) {
             submitBtn.innerText = origBtnText;
         }
     }
+}
+
+function autoFillAndSwitchToRegister(ident) {
+    switchAuthTab('register');
+    const isEmail = ident.includes('@');
+    if (isEmail) {
+        const emailInput = document.getElementById('auth-reg-email');
+        if (emailInput) emailInput.value = ident;
+        const userInput = document.getElementById('auth-reg-username');
+        if (userInput && !userInput.value) userInput.value = ident.split('@')[0];
+    } else {
+        const userInput = document.getElementById('auth-reg-username');
+        if (userInput) userInput.value = ident;
+    }
+    const loginPw = document.getElementById('auth-login-password')?.value;
+    if (loginPw) {
+        const regPw = document.getElementById('auth-reg-password');
+        const regPwc = document.getElementById('auth-reg-password-confirm');
+        if (regPw) regPw.value = loginPw;
+        if (regPwc) regPwc.value = loginPw;
+    }
+    setTimeout(() => {
+        if (!isEmail) {
+            document.getElementById('auth-reg-email')?.focus();
+        } else {
+            document.getElementById('auth-reg-password')?.focus();
+        }
+    }, 100);
 }
 
 async function handleRegisterSubmit(e) {
@@ -236,6 +347,20 @@ async function handleRegisterSubmit(e) {
             authToken = res.data.token;
             currentUser = res.data.user;
             localStorage.setItem('golf_auth', JSON.stringify({ token: authToken, user: currentUser }));
+
+            // Speichere bekanntes Konto lokal für nahtlose Wiederherstellung bei Server-Neustarts
+            try {
+                const knownAccounts = JSON.parse(localStorage.getItem('birdietrack_known_accounts') || '[]');
+                const lowUser = username.toLowerCase();
+                const existingIdx = knownAccounts.findIndex(a => a.username.toLowerCase() === lowUser || a.email.toLowerCase() === email.toLowerCase());
+                const accObj = { username, email, password, updated_at: Date.now() };
+                if (existingIdx >= 0) {
+                    knownAccounts[existingIdx] = accObj;
+                } else {
+                    knownAccounts.push(accObj);
+                }
+                localStorage.setItem('birdietrack_known_accounts', JSON.stringify(knownAccounts));
+            } catch(cacheErr) {}
 
             const migrate = document.getElementById('auth-migrate-local')?.checked;
             if(migrate && runden.length > 0) {
@@ -377,6 +502,25 @@ async function handleResetSubmit(e) {
             authToken = res.data.token;
             currentUser = res.data.user;
             localStorage.setItem('golf_auth', JSON.stringify({ token: authToken, user: currentUser }));
+
+            // Aktualisiere das Passwort im lokalen Account-Cache
+            try {
+                const knownAccounts = JSON.parse(localStorage.getItem('birdietrack_known_accounts') || '[]');
+                const lowIdent = identifier.toLowerCase();
+                const acc = knownAccounts.find(a => (a.username && a.username.toLowerCase() === lowIdent) || (a.email && a.email.toLowerCase() === lowIdent));
+                if (acc) {
+                    acc.password = newPassword;
+                    acc.updated_at = Date.now();
+                } else {
+                    knownAccounts.push({
+                        username: currentUser.username,
+                        email: currentUser.email || (identifier.includes('@') ? identifier : ''),
+                        password: newPassword,
+                        updated_at: Date.now()
+                    });
+                }
+                localStorage.setItem('birdietrack_known_accounts', JSON.stringify(knownAccounts));
+            } catch(cacheErr) {}
 
             document.getElementById('auth-reset-form')?.reset();
             closeAuthModal();
