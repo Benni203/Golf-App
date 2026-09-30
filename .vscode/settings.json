@@ -1,0 +1,47 @@
+{
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+  "python.terminal.activateEnvironment": true,
+  "python.testing.unittestArgs": [
+    "-v",
+    "-s",
+    "./tests",
+    "-p",
+    "test_*.py"
+  ],
+  "python.testing.unittestEnabled": true,
+  "python.testing.pytestEnabled": false,
+  "files.exclude": {
+    "**/.git": false,
+    "**/.svn": true,
+    "**/.hg": true,
+    "**/CVS": true,
+    "**/.DS_Store": true,
+    "**/Thumbs.db": true,
+    "**/__pycache__": true,
+    "**/*.pyc": true
+  },
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.expand": false,
+  "explorer.fileNesting.patterns": {
+    "app.py": "catalog_data.py, gunicorn.conf.py, Procfile, render.yaml, requirements.txt, DEPLOYMENT.md",
+    "index.html": "sw.js, manifest.webmanifest",
+    "build_frontend.py": "www"
+  },
+  "editor.formatOnSave": true,
+  "[python]": {
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true
+  },
+  "[javascript]": {
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true
+  },
+  "[html]": {
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true
+  },
+  "[json]": {
+    "editor.tabSize": 2,
+    "editor.insertSpaces": true
+  }
+}
