@@ -1353,6 +1353,17 @@
                         </button>
                     </div>
                 </div>
+                <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-[11px] text-slate-700 leading-relaxed">
+                    <div class="font-bold text-slate-800 flex items-center gap-1.5 mb-1">
+                        <span>💡</span>
+                        <span>Standard-Zugangsdaten:</span>
+                    </div>
+                    <div>Benutzer: <code class="font-mono font-bold bg-white px-1.5 py-0.5 rounded border border-slate-200 text-golf-800">benni</code> (oder <code class="font-mono bg-white px-1 py-0.5 rounded border border-slate-200">benni@golf.de</code>)</div>
+                    <div class="mt-0.5">Initial-Passwort: <code class="font-mono font-bold bg-white px-1.5 py-0.5 rounded border border-slate-200 text-golf-800">GolfPassword2026!</code></div>
+                    <div class="mt-1.5 text-[10.5px] text-slate-500">
+                        Möchtest du dein eigenes Passwort nutzen? Klicke einfach oben auf <button type="button" onclick="switchAuthTab('forgot')" class="text-golf-700 font-bold hover:underline">Passwort vergessen?</button> und vergebe in wenigen Sekunden dein Wunsch-Passwort!
+                    </div>
+                </div>
                 <div class="pt-4 flex items-center justify-end gap-3 border-t border-slate-100">
                     <button type="button" onclick="closeAuthModal()" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors">Abbrechen</button>
                     <button type="submit" id="auth-login-submit-btn" class="px-5 py-2.5 rounded-xl bg-golf-600 hover:bg-golf-700 text-white text-xs font-bold shadow-md shadow-golf-600/20 transition-all">

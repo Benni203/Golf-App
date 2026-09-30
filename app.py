@@ -1837,6 +1837,16 @@ def login():
                 user = u
                 break
 
+    # 3. Bekannte Aliase für den Standard-Admin benni unterstützen (z. B. benjamin, benjamin.berndt@akquinet.de, benni@golf.de)
+    if not user and identifier in ('benni', 'benjamin', 'benjamin.berndt@akquinet.de', 'benni@golf.de'):
+        user = User.query.filter((User.username == 'benni') | (User.email == 'benjamin.berndt@akquinet.de') | (User.email == 'benni@golf.de')).first()
+
+    if not user:
+        print(f"[AUTH LOGIN] ❌ Benutzerkonto nicht gefunden für: '{raw_ident}'")
+        return jsonify({
+            "fehler": f"Kein Benutzerkonto mit '{raw_ident}' gefunden. Bitte registriere dich zuerst oder prüfe deine Eingabe."
+        }), 401
+
     pw_ok = False
     if user and user.password_hash:
         for candidate_pw in (password, password.strip(), password.rstrip(), password.lstrip()):
@@ -1844,22 +1854,26 @@ def login():
                 pw_ok = True
                 break
 
-    if user and pw_ok:
-        user.api_token = secrets.token_hex(32)
-        db.session.commit()
-
-        u_dict = user.to_dict()
+    if not pw_ok:
+        print(f"[AUTH LOGIN] ❌ Passwortprüfung fehlgeschlagen für Benutzer: '{user.username}' (E-Mail: '{user.email}')")
         return jsonify({
-            "nachricht": "Login erfolgreich!",
-            "token": user.api_token,
-            "user": u_dict,
-            "id": user.id,
-            "username": user.username,
-            "email": user.email or "",
-            "is_admin": bool(user.is_admin)
-        }), 200
-    else:
-        return jsonify({"fehler": "Falsche Anmeldedaten oder Passwort."}), 401
+            "fehler": f"Das eingegebene Passwort für '{user.username}' ist nicht korrekt. Bitte prüfe deine Eingabe oder nutze 'Passwort vergessen'."
+        }), 401
+
+    user.api_token = secrets.token_hex(32)
+    db.session.commit()
+    print(f"[AUTH LOGIN] ✅ Login erfolgreich für: '{user.username}' (ID {user.id})")
+
+    u_dict = user.to_dict()
+    return jsonify({
+        "nachricht": "Login erfolgreich!",
+        "token": user.api_token,
+        "user": u_dict,
+        "id": user.id,
+        "username": user.username,
+        "email": user.email or "",
+        "is_admin": bool(user.is_admin)
+    }), 200
 
 @app.route('/api/forgot-password', methods=['POST'])
 @limiter.limit("3 per minute")
@@ -1874,6 +1888,9 @@ def forgot_password():
     user = User.query.filter(
         (func.lower(User.email) == identifier) | (func.lower(User.username) == identifier)
     ).first()
+
+    if not user and identifier in ('benni', 'benjamin', 'benjamin.berndt@akquinet.de', 'benni@golf.de'):
+        user = User.query.filter((User.username == 'benni') | (User.email == 'benjamin.berndt@akquinet.de') | (User.email == 'benni@golf.de')).first()
 
     if not user:
         return jsonify({"fehler": "Kein Benutzerkonto mit dieser E-Mail-Adresse oder diesem Benutzernamen gefunden."}), 404
@@ -1913,6 +1930,9 @@ def reset_password():
     user = User.query.filter(
         (func.lower(User.email) == identifier) | (func.lower(User.username) == identifier)
     ).first()
+
+    if not user and identifier in ('benni', 'benjamin', 'benjamin.berndt@akquinet.de', 'benni@golf.de'):
+        user = User.query.filter((User.username == 'benni') | (User.email == 'benjamin.berndt@akquinet.de') | (User.email == 'benni@golf.de')).first()
 
     if not user:
         return jsonify({"fehler": "Benutzerkonto nicht gefunden."}), 404
