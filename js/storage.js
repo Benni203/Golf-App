@@ -102,6 +102,9 @@ async function loadData() {
 
     sdErgaenzung = JSON.parse(localStorage.getItem('golf_sd')) || defaultSdErgaenzung;
     updateApp();
+    if (typeof applyRoleView === 'function') {
+        applyRoleView();
+    }
 }
 
 function saveData() {

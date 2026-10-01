@@ -187,5 +187,52 @@ class AuthAndVersionTestCase(unittest.TestCase):
         self.assertEqual(me_data['username'], 'test_login_robust_user')
         self.assertEqual(me_data['id'], me_data['user']['id'])
 
+    def test_club_registration_and_persistence_recovery(self):
+        """Testet die Registrierung eines Clubs und das automatische Nachladen via users_persistent.json."""
+        import os
+        from app import PERSISTENT_USERS_FILE, restore_users_from_file
+
+        # 1. Club-Konto registrieren
+        reg_res = self.client.post('/api/register', json={
+            'username': 'test_persisted_club',
+            'email': 'club_persisted@test.local',
+            'password': 'ClubPassword2026!',
+            'role': 'club',
+            'managed_club_name': 'GC Gut Jersbek'
+        })
+        self.assertEqual(reg_res.status_code, 201)
+        data = reg_res.get_json()
+        self.assertEqual(data.get('role'), 'club')
+        self.assertEqual(data.get('managed_club_name'), 'GC Gut Jersbek')
+
+        # 2. Prüfen, dass der Benutzer in users_persistent.json geschrieben wurde
+        self.assertTrue(os.path.exists(PERSISTENT_USERS_FILE))
+        with open(PERSISTENT_USERS_FILE, 'r', encoding='utf-8') as f:
+            persisted_records = json.load(f)
+        usernames = [r.get('username') for r in persisted_records]
+        self.assertIn('test_persisted_club', usernames)
+
+        # 3. Simuliere einen Render-Container-Neustart (Löschen des Users aus der SQLite DB)
+        with self.app.app_context():
+            User.query.filter_by(username='test_persisted_club').delete()
+            db.session.commit()
+            # Verifiziere, dass er aus DB temporär entfernt ist
+            self.assertIsNone(User.query.filter_by(username='test_persisted_club').first())
+
+        # 4. Login muss dank Fallback auf users_persistent.json trotzdem reibungslos funktionieren!
+        login_res = self.client.post('/api/login', json={
+            'identifier': 'test_persisted_club',
+            'password': 'ClubPassword2026!'
+        })
+        self.assertEqual(login_res.status_code, 200)
+        login_data = login_res.get_json()
+        self.assertEqual(login_data['user']['role'], 'club')
+        self.assertEqual(login_data['user']['managed_club_name'], 'GC Gut Jersbek')
+
+        # Bereinigung
+        with self.app.app_context():
+            User.query.filter_by(username='test_persisted_club').delete()
+            db.session.commit()
+
 if __name__ == '__main__':
     unittest.main()

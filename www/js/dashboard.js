@@ -415,21 +415,39 @@ function updateChartFilter(filter) {
 
 // --- NAVIGATION TABS ---
 function switchTab(tabId) {
+    // If logged in as club account, enforce access only to club-related tabs
+    if (currentUser && currentUser.role === 'club') {
+        const allowedClubTabs = ['club-portal', 'clubs'];
+        if (!allowedClubTabs.includes(tabId)) {
+            tabId = 'club-portal';
+        }
+    }
+
     document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
     
     // Desktop Tabs
     document.querySelectorAll('.nav-tab').forEach(el => {
         if(el.dataset.tab === tabId) {
-            el.className = "nav-tab active flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap bg-golf-600 text-white shadow-xs";
+            if (tabId === 'club-portal') {
+                el.className = "nav-tab active flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap text-white bg-emerald-700 shadow-sm border border-emerald-800";
+            } else {
+                el.className = "nav-tab active flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap bg-golf-600 text-white shadow-xs";
+            }
         } else {
-            el.className = "nav-tab flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap text-slate-600 hover:text-slate-900 hover:bg-slate-100";
+            if (el.id === 'nav-club-portal-btn') {
+                el.className = "nav-tab flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap text-emerald-800 bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 shadow-xs";
+            } else {
+                el.className = "nav-tab flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold transition-colors whitespace-nowrap text-slate-600 hover:text-slate-900 hover:bg-slate-100";
+            }
         }
     });
 
     // Mobile Bottom Navigation Bar Tabs
     document.querySelectorAll('.mobile-nav-btn').forEach(el => {
         if(el.dataset.tab === tabId) {
-            el.className = "mobile-nav-btn active flex flex-col items-center justify-center h-full text-golf-700 font-bold transition-all select-none scale-105";
+            const isClub = currentUser && currentUser.role === 'club';
+            const activeColorClass = isClub ? 'text-emerald-800' : 'text-golf-700';
+            el.className = `mobile-nav-btn active flex flex-col items-center justify-center h-full ${activeColorClass} font-bold transition-all select-none scale-105`;
         } else if(el.dataset.tab) {
             el.className = "mobile-nav-btn flex flex-col items-center justify-center h-full text-slate-400 hover:text-slate-700 font-medium transition-all select-none";
         }

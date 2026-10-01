@@ -1,3 +1,75 @@
+// --- ROLE VIEW MANAGEMENT (CLUB VS PLAYER) ---
+function applyRoleView() {
+    const isClub = Boolean(currentUser && currentUser.role === 'club');
+
+    // 1. Desktop Nav & Player-Only Controls
+    document.querySelectorAll('.nav-player-only').forEach(el => {
+        if (isClub) {
+            el.classList.add('hidden');
+        } else {
+            el.classList.remove('hidden');
+        }
+    });
+
+    // 2. Club Buttons in Header & Nav
+    const clubPortalBtn = document.getElementById('nav-club-portal-btn');
+    const clubTournamentsBtn = document.getElementById('nav-club-tournaments-btn');
+    if (clubPortalBtn) {
+        if (isClub || (currentUser && currentUser.is_admin)) {
+            clubPortalBtn.classList.remove('hidden');
+        } else {
+            clubPortalBtn.classList.add('hidden');
+        }
+    }
+    if (clubTournamentsBtn) {
+        if (isClub) {
+            clubTournamentsBtn.classList.remove('hidden');
+        } else {
+            clubTournamentsBtn.classList.add('hidden');
+        }
+    }
+
+    // 3. Header Identity Badges (HCP Box vs Club Sekretariat Badge)
+    const headerHcpBox = document.getElementById('header-hcp-box');
+    const headerClubBadge = document.getElementById('header-club-badge');
+    const headerClubName = document.getElementById('header-club-name');
+    if (headerHcpBox && headerClubBadge) {
+        if (isClub) {
+            headerHcpBox.classList.add('hidden');
+            headerClubBadge.classList.remove('hidden');
+            if (headerClubName) {
+                headerClubName.innerText = currentUser.managed_club_name || 'GC Gut Jersbek';
+            }
+        } else {
+            headerHcpBox.classList.remove('hidden');
+            headerClubBadge.classList.add('hidden');
+        }
+    }
+
+    // 4. Mobile Bottom Navigation (Player vs Club)
+    const mobilePlayerNav = document.getElementById('mobile-nav-player');
+    const mobileClubNav = document.getElementById('mobile-nav-club');
+    if (mobilePlayerNav && mobileClubNav) {
+        if (isClub) {
+            mobilePlayerNav.classList.add('hidden');
+            mobileClubNav.classList.remove('hidden');
+        } else {
+            mobilePlayerNav.classList.remove('hidden');
+            mobileClubNav.classList.add('hidden');
+        }
+    }
+
+    // 5. Force Club view if on a player tab
+    if (isClub) {
+        const activeTab = document.querySelector('.tab-pane:not(.hidden)');
+        if (!activeTab || (activeTab.id !== 'tab-club-portal' && activeTab.id !== 'tab-clubs')) {
+            if (typeof switchTab === 'function') {
+                switchTab('club-portal');
+            }
+        }
+    }
+}
+
 // --- AUTHENTICATION MODAL & LOGIC ---
 function renderAuthHeader() {
     const loggedInView = document.getElementById('auth-logged-in');
@@ -19,21 +91,13 @@ function renderAuthHeader() {
                 adminBtn.classList.add('hidden');
             }
         }
-
-        const clubBtn = document.getElementById('nav-club-portal-btn');
-        if(clubBtn) {
-            if(currentUser.role === 'club' || currentUser.is_admin) {
-                clubBtn.classList.remove('hidden');
-            } else {
-                clubBtn.classList.add('hidden');
-            }
-        }
     } else {
         loggedInView.classList.add('hidden');
         loggedOutView.classList.remove('hidden');
         document.getElementById('auth-admin-badge')?.classList.add('hidden');
-        document.getElementById('nav-club-portal-btn')?.classList.add('hidden');
     }
+
+    applyRoleView();
 }
 
 function openAuthModal(tab = 'login') {
@@ -251,12 +315,15 @@ async function handleLoginSubmit(e) {
             if(errBox) {
                 const isNotFound = errMsg.toLowerCase().includes("nicht gefunden") || errMsg.toLowerCase().includes("kein benutzerkonto");
                 if (isNotFound) {
+                    const safeIdent = identifier.replace(/'/g, "\\'");
+                    const safePw = password.replace(/'/g, "\\'");
                     errBox.innerHTML = `
-                        <div class="space-y-2">
+                        <div class="space-y-2.5">
                             <div>${errMsg}</div>
-                            <div class="pt-1">
-                                <button type="button" onclick="autoFillAndSwitchToRegister('${identifier.replace(/'/g, "\\'")}')" class="px-3 py-1.5 rounded-lg bg-golf-600 hover:bg-golf-700 text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 cursor-pointer">
-                                    <span>➕ Jetzt '${identifier}' als neues Konto registrieren</span>
+                            <div class="pt-2 border-t border-rose-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
+                                <span class="text-[11px] text-rose-800 font-bold">Konto neu erstellen?</span>
+                                <button type="button" onclick="autoRegisterWithCurrentCredentials('${safeIdent}', '${safePw}')" class="px-3 py-1.5 rounded-lg bg-golf-600 hover:bg-golf-700 text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer">
+                                    <span>➕ Mit diesen Daten jetzt anlegen & anmelden</span>
                                 </button>
                             </div>
                         </div>
@@ -277,6 +344,82 @@ async function handleLoginSubmit(e) {
             submitBtn.disabled = false;
             submitBtn.innerText = origBtnText;
         }
+    }
+}
+
+// Schnell-Login als Spieler (benni)
+async function loginAsDemoPlayer() {
+    const identInput = document.getElementById('auth-login-identifier');
+    const pwInput = document.getElementById('auth-login-password');
+    if (identInput && pwInput) {
+        identInput.value = 'benni';
+        pwInput.value = 'GolfPassword2026!';
+        showToast("Melde als Spieler an (benni)...", "👤");
+        const form = document.getElementById('auth-login-form');
+        if (form && typeof form.requestSubmit === 'function') {
+            form.requestSubmit();
+        } else {
+            handleLoginSubmit({ preventDefault: () => {} });
+        }
+    }
+}
+
+// Schnell-Login als Club-Sekretariat (GC Gut Jersbek)
+async function loginAsDemoClub() {
+    const identInput = document.getElementById('auth-login-identifier');
+    const pwInput = document.getElementById('auth-login-password');
+    if (identInput && pwInput) {
+        identInput.value = 'club_jersbek';
+        pwInput.value = 'GolfPassword2026!';
+        showToast("Melde als Club-Sekretariat an (GC Gut Jersbek)...", "🏛️");
+        const form = document.getElementById('auth-login-form');
+        if (form && typeof form.requestSubmit === 'function') {
+            form.requestSubmit();
+        } else {
+            handleLoginSubmit({ preventDefault: () => {} });
+        }
+    }
+}
+
+// 1-Klick Registrierung & Login bei fehlendem Konto
+async function autoRegisterWithCurrentCredentials(ident, pw) {
+    if (!ident || !pw) return;
+    const isEmail = ident.includes('@');
+    const username = isEmail ? ident.split('@')[0] : ident;
+    const email = isEmail ? ident : `${ident}@golfapp.local`;
+
+    showToast("Erstelle Konto und melde an...", "⏳");
+    const res = await apiFetch('/api/register', 'POST', {
+        username: username,
+        email: email,
+        password: pw
+    });
+
+    if (res.ok && res.data && res.data.token) {
+        authToken = res.data.token;
+        currentUser = res.data.user;
+        localStorage.setItem('golf_auth', JSON.stringify({ token: authToken, user: currentUser }));
+
+        try {
+            const known = JSON.parse(localStorage.getItem('birdietrack_known_accounts') || '[]');
+            const lowUser = username.toLowerCase();
+            const existingIdx = known.findIndex(a => a.username.toLowerCase() === lowUser || a.email.toLowerCase() === email.toLowerCase());
+            const accObj = { username, email, password: pw, updated_at: Date.now() };
+            if (existingIdx >= 0) {
+                known[existingIdx] = accObj;
+            } else {
+                known.push(accObj);
+            }
+            localStorage.setItem('birdietrack_known_accounts', JSON.stringify(known));
+        } catch(e) {}
+
+        document.getElementById('auth-login-form')?.reset();
+        closeAuthModal();
+        renderAuthHeader();
+        await loadData();
+        showToast(`Konto '${username}' erstellt & erfolgreich angemeldet! ⛳`, "🎉");
+    } else {
+        showToast("Fehler beim Erstellen: " + (res.data?.fehler || "Fehlgeschlagen"), "⚠️");
     }
 }
 
@@ -585,6 +728,9 @@ async function handleLogout() {
 
         renderAuthHeader();
         await loadData();
+        if (typeof switchTab === 'function') {
+            switchTab('dashboard');
+        }
         showToast("Erfolgreich abgemeldet.", "👋");
     }
 }

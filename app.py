@@ -704,6 +704,69 @@ def generate_gps_audit_token(user_id, club_name, lat, lon):
     payload = f"{user_id}:{club_name}:{lat:.4f}:{lon:.4f}:{secret}"
     return hashlib.sha256(payload.encode()).hexdigest()
 
+# --- DAUERHAFTE BENUTZER-PERSISTENZ (ÜBERLEBT SERVER-NEUSTARTS & DEPLOYMENTS) ---
+PERSISTENT_USERS_FILE = os.path.join(basis_ordner, 'users_persistent.json')
+
+def backup_users_to_file():
+    """Sichert alle registrierten Benutzer dauerhaft in users_persistent.json ab."""
+    try:
+        users = User.query.all()
+        records = []
+        for u in users:
+            records.append({
+                "username": u.username,
+                "email": u.email or "",
+                "password_hash": u.password_hash,
+                "role": getattr(u, 'role', 'player') or 'player',
+                "managed_club_name": getattr(u, 'managed_club_name', '') or "",
+                "is_admin": bool(u.is_admin),
+                "created_at": u.created_at.isoformat() if u.created_at else None
+            })
+        with open(PERSISTENT_USERS_FILE, 'w', encoding='utf-8') as f:
+            json.dump(records, f, indent=2, ensure_ascii=False)
+        print(f"[AUTH BACKUP] ✅ {len(records)} Benutzer in users_persistent.json gesichert.")
+    except Exception as e:
+        print(f"[AUTH BACKUP] Warnung: Konnte Benutzer nicht in Datei sichern: {e}")
+
+def restore_users_from_file():
+    """Stellt Benutzer aus users_persistent.json wieder her (überlebt Server-Neustarts/Deployments)."""
+    if not os.path.exists(PERSISTENT_USERS_FILE):
+        return
+    try:
+        with open(PERSISTENT_USERS_FILE, 'r', encoding='utf-8') as f:
+            records = json.load(f)
+        restored = 0
+        for rec in records:
+            username = rec.get("username")
+            if not username:
+                continue
+            existing = User.query.filter(
+                (func.lower(User.username) == username.lower()) |
+                (func.lower(User.email) == (rec.get("email") or '').lower())
+            ).first()
+            if not existing:
+                u = User(
+                    username=username,
+                    email=rec.get("email") or "",
+                    password_hash=rec.get("password_hash"),
+                    role=rec.get("role", "player"),
+                    managed_club_name=rec.get("managed_club_name"),
+                    is_admin=bool(rec.get("is_admin", False)),
+                    api_token=secrets.token_hex(32)
+                )
+                db.session.add(u)
+                restored += 1
+            else:
+                if rec.get("role") and existing.role != rec.get("role"):
+                    existing.role = rec.get("role")
+                if rec.get("managed_club_name") and existing.managed_club_name != rec.get("managed_club_name"):
+                    existing.managed_club_name = rec.get("managed_club_name")
+        if restored > 0:
+            db.session.commit()
+            print(f"[AUTH RESTORE] ✅ {restored} Benutzer erfolgreich aus users_persistent.json restauriert!")
+    except Exception as e:
+        print(f"[AUTH RESTORE] Warnung beim Wiederherstellen: {e}")
+
 def migrate_and_seed_database():
     """Stellt sicher, dass alle Tabellenspalten existieren und initialisiert Katalog-Clubs & Turniere."""
     # 1. Sicherstellen, dass neue Spalten in bestehenden Tabellen existieren
@@ -870,6 +933,10 @@ def migrate_and_seed_database():
             club_user.managed_club_name = "GC Gut Jersbek"
             club_user.role = "club"
             db.session.commit()
+
+        # 7. Benutzer aus permanenter Sicherungsdatei restaurieren & sichern
+        restore_users_from_file()
+        backup_users_to_file()
     except Exception as e:
         db.session.rollback()
         print(f"Fehler beim Seeden: {e}")
@@ -955,6 +1022,7 @@ def register():
     )
     db.session.add(neuer_user)
     db.session.commit()
+    backup_users_to_file()
 
     return jsonify({
         "nachricht": "Benutzer erfolgreich registriert!",
@@ -999,6 +1067,17 @@ def login():
     # 3. Bekannte Aliase für den Standard-Admin benni unterstützen (z. B. benjamin, benjamin.berndt@akquinet.de, benni@golf.de)
     if not user and identifier in ('benni', 'benjamin', 'benjamin.berndt@akquinet.de', 'benni@golf.de'):
         user = User.query.filter((User.username == 'benni') | (User.email == 'benjamin.berndt@akquinet.de') | (User.email == 'benni@golf.de')).first()
+
+    if not user:
+        # Fallback: Falls der Server-Container neugestartet wurde, Benutzer aus users_persistent.json nachladen
+        restore_users_from_file()
+        user = User.query.filter(
+            (func.lower(User.username) == identifier) |
+            (func.lower(User.email) == identifier) |
+            (func.lower(User.email) == clean_email) |
+            (User.username == raw_ident) |
+            (User.email == raw_ident)
+        ).first()
 
     if not user:
         print(f"[AUTH LOGIN] ❌ Benutzerkonto nicht gefunden für: '{raw_ident}'")
@@ -1110,6 +1189,7 @@ def reset_password():
     user.reset_token_expires = None
     user.api_token = secrets.token_hex(32)
     db.session.commit()
+    backup_users_to_file()
 
     return jsonify({
         "nachricht": "Passwort erfolgreich geändert! Du bist jetzt angemeldet.",
@@ -1169,8 +1249,33 @@ def change_password():
 
     user.password_hash = generate_password_hash(new_password.strip())
     db.session.commit()
+    backup_users_to_file()
 
     return jsonify({"nachricht": "Passwort erfolgreich geändert!"}), 200
+
+@app.route('/api/system-status', methods=['GET'])
+def system_status():
+    """Liefert System- und Persistenzstatus der Datenbank und Benutzerverwaltung."""
+    db_engine = db.engine.name
+    users_count = User.query.count()
+    has_backup = os.path.exists(PERSISTENT_USERS_FILE)
+    backup_count = 0
+    if has_backup:
+        try:
+            with open(PERSISTENT_USERS_FILE, 'r', encoding='utf-8') as f:
+                backup_count = len(json.load(f))
+        except Exception:
+            pass
+
+    return jsonify({
+        "version": APP_VERSION,
+        "database_type": db_engine,
+        "is_postgresql": db_engine == 'postgresql',
+        "is_persistent": db_engine == 'postgresql' or has_backup,
+        "users_count": users_count,
+        "backup_users_count": backup_count,
+        "backup_file_active": has_backup
+    }), 200
 
 # --- DSGVO & PRO-STATS ENDPOINTS ---
 
