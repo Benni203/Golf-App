@@ -60,5 +60,20 @@ class TestFrontendModular(unittest.TestCase):
             entry = f"'/js/{mod}'"
             self.assertIn(entry, content, f"Module missing in sw.js STATIC_ASSETS: {entry}")
 
+    def test_club_portal_role_isolation_in_js(self):
+        """Verifiziert, dass Club-Portal Buttons strikt an isClub gebunden sind und für normale Spieler ausgeblendet bleiben."""
+        auth_js = os.path.join(self.repo_root, "js", "auth.js")
+        with open(auth_js, "r", encoding="utf-8") as f:
+            auth_content = f.read()
+
+        # Sicherstellen, dass clubPortalBtn nicht fälschlicherweise für is_admin freigeschaltet wird
+        self.assertNotIn("isClub || (currentUser && currentUser.is_admin)", auth_content)
+
+        # Sicherstellen, dass tabId === 'club-portal' für normale User gesperrt ist
+        dash_js = os.path.join(self.repo_root, "js", "dashboard.js")
+        with open(dash_js, "r", encoding="utf-8") as f:
+            dash_content = f.read()
+        self.assertIn("tabId = 'dashboard'", dash_content)
+
 if __name__ == '__main__':
     unittest.main()

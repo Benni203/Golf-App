@@ -11,11 +11,11 @@ function applyRoleView() {
         }
     });
 
-    // 2. Club Buttons in Header & Nav
+    // 2. Club Buttons in Header & Nav (STRICTLY FOR CLUB ACCOUNTS ONLY!)
     const clubPortalBtn = document.getElementById('nav-club-portal-btn');
     const clubTournamentsBtn = document.getElementById('nav-club-tournaments-btn');
     if (clubPortalBtn) {
-        if (isClub || (currentUser && currentUser.is_admin)) {
+        if (isClub) {
             clubPortalBtn.classList.remove('hidden');
         } else {
             clubPortalBtn.classList.add('hidden');
@@ -59,13 +59,25 @@ function applyRoleView() {
         }
     }
 
-    // 5. Force Club view if on a player tab
+    // 5. Tab Isolation:
+    // If club: force redirection to club-portal if currently on a player tab
+    // If player or guest: force redirection away from club-portal to dashboard
+    const activeTab = document.querySelector('.tab-pane:not(.hidden)');
     if (isClub) {
-        const activeTab = document.querySelector('.tab-pane:not(.hidden)');
         if (!activeTab || (activeTab.id !== 'tab-club-portal' && activeTab.id !== 'tab-clubs')) {
             if (typeof switchTab === 'function') {
                 switchTab('club-portal');
             }
+        }
+    } else {
+        if (activeTab && activeTab.id === 'tab-club-portal') {
+            if (typeof switchTab === 'function') {
+                switchTab('dashboard');
+            }
+        }
+        const portalPane = document.getElementById('tab-club-portal');
+        if (portalPane && !portalPane.classList.contains('hidden')) {
+            portalPane.classList.add('hidden');
         }
     }
 }

@@ -23,7 +23,16 @@ async function loadClubPortalData() {
         }
     }
 
-    if (!currentUser) return;
+    if (!currentUser || currentUser.role !== 'club') {
+        if (clubPortalState.pollTimer) {
+            clearInterval(clubPortalState.pollTimer);
+            clubPortalState.pollTimer = null;
+        }
+        if (portalTab && !portalTab.classList.contains('hidden')) {
+            portalTab.classList.add('hidden');
+        }
+        return;
+    }
 
     // Club-Name ermitteln
     const userClub = currentUser.managed_club_name || (currentUser.role === 'club' ? currentUser.username : '');

@@ -415,11 +415,18 @@ function updateChartFilter(filter) {
 
 // --- NAVIGATION TABS ---
 function switchTab(tabId) {
-    // If logged in as club account, enforce access only to club-related tabs
-    if (currentUser && currentUser.role === 'club') {
+    const isClub = Boolean(currentUser && currentUser.role === 'club');
+
+    // Role-based Tab Access Control
+    if (isClub) {
         const allowedClubTabs = ['club-portal', 'clubs'];
         if (!allowedClubTabs.includes(tabId)) {
             tabId = 'club-portal';
+        }
+    } else {
+        // Normal user / Guest: Club Portal is STRICTLY forbidden and invisible!
+        if (tabId === 'club-portal') {
+            tabId = 'dashboard';
         }
     }
 
