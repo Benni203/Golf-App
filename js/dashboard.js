@@ -415,20 +415,23 @@ function updateChartFilter(filter) {
 
 // --- NAVIGATION TABS ---
 function switchTab(tabId) {
-    const isClub = Boolean(currentUser && currentUser.role === 'club');
+    const isAdmin = Boolean(currentUser && (currentUser.is_admin || currentUser.role === 'admin'));
+    const isClub = Boolean(currentUser && currentUser.role === 'club' && !isAdmin);
 
     // Role-based Tab Access Control
     if (isClub) {
+        // Dedicated Club accounts can only access club-portal and clubs
         const allowedClubTabs = ['club-portal', 'clubs'];
         if (!allowedClubTabs.includes(tabId)) {
             tabId = 'club-portal';
         }
-    } else {
-        // Normal user / Guest: Club Portal is STRICTLY forbidden and invisible!
+    } else if (!isAdmin) {
+        // Normal user / Guest: Club Portal is STRICTLY forbidden and redirected to dashboard!
         if (tabId === 'club-portal') {
             tabId = 'dashboard';
         }
     }
+    // Admin: Has full access to EVERYTHING! Any tab is fully allowed.
 
     document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
     

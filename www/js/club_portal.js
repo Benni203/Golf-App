@@ -23,7 +23,10 @@ async function loadClubPortalData() {
         }
     }
 
-    if (!currentUser || currentUser.role !== 'club') {
+    const isAdmin = Boolean(currentUser && (currentUser.is_admin || currentUser.role === 'admin'));
+    const isClub = Boolean(currentUser && currentUser.role === 'club');
+
+    if (!currentUser || (!isClub && !isAdmin)) {
         if (clubPortalState.pollTimer) {
             clearInterval(clubPortalState.pollTimer);
             clubPortalState.pollTimer = null;

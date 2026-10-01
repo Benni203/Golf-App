@@ -1,8 +1,11 @@
-// --- ROLE VIEW MANAGEMENT (CLUB VS PLAYER) ---
+// --- ROLE VIEW MANAGEMENT (PLAYER VS CLUB VS ADMIN) ---
 function applyRoleView() {
-    const isClub = Boolean(currentUser && currentUser.role === 'club');
+    const isAdmin = Boolean(currentUser && (currentUser.is_admin || currentUser.role === 'admin'));
+    const isClub = Boolean(currentUser && currentUser.role === 'club' && !isAdmin);
 
     // 1. Desktop Nav & Player-Only Controls
+    // Player controls are visible for regular players AND for Admin!
+    // They are only hidden for dedicated Club accounts (isClub && !isAdmin).
     document.querySelectorAll('.nav-player-only').forEach(el => {
         if (isClub) {
             el.classList.add('hidden');
@@ -11,11 +14,13 @@ function applyRoleView() {
         }
     });
 
-    // 2. Club Buttons in Header & Nav (STRICTLY FOR CLUB ACCOUNTS ONLY!)
+    // 2. Club Buttons in Header & Nav
+    // Visible for dedicated Club accounts AND for Admin (who has access to everything!)
+    // Strictly hidden for regular players and guests.
     const clubPortalBtn = document.getElementById('nav-club-portal-btn');
     const clubTournamentsBtn = document.getElementById('nav-club-tournaments-btn');
     if (clubPortalBtn) {
-        if (isClub) {
+        if (isClub || isAdmin) {
             clubPortalBtn.classList.remove('hidden');
         } else {
             clubPortalBtn.classList.add('hidden');
@@ -59,9 +64,10 @@ function applyRoleView() {
         }
     }
 
-    // 5. Tab Isolation:
-    // If club: force redirection to club-portal if currently on a player tab
-    // If player or guest: force redirection away from club-portal to dashboard
+    // 5. Tab Isolation & Access Control:
+    // - Dedicated Club accounts: force to club-portal if on player tab
+    // - Regular players / Guests: force to dashboard if on club-portal
+    // - Admin: HAS FULL ACCESS TO EVERYTHING! Never redirected away from any tab!
     const activeTab = document.querySelector('.tab-pane:not(.hidden)');
     if (isClub) {
         if (!activeTab || (activeTab.id !== 'tab-club-portal' && activeTab.id !== 'tab-clubs')) {
@@ -69,7 +75,7 @@ function applyRoleView() {
                 switchTab('club-portal');
             }
         }
-    } else {
+    } else if (!isAdmin) {
         if (activeTab && activeTab.id === 'tab-club-portal') {
             if (typeof switchTab === 'function') {
                 switchTab('dashboard');
