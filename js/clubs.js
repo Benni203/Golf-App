@@ -40,6 +40,16 @@ function checkInClub(clubName, turnier = null) {
 
     switchTab('record');
     showToast(`Check-In aktiv: ${clubName}! ⛳`, "🏌️‍♂️");
+
+    // Server-seitiger Live-Check-In für den Club
+    if(typeof apiFetch === 'function' && authToken) {
+        apiFetch('/api/club-portal/live-checkin', 'POST', {
+            club_name: clubName,
+            turnier_name: activeCheckIn.turnier || '',
+            tee: document.getElementById('sc-tee-select')?.value || 'gelb',
+            loecher: (activeCheckIn.turnier && typeof turnier === 'object' && turnier.loecher) ? turnier.loecher : 18
+        }).catch(e => console.log('Live-Check-In Hintergrund-Sync:', e));
+    }
 }
 
 function checkOutClub() {
@@ -49,6 +59,11 @@ function checkOutClub() {
     renderActiveCheckInBanner();
     renderClubsExplorer();
     showToast("Check-In beendet.", "📍");
+
+    // Server-seitiger Live-Check-Out
+    if(typeof apiFetch === 'function' && authToken) {
+        apiFetch('/api/club-portal/live-checkout', 'POST', {}).catch(() => {});
+    }
 }
 
 function renderActiveCheckInBanner() {

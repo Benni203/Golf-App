@@ -440,6 +440,8 @@ function switchTab(tabId) {
 
     if(tabId === 'dashboard') {
         renderChart();
+    } else if(tabId === 'club-portal' && typeof loadClubPortalData === 'function') {
+        loadClubPortalData();
     }
 
     // Smoothly scroll to top on mobile tab switch

@@ -1,4 +1,5 @@
 import os
+import io
 import math
 import hashlib
 import json
@@ -80,6 +81,8 @@ class User(db.Model):
     reset_token = db.Column(db.String(64), nullable=True)
     reset_token_expires = db.Column(db.DateTime, nullable=True)
     is_admin = db.Column(db.Boolean, default=False)
+    role = db.Column(db.String(20), default='player')  # 'player', 'club', 'admin'
+    managed_club_name = db.Column(db.String(120), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     runden = db.relationship('Runde', backref='user', cascade='all, delete-orphan', lazy=True)
@@ -88,6 +91,7 @@ class User(db.Model):
     favorites = db.relationship('FavoriteClub', backref='user', cascade='all, delete-orphan', lazy=True)
     scorecards = db.relationship('Scorecard', backref='user', cascade='all, delete-orphan', lazy=True)
     registrations = db.relationship('TournamentRegistration', backref='user', cascade='all, delete-orphan', lazy=True)
+    checkins = db.relationship('ClubLiveCheckin', backref='user', cascade='all, delete-orphan', lazy=True)
 
     def to_dict(self):
         return {
@@ -95,6 +99,8 @@ class User(db.Model):
             "username": self.username,
             "email": self.email or "",
             "is_admin": bool(self.is_admin),
+            "role": getattr(self, 'role', 'player') or 'player',
+            "managed_club_name": getattr(self, 'managed_club_name', '') or "",
             "runden_count": len(self.runden) if self.runden else 0,
             "created_at": self.created_at.isoformat() if self.created_at else None
         }
@@ -320,6 +326,9 @@ class Scorecard(db.Model):
     gps_verified = db.Column(db.Boolean, default=False)
     gps_distance_km = db.Column(db.Float, nullable=True)
     gps_audit_token = db.Column(db.String(128), nullable=True)
+    submitted_to_club = db.Column(db.Boolean, default=False, index=True)
+    submission_status = db.Column(db.String(30), default='draft', index=True)  # 'draft', 'submitted', 'verified', 'in_pccaddie', 'rejected'
+    submitted_at = db.Column(db.DateTime, nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     def to_dict(self):
@@ -355,7 +364,49 @@ class Scorecard(db.Model):
             "gps_verified": bool(self.gps_verified),
             "gps_distance_km": self.gps_distance_km,
             "gps_audit_token": self.gps_audit_token or "",
+            "submitted_to_club": bool(getattr(self, 'submitted_to_club', False)),
+            "submission_status": getattr(self, 'submission_status', 'draft') or 'draft',
+            "submitted_at": self.submitted_at.isoformat() if getattr(self, 'submitted_at', None) else None,
             "created_at": self.created_at.isoformat() if self.created_at else None
+        }
+
+class ClubLiveCheckin(db.Model):
+    """Verwaltet serverseitige Live-Check-Ins von Spielern auf einem Golfplatz."""
+    __tablename__ = 'club_live_checkins'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
+    club_name = db.Column(db.String(120), nullable=False, index=True)
+    turnier_id = db.Column(db.Integer, db.ForeignKey('turniere.id', ondelete='SET NULL'), nullable=True)
+    turnier_name = db.Column(db.String(120), nullable=True)
+    tee = db.Column(db.String(20), default='gelb')
+    loecher = db.Column(db.Integer, default=18)
+    started_at = db.Column(db.DateTime, default=datetime.utcnow)
+    status = db.Column(db.String(30), default='active', index=True)  # 'active', 'finished'
+
+    def to_dict(self):
+        user = db.session.get(User, self.user_id)
+        now = datetime.utcnow()
+        duration_minutes = int((now - self.started_at).total_seconds() / 60) if self.started_at else 0
+        hcp = None
+        try:
+            if user and hasattr(user, 'runden') and user.runden:
+                hcp = calculate_whs_hcp(user.runden)
+        except Exception:
+            hcp = None
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "username": user.username if user else "",
+            "club_name": self.club_name,
+            "turnier_id": self.turnier_id,
+            "turnier_name": self.turnier_name or "",
+            "tee": self.tee or "gelb",
+            "loecher": self.loecher or 18,
+            "handicap_index": hcp,
+            "started_at": self.started_at.isoformat() if self.started_at else None,
+            "started_at_time": self.started_at.strftime('%H:%M') if self.started_at else "",
+            "duration_minutes": max(0, duration_minutes),
+            "status": self.status
         }
 
 def parse_pccaddy_turniere(content_str, fallback_club_name=""):
@@ -685,11 +736,21 @@ def migrate_and_seed_database():
                     cursor.execute("ALTER TABLE users ADD COLUMN reset_token_expires DATETIME")
                 if user_cols and 'is_admin' not in user_cols:
                     cursor.execute("ALTER TABLE users ADD COLUMN is_admin BOOLEAN DEFAULT 0")
+                if user_cols and 'role' not in user_cols:
+                    cursor.execute("ALTER TABLE users ADD COLUMN role VARCHAR(20) DEFAULT 'player'")
+                if user_cols and 'managed_club_name' not in user_cols:
+                    cursor.execute("ALTER TABLE users ADD COLUMN managed_club_name VARCHAR(120)")
 
                 cursor.execute("PRAGMA table_info(scorecards)")
                 sc_cols = [row[1] for row in cursor.fetchall()]
                 if sc_cols and 'tee' not in sc_cols:
                     cursor.execute("ALTER TABLE scorecards ADD COLUMN tee VARCHAR(20) DEFAULT 'gelb'")
+                if sc_cols and 'submitted_to_club' not in sc_cols:
+                    cursor.execute("ALTER TABLE scorecards ADD COLUMN submitted_to_club BOOLEAN DEFAULT 0")
+                if sc_cols and 'submission_status' not in sc_cols:
+                    cursor.execute("ALTER TABLE scorecards ADD COLUMN submission_status VARCHAR(30) DEFAULT 'draft'")
+                if sc_cols and 'submitted_at' not in sc_cols:
+                    cursor.execute("ALTER TABLE scorecards ADD COLUMN submitted_at DATETIME")
                 conn.connection.commit()
             elif db.engine.name == 'postgresql':
                 from sqlalchemy import text
@@ -703,7 +764,12 @@ def migrate_and_seed_database():
                 conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token VARCHAR(64)"))
                 conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expires TIMESTAMP"))
                 conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT FALSE"))
+                conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(20) DEFAULT 'player'"))
+                conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS managed_club_name VARCHAR(120)"))
                 conn.execute(text("ALTER TABLE scorecards ADD COLUMN IF NOT EXISTS tee VARCHAR(20) DEFAULT 'gelb'"))
+                conn.execute(text("ALTER TABLE scorecards ADD COLUMN IF NOT EXISTS submitted_to_club BOOLEAN DEFAULT FALSE"))
+                conn.execute(text("ALTER TABLE scorecards ADD COLUMN IF NOT EXISTS submission_status VARCHAR(30) DEFAULT 'draft'"))
+                conn.execute(text("ALTER TABLE scorecards ADD COLUMN IF NOT EXISTS submitted_at TIMESTAMP"))
                 conn.commit()
     except Exception as e:
         print(f"Hinweis zur Tabellenmigration: {e}")
@@ -772,15 +838,38 @@ def migrate_and_seed_database():
                 email="benni@golf.de",
                 password_hash=generate_password_hash("GolfPassword2026!"),
                 api_token=secrets.token_hex(32),
+                role="admin",
                 is_admin=True
             )
             db.session.add(default_user)
             db.session.commit()
         else:
             first_user = User.query.order_by(User.id.asc()).first()
-            if first_user and not first_user.is_admin:
-                first_user.is_admin = True
+            if first_user:
+                if not first_user.is_admin:
+                    first_user.is_admin = True
+                if not getattr(first_user, 'role', None) or first_user.role != 'admin':
+                    first_user.role = 'admin'
                 db.session.commit()
+
+        # 6. Standard Club-Account erstellen (GC Gut Jersbek), falls noch nicht existent
+        club_user = User.query.filter_by(username="club_jersbek").first()
+        if not club_user:
+            club_user = User(
+                username="club_jersbek",
+                email="jersbek@golfapp.local",
+                password_hash=generate_password_hash("GolfPassword2026!"),
+                api_token=secrets.token_hex(32),
+                role="club",
+                managed_club_name="GC Gut Jersbek",
+                is_admin=False
+            )
+            db.session.add(club_user)
+            db.session.commit()
+        elif not getattr(club_user, 'managed_club_name', None):
+            club_user.managed_club_name = "GC Gut Jersbek"
+            club_user.role = "club"
+            db.session.commit()
     except Exception as e:
         db.session.rollback()
         print(f"Fehler beim Seeden: {e}")
@@ -851,14 +940,28 @@ def register():
     hashed_pw = generate_password_hash(password.strip())
     token = secrets.token_hex(32)
 
-    neuer_user = User(username=username, email=email, password_hash=hashed_pw, api_token=token)
+    role = daten.get('role', 'player').strip().lower()
+    if role not in ('player', 'club'):
+        role = 'player'
+    managed_club_name = daten.get('managed_club_name', '').strip() if role == 'club' else None
+
+    neuer_user = User(
+        username=username,
+        email=email,
+        password_hash=hashed_pw,
+        api_token=token,
+        role=role,
+        managed_club_name=managed_club_name
+    )
     db.session.add(neuer_user)
     db.session.commit()
 
     return jsonify({
         "nachricht": "Benutzer erfolgreich registriert!",
         "token": token,
-        "user": neuer_user.to_dict()
+        "user": neuer_user.to_dict(),
+        "role": neuer_user.role,
+        "managed_club_name": neuer_user.managed_club_name or ""
     }), 201
 
 @app.route('/api/login', methods=['POST'])
@@ -928,6 +1031,8 @@ def login():
         "id": user.id,
         "username": user.username,
         "email": user.email or "",
+        "role": u_dict.get("role", "player"),
+        "managed_club_name": u_dict.get("managed_club_name", ""),
         "is_admin": bool(user.is_admin)
     }), 200
 
@@ -2205,9 +2310,15 @@ def create_scorecard():
         gps_longitude=lon,
         gps_verified=gps_verified,
         gps_distance_km=dist_km,
-        gps_audit_token=audit_token
+        gps_audit_token=audit_token,
+        submitted_to_club=bool(daten.get('submit_to_club', True)),
+        submission_status='submitted' if daten.get('submit_to_club', True) else 'draft',
+        submitted_at=datetime.utcnow() if daten.get('submit_to_club', True) else None
     )
     db.session.add(card)
+
+    # Falls der Spieler noch als aktiv auf dem Platz eingecheckt war, Check-In beenden
+    ClubLiveCheckin.query.filter_by(user_id=user.id, club_name=club_name, status='active').update({'status': 'finished'})
 
     # Optional: Automatisch in Runden-Historie für Handicap übernehmen
     if daten.get('save_as_round', True):
@@ -2290,6 +2401,272 @@ def export_pccaddy_csv(card_id):
     response = Response(csv_content, mimetype='text/csv; charset=utf-8')
     response.headers['Content-Disposition'] = f'attachment; filename="pccaddy_scorecard_{card.id}.csv"'
     return response
+
+# --- 11b. CLUB PORTAL: LIVE-SPIELER, SCORECARD-EMPFANG & PC CADDIE BATCH EXPORT ---
+
+def require_club_user(user):
+    """Prüft, ob der angemeldete Benutzer ein Club-Account oder Administrator ist."""
+    if not user:
+        return False, "Authentifizierung erforderlich.", 401
+    if not (user.is_admin or (hasattr(user, 'role') and user.role in ('club', 'admin'))):
+        return False, "Zugriff verweigert: Nur für Club-Accounts und Administratoren.", 403
+    return True, None, 200
+
+@app.route('/api/club-portal/live-checkin', methods=['POST'])
+def club_live_checkin():
+    """Startet oder aktualisiert einen serverseitigen Check-In eines Spielers."""
+    user = get_current_user()
+    if not user:
+        return jsonify({"fehler": "Authentifizierung erforderlich."}), 401
+
+    daten = request.get_json(silent=True) or {}
+    club_name = (daten.get('club_name') or '').strip()
+    if not club_name:
+        return jsonify({"fehler": "Club-Name erforderlich."}), 400
+
+    turnier_id = daten.get('turnier_id')
+    turnier_name = (daten.get('turnier_name') or '').strip()
+    tee = daten.get('tee', 'gelb')
+    try:
+        loecher = int(daten.get('loecher', 18))
+    except (ValueError, TypeError):
+        loecher = 18
+
+    # Vorherige aktive Check-Ins des Benutzers als beendet markieren
+    ClubLiveCheckin.query.filter_by(user_id=user.id, status='active').update({'status': 'finished'})
+
+    checkin = ClubLiveCheckin(
+        user_id=user.id,
+        club_name=club_name,
+        turnier_id=turnier_id,
+        turnier_name=turnier_name,
+        tee=tee,
+        loecher=loecher,
+        started_at=datetime.utcnow(),
+        status='active'
+    )
+    db.session.add(checkin)
+    db.session.commit()
+
+    return jsonify({
+        "nachricht": f"Erfolgreich auf {club_name} eingecheckt!",
+        "checkin": checkin.to_dict()
+    }), 201
+
+@app.route('/api/club-portal/live-checkout', methods=['POST'])
+def club_live_checkout():
+    """Beendet den aktiven Check-In eines Spielers (durch den Spieler selbst oder Club-Admin)."""
+    user = get_current_user()
+    if not user:
+        return jsonify({"fehler": "Authentifizierung erforderlich."}), 401
+
+    daten = request.get_json(silent=True) or {}
+    checkin_id = daten.get('checkin_id')
+
+    if checkin_id and (user.is_admin or (hasattr(user, 'role') and user.role == 'club')):
+        checkin = db.session.get(ClubLiveCheckin, checkin_id)
+        if checkin:
+            checkin.status = 'finished'
+            db.session.commit()
+            return jsonify({"nachricht": f"Check-In #{checkin_id} beendet."}), 200
+    else:
+        ClubLiveCheckin.query.filter_by(user_id=user.id, status='active').update({'status': 'finished'})
+        db.session.commit()
+        return jsonify({"nachricht": "Check-In beendet."}), 200
+
+    return jsonify({"nachricht": "Kein aktiver Check-In gefunden."}), 200
+
+@app.route('/api/club-portal/live-players', methods=['GET'])
+def club_live_players():
+    """Liefert alle aktuell aktiven Spieler auf dem Platz des eingeloggten Clubs."""
+    user = get_current_user()
+    ok, err_msg, code = require_club_user(user)
+    if not ok:
+        return jsonify({"fehler": err_msg}), code
+
+    target_club = request.args.get('club_name') or getattr(user, 'managed_club_name', '') or ''
+    if not target_club and not user.is_admin:
+        return jsonify({"fehler": "Kein Golfclub zugewiesen."}), 400
+
+    query = ClubLiveCheckin.query.filter_by(status='active')
+    if target_club:
+        query = query.filter_by(club_name=target_club)
+
+    active_checkins = query.order_by(ClubLiveCheckin.started_at.desc()).all()
+    return jsonify({
+        "club_name": target_club or "Alle Clubs",
+        "count": len(active_checkins),
+        "players": [c.to_dict() for c in active_checkins]
+    }), 200
+
+@app.route('/api/scorecards/<int:card_id>/submit-to-club', methods=['POST'])
+def submit_scorecard_to_club(card_id):
+    """Spieler reicht seine signierte Scorekarte digital beim Club ein."""
+    user = get_current_user()
+    if not user:
+        return jsonify({"fehler": "Authentifizierung erforderlich."}), 401
+
+    card = db.session.get(Scorecard, card_id)
+    if not card:
+        return jsonify({"fehler": "Scorekarte nicht gefunden."}), 404
+
+    if card.user_id != user.id and not user.is_admin:
+        return jsonify({"fehler": "Keine Berechtigung für diese Scorekarte."}), 403
+
+    card.submitted_to_club = True
+    card.submission_status = 'submitted'
+    card.submitted_at = datetime.utcnow()
+
+    # Falls der Spieler noch als aktiv auf dem Platz eingecheckt war, Check-In beenden
+    ClubLiveCheckin.query.filter_by(user_id=user.id, club_name=card.club_name, status='active').update({'status': 'finished'})
+
+    db.session.commit()
+
+    return jsonify({
+        "nachricht": f"Scorekarte erfolgreich an '{card.club_name}' übermittelt!",
+        "scorecard": card.to_dict()
+    }), 200
+
+@app.route('/api/club-portal/scorecards', methods=['GET'])
+def club_portal_scorecards():
+    """Gibt alle an den Club übermittelten Scorekarten zurück (Inbox)."""
+    user = get_current_user()
+    ok, err_msg, code = require_club_user(user)
+    if not ok:
+        return jsonify({"fehler": err_msg}), code
+
+    target_club = request.args.get('club_name') or getattr(user, 'managed_club_name', '') or ''
+    if not target_club and not user.is_admin:
+        return jsonify({"fehler": "Kein Golfclub zugewiesen."}), 400
+
+    query = Scorecard.query.filter_by(submitted_to_club=True)
+    if target_club:
+        query = query.filter_by(club_name=target_club)
+
+    status_filter = request.args.get('status')
+    if status_filter and status_filter != 'all':
+        query = query.filter_by(submission_status=status_filter)
+
+    cards = query.order_by(Scorecard.submitted_at.desc(), Scorecard.id.desc()).all()
+    return jsonify({
+        "club_name": target_club or "Alle Clubs",
+        "count": len(cards),
+        "scorecards": [c.to_dict() for c in cards]
+    }), 200
+
+@app.route('/api/club-portal/scorecards/<int:card_id>/status', methods=['PUT'])
+def update_club_scorecard_status(card_id):
+    """Club-Manager aktualisiert den Bearbeitungsstatus einer eingereichten Scorekarte."""
+    user = get_current_user()
+    ok, err_msg, code = require_club_user(user)
+    if not ok:
+        return jsonify({"fehler": err_msg}), code
+
+    card = db.session.get(Scorecard, card_id)
+    if not card:
+        return jsonify({"fehler": "Scorekarte nicht gefunden."}), 404
+
+    target_club = getattr(user, 'managed_club_name', '')
+    if target_club and card.club_name != target_club and not user.is_admin:
+        return jsonify({"fehler": "Diese Scorekarte gehört nicht zu deinem Club."}), 403
+
+    daten = request.get_json(silent=True) or {}
+    new_status = daten.get('status', 'verified')
+    if new_status not in ('draft', 'submitted', 'verified', 'in_pccaddie', 'rejected'):
+        return jsonify({"fehler": "Ungültiger Status."}), 400
+
+    card.submission_status = new_status
+    db.session.commit()
+
+    return jsonify({
+        "nachricht": f"Status erfolgreich auf '{new_status}' geändert.",
+        "scorecard": card.to_dict()
+    }), 200
+
+@app.route('/api/club-portal/export/pccaddie.csv', methods=['GET'])
+def export_club_pccaddie_batch_csv():
+    """Generiert einen offiziellen PC CADDIE Batch-CSV-Export aller eingereichten Scorekarten."""
+    user = get_current_user()
+    ok, err_msg, code = require_club_user(user)
+    if not ok:
+        return jsonify({"fehler": err_msg}), code
+
+    target_club = request.args.get('club_name') or getattr(user, 'managed_club_name', '') or ''
+    if not target_club and not user.is_admin:
+        return jsonify({"fehler": "Kein Golfclub zugewiesen."}), 400
+
+    query = Scorecard.query.filter_by(submitted_to_club=True)
+    if target_club:
+        query = query.filter_by(club_name=target_club)
+
+    cards = query.order_by(Scorecard.datum.desc(), Scorecard.id.asc()).all()
+
+    output = io.StringIO()
+    writer = csv.writer(output, delimiter=';')
+
+    header = [
+        "FORMAT", "TURNIER_ID", "CLUB", "DATUM", "SPIELER", "MARKER", "HCP_INDEX", "PLAYING_HCP", "TEE",
+        "L1", "L2", "L3", "L4", "L5", "L6", "L7", "L8", "L9",
+        "OUT_GROSS",
+        "L10", "L11", "L12", "L13", "L14", "L15", "L16", "L17", "L18",
+        "IN_GROSS", "TOTAL_GROSS", "TOTAL_NET", "STABLEFORD",
+        "STATUS", "GPS_VERIFIED", "GPS_TOKEN"
+    ]
+    writer.writerow(header)
+
+    for c in cards:
+        holes = []
+        try:
+            holes = json.loads(c.holes_json or '[]')
+        except Exception:
+            holes = []
+
+        gross_scores = [str(h.get('gross', '-')) for h in holes]
+        while len(gross_scores) < 18:
+            gross_scores.append('-')
+
+        try:
+            out_gross = sum(int(s) for s in gross_scores[:9] if str(s).isdigit())
+            in_gross = sum(int(s) for s in gross_scores[9:18] if str(s).isdigit())
+        except Exception:
+            out_gross = '-'
+            in_gross = '-'
+
+        u = db.session.get(User, c.user_id)
+        player_name = u.username if u else "Unbekannt"
+
+        row = [
+            "PCC_SCORECARD_v2",
+            str(c.turnier_id or "Privatrunde"),
+            c.club_name,
+            c.datum,
+            player_name,
+            c.marker_name or "-",
+            str(c.handicap_index or "-"),
+            str(c.playing_hcp or 0),
+            c.tee or "gelb",
+            *gross_scores[:9],
+            str(out_gross),
+            *gross_scores[9:18],
+            str(in_gross),
+            str(c.brutto or 0),
+            str(c.netto or 0),
+            str(c.stableford or 0),
+            c.submission_status or "submitted",
+            "JA" if c.gps_verified else "NEIN",
+            c.gps_audit_token or "-"
+        ]
+        writer.writerow(row)
+
+    csv_bytes = output.getvalue().encode('utf-8-sig')
+    club_slug = re.sub(r'[^a-zA-Z0-9_-]', '_', target_club or 'Alle_Clubs')
+    filename = f"pccaddie_scores_{club_slug}_{datetime.utcnow().strftime('%Y%m%d')}.csv"
+
+    return Response(
+        csv_bytes,
+        mimetype="text/csv; charset=utf-8",
+        headers={"Content-Disposition": f"attachment; filename={filename}"}
+    )
 
 # --- 12. STATIC WEBPAGE SERVING ---
 

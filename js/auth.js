@@ -19,10 +19,20 @@ function renderAuthHeader() {
                 adminBtn.classList.add('hidden');
             }
         }
+
+        const clubBtn = document.getElementById('nav-club-portal-btn');
+        if(clubBtn) {
+            if(currentUser.role === 'club' || currentUser.is_admin) {
+                clubBtn.classList.remove('hidden');
+            } else {
+                clubBtn.classList.add('hidden');
+            }
+        }
     } else {
         loggedInView.classList.add('hidden');
         loggedOutView.classList.remove('hidden');
         document.getElementById('auth-admin-badge')?.classList.add('hidden');
+        document.getElementById('nav-club-portal-btn')?.classList.add('hidden');
     }
 }
 
@@ -221,6 +231,9 @@ async function handleLoginSubmit(e) {
             renderAuthHeader();
             await loadData();
             showToast(`Willkommen zurück, ${currentUser.username}! ⛳`, "👤");
+            if (currentUser && currentUser.role === 'club') {
+                switchTab('club-portal');
+            }
         } else {
             let errMsg = res.data?.fehler;
             if(!errMsg) {

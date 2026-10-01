@@ -13,6 +13,7 @@ const STATIC_ASSETS = [
   '/js/dashboard.js',
   '/js/rounds.js',
   '/js/clubs.js',
+  '/js/club_portal.js',
   '/js/tournaments.js',
   '/js/scorecard.js',
   '/js/calculator.js',

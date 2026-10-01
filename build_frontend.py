@@ -21,6 +21,7 @@ EXPECTED_MODULES = [
     "dashboard.js",
     "rounds.js",
     "clubs.js",
+    "club_portal.js",
     "tournaments.js",
     "scorecard.js",
     "calculator.js",
