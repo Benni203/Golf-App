@@ -38,10 +38,10 @@
   {
     "username": "test_auth_user",
     "email": "auth_user@example.com",
-    "password_hash": "scrypt:32768:8:1$rh9ubMGeup4Ec9wP$5426be21063608bde4e7eb974dfb03c3926d1539f93ef647d0b0e5482e0432dd0a0843738111065cb5bc465dda939e4bb2701dc36a155dabab6aa6c9752917ad",
+    "password_hash": "scrypt:32768:8:1$LLatncj5p7NEso2C$a6f43068e7e191a0bd1ce6f9bb5243a78e6f44bc927720206a0ce84f541ae708b0446d5f8f8e0889b5ed7d38d6387b63192c13388d57c204ad630260156bfcf4",
     "role": "player",
     "managed_club_name": "",
     "is_admin": false,
-    "created_at": "2026-10-12T10:46:23.062709"
+    "created_at": "2026-10-12T11:05:36.866171"
   }
 ]

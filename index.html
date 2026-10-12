@@ -68,8 +68,21 @@
             --sal: env(safe-area-inset-left, 0px);
             --sar: env(safe-area-inset-right, 0px);
         }
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+        html {
+            overflow-x: hidden;
+            max-width: 100vw;
+            width: 100%;
+            -webkit-text-size-adjust: 100%;
+        }
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow-x: hidden;
+            max-width: 100vw;
+            width: 100%;
+            position: relative;
             padding-top: var(--sat);
             padding-left: var(--sal);
             padding-right: var(--sar);
@@ -77,6 +90,12 @@
             -webkit-tap-highlight-color: transparent;
             touch-action: manipulation;
             -webkit-font-smoothing: antialiased;
+        }
+        main, section, header, nav, footer {
+            max-width: 100vw;
+        }
+        img, svg, video, canvas, table {
+            max-width: 100%;
         }
         @media (min-width: 768px) {
             body {
@@ -90,9 +109,17 @@
             }
         }
         /* Mobile touch scrolling */
-        .touch-scroll {
+        .touch-scroll, .overflow-x-auto {
             -webkit-overflow-scrolling: touch;
-            overscroll-behavior-y: contain;
+            overscroll-behavior-x: contain;
+        }
+        /* Hide scrollbars on mobile pills */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
         /* Custom scrollbar */
         ::-webkit-scrollbar {
@@ -175,52 +202,52 @@
 
     <!-- TOP NAVIGATION / BRANDING HEADER -->
     <header class="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm transition-all">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 min-w-0 max-w-full">
             <div class="flex items-center justify-between h-16">
                 <!-- Brand / Logo -->
-                <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('dashboard')">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-golf-800 via-golf-700 to-golf-600 flex items-center justify-center text-white shadow-md shadow-golf-700/20">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="flex items-center gap-2 sm:gap-3 cursor-pointer min-w-0 shrink" onclick="switchTab('dashboard')">
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-golf-800 via-golf-700 to-golf-600 flex items-center justify-center text-white shadow-md shadow-golf-700/20 shrink-0">
+                        <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"></path>
                         </svg>
                     </div>
-                    <div>
-                        <div class="flex items-center gap-2">
-                            <span class="text-xl font-extrabold tracking-tight text-slate-900">Birdie<span class="text-golf-600">Track</span></span>
-                            <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-golf-100 text-golf-800 border border-golf-200">WHS Pro</span>
-                            <button type="button" onclick="event.stopPropagation(); openVersionModal();" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition-colors shadow-2xs" title="Versionsinformationen & Changelog anzeigen">v1.2.0</button>
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-1.5 sm:gap-2">
+                            <span class="text-lg sm:text-xl font-extrabold tracking-tight text-slate-900 truncate">Birdie<span class="text-golf-600">Track</span></span>
+                            <span class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider px-1.5 sm:px-2 py-0.5 rounded-full bg-golf-100 text-golf-800 border border-golf-200 hidden sm:inline-block">WHS Pro</span>
+                            <button type="button" onclick="event.stopPropagation(); openVersionModal();" class="text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 transition-colors shadow-2xs hidden md:inline-block" title="Versionsinformationen & Changelog anzeigen">v1.2.0</button>
                         </div>
-                        <p class="text-xs text-slate-500 font-medium hidden sm:block">World Handicap System Tracker & Calculator</p>
+                        <p class="text-xs text-slate-500 font-medium hidden sm:block truncate">World Handicap System Tracker & Calculator</p>
                     </div>
                 </div>
 
                 <!-- Right Header Controls: HCP Badge & User Account -->
-                <div class="flex items-center gap-2.5 sm:gap-4">
+                <div class="flex items-center gap-1.5 sm:gap-3 shrink-0">
                     <!-- Live Quick Stats Badge -->
-                    <div id="header-hcp-box" class="flex items-center gap-2 bg-gradient-to-r from-golf-50 to-emerald-50 px-3 py-1.5 rounded-xl border border-golf-200 shadow-xs">
+                    <div id="header-hcp-box" class="flex items-center gap-1 sm:gap-2 bg-gradient-to-r from-golf-50 to-emerald-50 px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl border border-golf-200 shadow-xs">
                         <div class="text-right">
-                            <div class="text-[10px] font-bold text-golf-800 uppercase tracking-wider">HCP Index</div>
-                            <div class="text-base sm:text-lg font-black text-golf-700 leading-tight flex items-center justify-end gap-1">
+                            <div class="text-[9px] sm:text-[10px] font-bold text-golf-800 uppercase tracking-wider">HCP</div>
+                            <div class="text-sm sm:text-base md:text-lg font-black text-golf-700 leading-tight flex items-center justify-end gap-0.5 sm:gap-1">
                                 <span id="header-hcp">--</span>
-                                <span id="header-hcp-trend" class="text-[10px] font-semibold px-1 py-0.2 rounded bg-golf-200/80 text-golf-800"></span>
+                                <span id="header-hcp-trend" class="text-[9px] font-semibold px-1 py-0.2 rounded bg-golf-200/80 text-golf-800 hidden sm:inline-block"></span>
                             </div>
                         </div>
-                        <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-golf-600 text-white flex items-center justify-center font-bold text-xs shadow-sm">
+                        <div class="hidden sm:flex w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-golf-600 text-white items-center justify-center font-bold text-xs shadow-sm">
                             ⛳
                         </div>
                     </div>
 
                     <!-- Club Identity Badge (Visible ONLY when logged in as Club) -->
-                    <div id="header-club-badge" class="hidden flex items-center gap-2 bg-gradient-to-r from-emerald-800 to-slate-900 text-white px-3 py-1.5 rounded-xl border border-emerald-500/30 shadow-sm">
-                        <span class="text-base">🏛️</span>
+                    <div id="header-club-badge" class="hidden flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-emerald-800 to-slate-900 text-white px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl border border-emerald-500/30 shadow-sm">
+                        <span class="text-sm sm:text-base">🏛️</span>
                         <div class="text-left">
-                            <div class="text-[9px] font-bold text-emerald-300 uppercase tracking-wider">Club-Sekretariat</div>
-                            <div class="text-xs sm:text-sm font-black text-white leading-tight truncate max-w-[150px] sm:max-w-[200px]" id="header-club-name">GC Gut Jersbek</div>
+                            <div class="text-[8px] sm:text-[9px] font-bold text-emerald-300 uppercase tracking-wider">Club-Sekretariat</div>
+                            <div class="text-xs sm:text-sm font-black text-white leading-tight truncate max-w-[110px] sm:max-w-[200px]" id="header-club-name">GC Gut Jersbek</div>
                         </div>
                     </div>
 
                     <!-- Live Offline & Cloud Sync Status Pill (Feature 5) -->
-                    <div id="header-sync-pill" class="flex items-center">
+                    <div id="header-sync-pill" class="hidden sm:flex items-center">
                         <button type="button" onclick="handleManualSyncClick()" id="header-sync-btn" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold transition-all shadow-2xs group cursor-pointer" title="Cloud-Synchronisation aktiv (Klicken für manuellen Sync)">
                             <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" id="header-sync-dot"></span>
                             <span class="text-[11px] font-semibold hidden md:inline" id="header-sync-text">Live synchronisiert</span>
@@ -229,12 +256,12 @@
 
                     <!-- Live Active Check-In Pill in Header (Hidden when not playing) -->
                     <div id="header-checkin-pill" class="hidden">
-                        <button onclick="switchTab('record')" class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold transition-all shadow-xs group" title="Klicke hier, um deine aktive Runde zu erfassen">
-                            <span class="relative flex h-2.5 w-2.5">
+                        <button onclick="switchTab('record')" class="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold transition-all shadow-xs group" title="Klicke hier, um deine aktive Runde zu erfassen">
+                            <span class="relative flex h-2 w-2 sm:h-2.5 sm:w-2.5">
                                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-600"></span>
+                                <span class="relative inline-flex rounded-full h-2 w-2 sm:h-2.5 sm:w-2.5 bg-emerald-600"></span>
                             </span>
-                            <span class="truncate max-w-[130px] sm:max-w-[200px]" id="header-checkin-name">Live auf dem Platz</span>
+                            <span class="truncate max-w-[90px] sm:max-w-[200px] text-xs" id="header-checkin-name">Live</span>
                         </button>
                     </div>
 
@@ -290,7 +317,7 @@
             </div>
 
             <!-- Main Navigation Tabs -->
-            <nav class="flex space-x-1 sm:space-x-2 overflow-x-auto py-2 border-t border-slate-100 no-scrollbar">
+            <nav class="flex space-x-1 sm:space-x-2 overflow-x-auto py-2 border-t border-slate-100 no-scrollbar min-w-0 max-w-full w-full">
                 <!-- CLUB-ONLY TABS -->
                 <button id="nav-club-portal-btn" onclick="switchTab('club-portal')" class="nav-tab hidden flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-sm font-bold transition-all whitespace-nowrap text-emerald-800 bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 shadow-xs" data-tab="club-portal">
                     <span>🏛️ Club-Portal</span>
@@ -348,7 +375,7 @@
     </header>
 
     <!-- MAIN APP CONTENT AREA -->
-    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+    <main class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-8 min-w-0 max-w-full overflow-x-hidden">
 
         <!-- ========================================== -->
         <!-- TAB 1: DASHBOARD -->
@@ -602,15 +629,17 @@
                 </div>
 
                 <!-- Mode Selector (Quick vs Hole-by-Hole) -->
-                <div class="flex items-center justify-center mb-6">
-                    <div class="bg-slate-200/80 p-1.5 rounded-2xl flex items-center gap-1 shadow-inner text-sm font-semibold">
-                        <button id="mode-quick-btn" onclick="setEntryMode('quick')" class="px-5 py-2 rounded-xl bg-white text-slate-900 shadow-sm transition-all flex items-center gap-2">
-                            <svg class="w-4 h-4 text-golf-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                            <span>Schnellerfassung (Gesamt-Brutto)</span>
+                <div class="flex items-center justify-center mb-6 px-1">
+                    <div class="bg-slate-200/80 p-1 sm:p-1.5 rounded-2xl grid grid-cols-2 gap-1 shadow-inner text-xs sm:text-sm font-semibold w-full max-w-md">
+                        <button id="mode-quick-btn" onclick="setEntryMode('quick')" class="px-2 sm:px-4 py-2 rounded-xl bg-white text-slate-900 shadow-sm transition-all flex items-center justify-center gap-1.5 sm:gap-2 text-center">
+                            <svg class="w-4 h-4 text-golf-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                            <span class="truncate sm:hidden">Schnellerfassung</span>
+                            <span class="hidden sm:inline">Schnellerfassung (Brutto)</span>
                         </button>
-                        <button id="mode-holes-btn" onclick="setEntryMode('holes')" class="px-5 py-2 rounded-xl text-slate-600 hover:text-slate-900 transition-all flex items-center gap-2">
-                            <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
-                            <span>Loch-für-Loch Scorekarte</span>
+                        <button id="mode-holes-btn" onclick="setEntryMode('holes')" class="px-2 sm:px-4 py-2 rounded-xl text-slate-600 hover:text-slate-900 transition-all flex items-center justify-center gap-1.5 sm:gap-2 text-center">
+                            <svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                            <span class="truncate sm:hidden">Scorekarte</span>
+                            <span class="hidden sm:inline">Loch-für-Loch Scorekarte</span>
                         </button>
                     </div>
                 </div>
@@ -666,7 +695,7 @@
                             </div>
 
                             <!-- Course Rating Info Pills -->
-                            <div id="course-rating-pill" class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-wrap items-center justify-between text-xs text-slate-600">
+                            <div id="course-rating-pill" class="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600">
                                 <span>CR: <strong id="rec-cr-val" class="text-slate-900 font-mono">--</strong></span>
                                 <span>Slope (SR): <strong id="rec-sr-val" class="text-slate-900 font-mono">--</strong></span>
                                 <span>Par: <strong id="rec-par-val" class="text-slate-900 font-mono">--</strong></span>
@@ -2822,7 +2851,7 @@
                 <!-- 18 Löcher Kacheln -->
                 <div>
                     <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Erfasste Schläge (Loch 1 - 18)</h4>
-                    <div id="pca-holes-grid" class="grid grid-cols-6 sm:grid-cols-9 gap-2">
+                    <div id="pca-holes-grid" class="grid grid-cols-3 sm:grid-cols-6 md:grid-cols-9 gap-1.5 sm:gap-2">
                         <!-- Dynamisch befüllt via club_portal.js -->
                     </div>
                 </div>
@@ -2870,6 +2899,117 @@
         </div>
     </div>
 
+    <!-- MOBILE MORE / ACTION SHEET (Slide-up drawer for iOS & Android) -->
+    <div id="mobile-more-sheet" class="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs transition-opacity duration-200 hidden md:hidden flex items-end justify-center" onclick="if(event.target === this) closeMobileMoreMenu();">
+        <div id="mobile-more-sheet-panel" class="w-full max-w-lg bg-white rounded-t-3xl shadow-2xl border-t border-slate-200/80 overflow-hidden transform transition-transform duration-300 translate-y-full max-h-[85vh] flex flex-col pb-[calc(1rem+env(safe-area-inset-bottom,0px))]">
+            <!-- Sheet Header with Drag Handle -->
+            <div class="pt-3 pb-2 px-4 flex flex-col items-center border-b border-slate-100 shrink-0">
+                <div class="w-12 h-1.5 bg-slate-300 rounded-full mb-3"></div>
+                <div class="w-full flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-golf-700 to-golf-600 text-white flex items-center justify-center font-bold text-lg shadow-sm">
+                            ⛳
+                        </div>
+                        <div>
+                            <div id="sheet-user-name" class="font-bold text-slate-900 text-sm">Mein Profil</div>
+                            <div class="flex items-center gap-2 text-xs text-slate-500 font-medium">
+                                <span id="sheet-user-hcp" class="text-golf-700 font-bold">HCP --</span>
+                                <span>•</span>
+                                <span id="sheet-user-role">Spieler</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" onclick="closeMobileMoreMenu()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center text-lg font-bold transition-colors">
+                        &times;
+                    </button>
+                </div>
+            </div>
+
+            <!-- Sheet Content / Navigation Grid -->
+            <div class="p-4 overflow-y-auto space-y-3 flex-1 text-sm">
+                <!-- Quick Navigation Grid -->
+                <div class="grid grid-cols-2 gap-2.5">
+                    <button type="button" onclick="mobileSheetNavigate('history')" class="p-3 rounded-2xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-left flex items-center gap-3 transition-colors">
+                        <span class="text-xl">⏱️</span>
+                        <div>
+                            <div class="font-bold text-xs text-slate-800">Historie</div>
+                            <div class="text-[10px] text-slate-500">Alle Runden</div>
+                        </div>
+                    </button>
+                    <button type="button" onclick="mobileSheetNavigate('stammblatt', true)" class="p-3 rounded-2xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-left flex items-center gap-3 transition-colors">
+                        <span class="text-xl">📜</span>
+                        <div>
+                            <div class="font-bold text-xs text-slate-800">DGV Stammblatt</div>
+                            <div class="text-[10px] text-slate-500">Best 8 WHS</div>
+                        </div>
+                    </button>
+                    <button type="button" onclick="mobileSheetNavigate('friends', true)" class="p-3 rounded-2xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-left flex items-center gap-3 transition-colors">
+                        <span class="text-xl">👥</span>
+                        <div>
+                            <div class="font-bold text-xs text-slate-800">Freunde & Rangliste</div>
+                            <div class="text-[10px] text-slate-500">Community</div>
+                        </div>
+                    </button>
+                    <button type="button" onclick="mobileSheetNavigate('simulator')" class="p-3 rounded-2xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-left flex items-center gap-3 transition-colors">
+                        <span class="text-xl">📈</span>
+                        <div>
+                            <div class="font-bold text-xs text-slate-800">HCP Simulator</div>
+                            <div class="text-[10px] text-slate-500">Prognose</div>
+                        </div>
+                    </button>
+                    <button type="button" onclick="mobileSheetNavigate('calculator')" class="p-3 rounded-2xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-left flex items-center gap-3 transition-colors">
+                        <span class="text-xl">🧮</span>
+                        <div>
+                            <div class="font-bold text-xs text-slate-800">Spielvorgabe</div>
+                            <div class="text-[10px] text-slate-500">Course HCP</div>
+                        </div>
+                    </button>
+                    <button type="button" onclick="mobileSheetNavigate('import')" class="p-3 rounded-2xl bg-slate-50 hover:bg-slate-100 border border-slate-200/80 text-left flex items-center gap-3 transition-colors">
+                        <span class="text-xl">💾</span>
+                        <div>
+                            <div class="font-bold text-xs text-slate-800">PDF & Backup</div>
+                            <div class="text-[10px] text-slate-500">Export / Import</div>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- Special Roles: Club Portal & Admin (Conditional) -->
+                <div class="space-y-2 pt-1">
+                    <button type="button" id="sheet-club-btn" onclick="mobileSheetNavigate('club-portal')" class="hidden w-full flex items-center justify-between p-3 rounded-2xl bg-gradient-to-r from-emerald-50 to-emerald-100/60 border border-emerald-200 text-emerald-900 transition-colors">
+                        <div class="flex items-center gap-2.5">
+                            <span class="text-lg">🏛️</span>
+                            <span class="font-bold text-xs">Club-Portal & PC CADDIE</span>
+                        </div>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-600 text-white">Öffnen →</span>
+                    </button>
+
+                    <button type="button" id="sheet-admin-btn" onclick="mobileSheetNavigate('admin', true)" class="hidden w-full flex items-center justify-between p-3 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 transition-colors">
+                        <div class="flex items-center gap-2.5">
+                            <span class="text-lg">🛡️</span>
+                            <span class="font-bold text-xs">Admin-Verwaltung</span>
+                        </div>
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-600 text-white">Verwalten →</span>
+                    </button>
+
+                    <button type="button" onclick="mobileSheetNavigate('profile', true)" class="w-full flex items-center justify-between p-3 rounded-2xl bg-slate-100 hover:bg-slate-200/80 text-slate-800 transition-colors">
+                        <div class="flex items-center gap-2.5">
+                            <span class="text-lg">⚙️</span>
+                            <span class="font-bold text-xs">Profil & Einstellungen</span>
+                        </div>
+                        <span class="text-slate-400 text-xs">›</span>
+                    </button>
+                </div>
+
+                <!-- Auth Action Button (Login / Logout) -->
+                <div class="pt-2">
+                    <button type="button" id="sheet-auth-btn" class="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-golf-600 text-white font-bold text-xs shadow-xs transition-colors">
+                        <span>🔑</span><span>Anmelden / Registrieren</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- MOBILE BOTTOM NAVIGATION (Native iOS & Android App Bar) -->
     <nav id="mobile-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-lg border-t border-slate-200/90 shadow-[0_-4px_16px_rgba(0,0,0,0.06)] pb-[env(safe-area-inset-bottom,0px)]">
         <!-- 1. PLAYER MOBILE NAV (Default) -->
@@ -2900,10 +3040,10 @@
                 <span class="text-[10px] tracking-tight mt-0.5">Runde</span>
             </button>
 
-            <!-- 5. Profil / Mehr -->
-            <button type="button" onclick="openMobileMoreMenu()" class="mobile-nav-btn flex flex-col items-center justify-center h-full text-slate-400 hover:text-slate-800 font-medium transition-all select-none" title="Mein Profil & Mehr">
-                <span class="text-xl">👤</span>
-                <span class="text-[10px] tracking-tight mt-0.5">Profil</span>
+            <!-- 5. Mehr / Menü (Native Action Sheet) -->
+            <button type="button" onclick="openMobileMoreMenu()" class="mobile-nav-btn flex flex-col items-center justify-center h-full text-slate-400 hover:text-slate-800 font-medium transition-all select-none" title="Menü & Funktionen">
+                <span class="text-xl">⋮</span>
+                <span class="text-[10px] tracking-tight mt-0.5">Mehr</span>
             </button>
         </div>
 

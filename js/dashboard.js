@@ -477,11 +477,91 @@ function switchTab(tabId) {
 }
 
 function openMobileMoreMenu() {
-    if(!currentUser) {
-        openAuthModal('login');
-    } else {
-        openProfileModal();
+    const sheet = document.getElementById('mobile-more-sheet');
+    if (!sheet) {
+        if (!currentUser) openAuthModal('login');
+        else openProfileModal();
+        return;
     }
+
+    const isAdmin = Boolean(currentUser && (currentUser.is_admin || currentUser.role === 'admin'));
+    const isClub = Boolean(currentUser && currentUser.role === 'club');
+
+    const sheetUserName = document.getElementById('sheet-user-name');
+    const sheetUserHcp = document.getElementById('sheet-user-hcp');
+    const sheetUserRole = document.getElementById('sheet-user-role');
+    const sheetAdminBtn = document.getElementById('sheet-admin-btn');
+    const sheetClubBtn = document.getElementById('sheet-club-btn');
+    const sheetAuthBtn = document.getElementById('sheet-auth-btn');
+
+    if (currentUser) {
+        if (sheetUserName) sheetUserName.textContent = currentUser.username || 'Mein Profil';
+        if (sheetUserHcp) {
+            sheetUserHcp.textContent = (typeof aktuellesHCP !== 'undefined' && aktuellesHCP !== null) ? `HCP ${aktuellesHCP >= 0 ? aktuellesHCP.toFixed(1) : '+' + Math.abs(aktuellesHCP).toFixed(1)}` : 'HCP --';
+        }
+        if (sheetUserRole) {
+            sheetUserRole.textContent = isClub ? '🏛️ Club-Account' : (isAdmin ? '🛡️ Admin' : '⛳ Spieler');
+        }
+        if (sheetAuthBtn) {
+            sheetAuthBtn.innerHTML = '<span>🚪</span><span>Abmelden</span>';
+            sheetAuthBtn.onclick = () => { closeMobileMoreMenu(); handleLogout(); };
+            sheetAuthBtn.className = 'w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 font-bold text-xs transition-colors';
+        }
+        if (sheetAdminBtn) {
+            sheetAdminBtn.classList.toggle('hidden', !isAdmin);
+        }
+        if (sheetClubBtn) {
+            sheetClubBtn.classList.toggle('hidden', !isClub && !isAdmin);
+        }
+    } else {
+        if (sheetUserName) sheetUserName.textContent = 'Gast-Modus';
+        if (sheetUserHcp) sheetUserHcp.textContent = 'Nicht angemeldet';
+        if (sheetUserRole) sheetUserRole.textContent = 'Lokale Daten';
+        if (sheetAuthBtn) {
+            sheetAuthBtn.innerHTML = '<span>🔑</span><span>Anmelden / Registrieren</span>';
+            sheetAuthBtn.onclick = () => { closeMobileMoreMenu(); openAuthModal('login'); };
+            sheetAuthBtn.className = 'w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-golf-600 hover:bg-golf-700 text-white font-bold text-xs shadow-xs transition-colors';
+        }
+        if (sheetAdminBtn) sheetAdminBtn.classList.add('hidden');
+        if (sheetClubBtn) sheetClubBtn.classList.add('hidden');
+    }
+
+    sheet.classList.remove('hidden');
+    // Animate slide up
+    setTimeout(() => {
+        const panel = document.getElementById('mobile-more-sheet-panel');
+        if (panel) {
+            panel.classList.remove('translate-y-full');
+            panel.classList.add('translate-y-0');
+        }
+    }, 10);
+}
+
+function closeMobileMoreMenu() {
+    const sheet = document.getElementById('mobile-more-sheet');
+    const panel = document.getElementById('mobile-more-sheet-panel');
+    if (panel) {
+        panel.classList.remove('translate-y-0');
+        panel.classList.add('translate-y-full');
+    }
+    setTimeout(() => {
+        if (sheet) sheet.classList.add('hidden');
+    }, 200);
+}
+
+function mobileSheetNavigate(target, isModal = false) {
+    closeMobileMoreMenu();
+    setTimeout(() => {
+        if (isModal) {
+            if (target === 'profile' && typeof openProfileModal === 'function') openProfileModal();
+            else if (target === 'stammblatt' && typeof openStammblattModal === 'function') openStammblattModal();
+            else if (target === 'friends' && typeof openFriendsModal === 'function') openFriendsModal();
+            else if (target === 'admin' && typeof openAdminModal === 'function') openAdminModal();
+            else if (target === 'scorecard' && typeof openScorecardModal === 'function') openScorecardModal();
+        } else {
+            switchTab(target);
+        }
+    }, 150);
 }
 
 
