@@ -234,5 +234,50 @@ class AuthAndVersionTestCase(unittest.TestCase):
             User.query.filter_by(username='test_persisted_club').delete()
             db.session.commit()
 
+    def test_sync_accounts_endpoint(self):
+        """Testet den POST /api/sync-accounts Endpoint zur nahtlosen Kontowiederherstellung."""
+        sync_payload = {
+            "accounts": [
+                {
+                    "username": "sync_test_player",
+                    "email": "sync_player@test.de",
+                    "password": "SyncPassword2026!",
+                    "role": "player"
+                },
+                {
+                    "username": "sync_test_club",
+                    "email": "sync_club@test.de",
+                    "password": "SyncClubPassword2026!",
+                    "role": "club",
+                    "managed_club_name": "GC Gut Jersbek"
+                }
+            ]
+        }
+        res = self.client.post('/api/sync-accounts', json=sync_payload)
+        self.assertEqual(res.status_code, 200)
+        data = res.get_json()
+        self.assertIn("synced", data)
+        self.assertGreaterEqual(data["synced"], 1)
+
+        # Login mit synchronisiertem Spieler-Konto muss sofort klappen
+        login_player = self.client.post('/api/login', json={
+            'identifier': 'sync_test_player',
+            'password': 'SyncPassword2026!'
+        })
+        self.assertEqual(login_player.status_code, 200)
+
+        # Login mit synchronisiertem Club-Konto muss sofort klappen
+        login_club = self.client.post('/api/login', json={
+            'identifier': 'sync_test_club',
+            'password': 'SyncClubPassword2026!'
+        })
+        self.assertEqual(login_club.status_code, 200)
+        self.assertEqual(login_club.get_json()['user']['role'], 'club')
+
+        # Bereinigung
+        with self.app.app_context():
+            User.query.filter(User.username.in_(['sync_test_player', 'sync_test_club'])).delete()
+            db.session.commit()
+
 if __name__ == '__main__':
     unittest.main()

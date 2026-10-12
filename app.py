@@ -740,14 +740,15 @@ def restore_users_from_file():
             username = rec.get("username")
             if not username:
                 continue
-            existing = User.query.filter(
-                (func.lower(User.username) == username.lower()) |
-                (func.lower(User.email) == (rec.get("email") or '').lower())
-            ).first()
+            rec_email = (rec.get("email") or '').strip().lower()
+            query = (func.lower(User.username) == username.lower())
+            if rec_email:
+                query = query | (func.lower(User.email) == rec_email)
+            existing = User.query.filter(query).first()
             if not existing:
                 u = User(
                     username=username,
-                    email=rec.get("email") or "",
+                    email=rec_email,
                     password_hash=rec.get("password_hash"),
                     role=rec.get("role", "player"),
                     managed_club_name=rec.get("managed_club_name"),
@@ -983,7 +984,7 @@ def get_version():
 # --- 4. API ROUTEN: AUTH ---
 
 @app.route('/api/register', methods=['POST'])
-@limiter.limit("5 per minute")
+@limiter.limit("60 per minute")
 def register():
     """Registriert einen neuen Benutzer und liefert einen Auth-Token zurück."""
     daten = request.get_json(silent=True) or {}
@@ -1032,8 +1033,78 @@ def register():
         "managed_club_name": neuer_user.managed_club_name or ""
     }), 201
 
+@app.route('/api/sync-accounts', methods=['POST'])
+@limiter.limit("120 per minute")
+def sync_accounts():
+    """Synchronisiert und restauriert bekannte Client-Benutzerkonten dauerhaft in die Datenbank.
+    Verhindert Kontoverlust bei ephemeral Cloud-Containern (Render) oder Server-Neustarts."""
+    daten = request.get_json(silent=True) or {}
+    accounts = daten.get('accounts') or []
+    if not isinstance(accounts, list):
+        return jsonify({"fehler": "Ungültiges Format für Konten-Array."}), 400
+
+    synced_count = 0
+    for acc in accounts:
+        if not isinstance(acc, dict):
+            continue
+        username = (acc.get('username') or '').strip()
+        email = (acc.get('email') or '').strip().lower()
+        password = acc.get('password') or ''
+        password_hash = acc.get('password_hash') or ''
+        role = (acc.get('role') or 'player').strip().lower()
+        if role not in ('player', 'club', 'admin'):
+            role = 'player'
+        managed_club_name = (acc.get('managed_club_name') or '').strip()
+
+        if not username or len(username) < 3:
+            continue
+
+        query = (func.lower(User.username) == username.lower())
+        if email:
+            query = query | (func.lower(User.email) == email)
+        existing = User.query.filter(query).first()
+
+        if not existing:
+            final_hash = password_hash if password_hash else (generate_password_hash(password.strip()) if password else None)
+            if not final_hash:
+                continue
+            new_u = User(
+                username=username,
+                email=email,
+                password_hash=final_hash,
+                role=role,
+                managed_club_name=managed_club_name if role == 'club' else None,
+                is_admin=bool(acc.get('is_admin', False)),
+                api_token=secrets.token_hex(32)
+            )
+            db.session.add(new_u)
+            synced_count += 1
+        else:
+            updated = False
+            if role == 'club' and existing.role != 'club':
+                existing.role = 'club'
+                updated = True
+            if managed_club_name and existing.managed_club_name != managed_club_name:
+                existing.managed_club_name = managed_club_name
+                updated = True
+            if password and not existing.password_hash:
+                existing.password_hash = generate_password_hash(password.strip())
+                updated = True
+            if updated:
+                synced_count += 1
+
+    if synced_count > 0:
+        db.session.commit()
+        backup_users_to_file()
+
+    return jsonify({
+        "nachricht": f"{synced_count} Konten erfolgreich synchronisiert.",
+        "synced": synced_count,
+        "total_users": User.query.count()
+    }), 200
+
 @app.route('/api/login', methods=['POST'])
-@limiter.limit("30 per minute")
+@limiter.limit("60 per minute")
 def login():
     """Prüft Logindaten (E-Mail oder Benutzername) und gibt neuen/aktuellen Token zurück."""
     daten = request.get_json(silent=True) or {}

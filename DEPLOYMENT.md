@@ -19,21 +19,30 @@ git commit -m "Add user authentication and production deployment configuration"
 git push origin main
 ```
 
-### Schritt 2: Auf Render.com bereitstellen
-1. Gehe auf [render.com](https://render.com) und erstelle einen kostenlosen Account (am besten mit deinem GitHub-Login).
-2. Klicke im Dashboard auf **New +** → **Web Service**.
-3. Wähle dein GitHub-Repository (`GolfApp` oder `AbschlussprojektBenni`) aus und klicke auf **Connect**.
-4. Trage folgende Einstellungen ein (falls nicht automatisch durch `render.yaml` erkannt):
-   * **Name:** `golf-handicap-app` (oder dein Wunschname)
-   * **Region:** Frankfurt (EU)
-   * **Branch:** `main`
-   * **Runtime:** `Python 3`
-   * **Build Command:** `pip install -r requirements.txt`
-   * **Start Command:** `gunicorn app:app`
-   * **Instance Type:** `Free`
-5. Klicke unten auf **Create Web Service**.
+### Schritt 2: Auf Render.com bereitstellen (Empfohlen: Blueprint mit PostgreSQL)
 
-Fertig! In ca. 1–2 Minuten baut Render die Anwendung und gibt dir deine öffentliche URL (z.B. `https://golf-handicap-app.onrender.com`).
+Um sicherzustellen, dass neu registrierte Benutzer, Runden und Turniere dauerhaft erhalten bleiben und nicht bei einem Container-Neustart (z. B. nach 15 Min. Inaktivität im Render Free Tier) verloren gehen, wird eine PostgreSQL-Datenbank verwendet:
+
+#### Methode A: Über Blueprint (Automatisches Setup mit PostgreSQL)
+1. Gehe auf [render.com](https://render.com) in dein Dashboard.
+2. Klicke auf **New +** → **Blueprint**.
+3. Wähle dein GitHub-Repository (`GolfApp`) aus.
+4. Render liest die beiliegende `render.yaml` und erstellt automatisch:
+   * Den Web Service `golf-handicap-app`
+   * Eine kostenlose PostgreSQL-Datenbank `golfapp-db`
+   * Die Verknüpfung der Umgebungsvariable `DATABASE_URL`
+5. Klicke auf **Apply**.
+
+#### Methode B: Manuell bestehenden Web Service mit PostgreSQL verbinden
+Falls du bereits einen Web Service auf Render hast:
+1. Klicke auf **New +** → **PostgreSQL**.
+2. Vergib einen Namen (z.B. `golf-db`) und klicke auf **Create Database**.
+3. Kopiere die **Internal Database URL** (beginnt mit `postgres://...`).
+4. Öffne deinen Web Service → **Environment** → **Add Environment Variable**.
+5. Key: `DATABASE_URL`, Value: die kopierte Datenbank-URL einfügen.
+6. Klicke auf **Save Changes** (Render startet den Service neu und speichert ab sofort alles permanent in PostgreSQL).
+
+> 💡 **Zusätzlicher Schutz:** Die App verfügt nun über einen **automatischen Konto-Tresor** (`birdietrack_accounts_v1`) im Browser sowie einen Server-Synchronisations-Endpoint (`/api/sync-accounts`). Selbst wenn der Server zwischenzeitlich schläft oder neu gestartet wird, stellt das Frontend alle registrierten Benutzerkonten automatisch und nahtlos wieder her!
 
 ---
 

@@ -6,6 +6,11 @@ async function loadData() {
     // Bereinige alte, nicht zugeordnete Runden aus dem LocalStorage
     localStorage.removeItem('golf_runden');
 
+    // Hintergrund-Synchronisation bekannter Konten mit dem Server (überlebt Server-Neustarts/Deployments)
+    if (typeof syncLocalAccountsWithServer === 'function') {
+        syncLocalAccountsWithServer();
+    }
+
     // Check auth state in localStorage
     const savedAuth = JSON.parse(localStorage.getItem('golf_auth') || 'null');
     if(savedAuth && savedAuth.token && savedAuth.user) {
@@ -22,9 +27,29 @@ async function loadData() {
                     localStorage.setItem('golf_auth', JSON.stringify({ token: authToken, user: currentUser }));
                 }
             } else if(checkMe.status === 401) {
-                authToken = null;
-                currentUser = null;
-                localStorage.removeItem('golf_auth');
+                // Versuche automatische Wiederherstellung aus dem lokalen Tresor, falls der Container neu gestartet wurde
+                let recovered = false;
+                if (typeof getLocalAccountVault === 'function') {
+                    const vault = getLocalAccountVault();
+                    const lowCur = (currentUser.username || '').toLowerCase().trim();
+                    const matched = vault.find(a => a.username && a.username.toLowerCase().trim() === lowCur);
+                    if (matched && matched.password) {
+                        try {
+                            const reLogin = await apiFetch('/api/login', 'POST', { identifier: matched.username, password: matched.password });
+                            if (reLogin.ok && reLogin.data && reLogin.data.token) {
+                                authToken = reLogin.data.token;
+                                currentUser = reLogin.data.user || currentUser;
+                                localStorage.setItem('golf_auth', JSON.stringify({ token: authToken, user: currentUser }));
+                                recovered = true;
+                            }
+                        } catch(e) {}
+                    }
+                }
+                if (!recovered) {
+                    authToken = null;
+                    currentUser = null;
+                    localStorage.removeItem('golf_auth');
+                }
             }
         } catch(e) {
             console.warn("Auth token verification error:", e);

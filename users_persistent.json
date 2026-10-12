@@ -16,5 +16,32 @@
     "managed_club_name": "GC Gut Jersbek",
     "is_admin": false,
     "created_at": "2026-10-01T10:46:05.838776"
+  },
+  {
+    "username": "testuser_123",
+    "email": "test12345@golf.de",
+    "password_hash": "scrypt:32768:8:1$z1XfuwM49b8dzB56$b396100579d31d95a765007cc50b431a8731de39942518625b763425285f1975fa42f56a2d845331e3f3bc9b7e79280626466fa9c71ef9c396ea6965e5aaee65",
+    "role": "player",
+    "managed_club_name": "",
+    "is_admin": false,
+    "created_at": "2026-10-12T10:39:01.138134"
+  },
+  {
+    "username": "TestPlayer2026",
+    "email": "player2026@test.com",
+    "password_hash": "scrypt:32768:8:1$GAhCrqwpzib44xUa$130d8e276fd2f50ae69bce64fba872c5b8aba8ae882d97b3f3403761541f03457d84fd47dfa413a69b68b0b0bfb44956928151b1d9e18c2698ae98f53caa5eed",
+    "role": "player",
+    "managed_club_name": "",
+    "is_admin": false,
+    "created_at": "2026-10-12T10:39:01.355021"
+  },
+  {
+    "username": "test_auth_user",
+    "email": "auth_user@example.com",
+    "password_hash": "scrypt:32768:8:1$rh9ubMGeup4Ec9wP$5426be21063608bde4e7eb974dfb03c3926d1539f93ef647d0b0e5482e0432dd0a0843738111065cb5bc465dda939e4bb2701dc36a155dabab6aa6c9752917ad",
+    "role": "player",
+    "managed_club_name": "",
+    "is_admin": false,
+    "created_at": "2026-10-12T10:46:23.062709"
   }
 ]

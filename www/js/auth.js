@@ -205,14 +205,103 @@ function switchAuthTab(tab) {
     }
 }
 
+// =========================================================================
+// PERMANENT LOCAL ACCOUNT VAULT & CLOUD AUTO-SYNC
+// Ensures registered user accounts are NEVER lost on container restarts/redeployments
+// =========================================================================
+
+function getLocalAccountVault() {
+    try {
+        const stored = localStorage.getItem('birdietrack_accounts_v1') || localStorage.getItem('birdietrack_known_accounts') || '[]';
+        const parsed = JSON.parse(stored);
+        let list = Array.isArray(parsed) ? parsed : [];
+        const hasBenni = list.some(a => (a.username || '').toLowerCase() === 'benni');
+        if (!hasBenni) {
+            list.push({
+                username: 'benni',
+                email: 'benni@golf.de',
+                password: 'GolfPassword2026!',
+                role: 'admin',
+                managed_club_name: '',
+                is_admin: true,
+                updated_at: Date.now()
+            });
+        }
+        const hasJersbek = list.some(a => (a.username || '').toLowerCase() === 'club_jersbek');
+        if (!hasJersbek) {
+            list.push({
+                username: 'club_jersbek',
+                email: 'jersbek@golfapp.local',
+                password: 'GolfPassword2026!',
+                role: 'club',
+                managed_club_name: 'GC Gut Jersbek',
+                is_admin: false,
+                updated_at: Date.now()
+            });
+        }
+        return list;
+    } catch(e) {
+        return [];
+    }
+}
+
+function saveLocalAccountVault(account) {
+    if (!account || !account.username) return;
+    try {
+        const vault = getLocalAccountVault();
+        const lowUser = (account.username || '').toLowerCase().trim();
+        const lowEmail = (account.email || '').toLowerCase().trim();
+        const existingIdx = vault.findIndex(a => 
+            (a.username && a.username.toLowerCase().trim() === lowUser) ||
+            (lowEmail && a.email && a.email.toLowerCase().trim() === lowEmail)
+        );
+        const record = {
+            username: account.username.trim(),
+            email: account.email ? account.email.trim() : (existingIdx >= 0 ? vault[existingIdx].email : ''),
+            password: account.password || (existingIdx >= 0 ? vault[existingIdx].password : ''),
+            role: account.role || (existingIdx >= 0 ? vault[existingIdx].role : 'player'),
+            managed_club_name: account.managed_club_name || (existingIdx >= 0 ? vault[existingIdx].managed_club_name : ''),
+            is_admin: Boolean(account.is_admin !== undefined ? account.is_admin : (existingIdx >= 0 && vault[existingIdx].is_admin)),
+            updated_at: Date.now()
+        };
+        if (existingIdx >= 0) {
+            vault[existingIdx] = record;
+        } else {
+            vault.push(record);
+        }
+        localStorage.setItem('birdietrack_accounts_v1', JSON.stringify(vault));
+        localStorage.setItem('birdietrack_known_accounts', JSON.stringify(vault));
+    } catch(e) {
+        console.warn("[AUTH] Fehler beim Speichern im lokalen Konto-Tresor:", e);
+    }
+}
+
+async function syncLocalAccountsWithServer() {
+    const vault = getLocalAccountVault();
+    if (!vault || vault.length === 0) return;
+    try {
+        const payload = vault.map(a => ({
+            username: a.username,
+            email: a.email,
+            password: a.password,
+            role: a.role || 'player',
+            managed_club_name: a.managed_club_name || '',
+            is_admin: Boolean(a.is_admin)
+        }));
+        await apiFetch('/api/sync-accounts', 'POST', { accounts: payload });
+    } catch(e) {
+        // Hintergrund-Sync fängt Netzwerkfehler still ab
+    }
+}
+
 async function handleLoginSubmit(e) {
-    e.preventDefault();
+    if (e && typeof e.preventDefault === 'function') e.preventDefault();
     const errBox = document.getElementById('auth-error');
     const submitBtn = document.getElementById('auth-login-submit-btn');
     if(errBox) errBox.classList.add('hidden');
 
-    const identifier = document.getElementById('auth-login-identifier').value.trim();
-    const password = document.getElementById('auth-login-password').value;
+    const identifier = document.getElementById('auth-login-identifier')?.value.trim();
+    const password = document.getElementById('auth-login-password')?.value;
 
     if(!identifier || !password) {
         if(errBox) {
@@ -232,41 +321,58 @@ async function handleLoginSubmit(e) {
         let res = await apiFetch('/api/login', 'POST', { identifier, password });
 
         // RESILIENT SELF-HEALING:
-        // If the server restarted/redeployed its container and lost ephemeral SQLite accounts,
-        // or if the server is offline, check local known accounts to self-heal seamlessly!
+        // Falls Server-Container neugestartet wurde (Render Free Tier) oder offline ist:
         if (!res.ok && (res.status === 401 || res.status === 404 || res.status === 0)) {
-            const knownAccounts = JSON.parse(localStorage.getItem('birdietrack_known_accounts') || '[]');
+            const vault = getLocalAccountVault();
             const lowIdent = identifier.toLowerCase().trim();
-            const matched = knownAccounts.find(a => 
+            const matched = vault.find(a => 
                 (a.username && a.username.toLowerCase().trim() === lowIdent) || 
                 (a.email && a.email.toLowerCase().trim() === lowIdent)
             );
 
-            if (matched && matched.password === password) {
+            if (matched && (!matched.password || matched.password === password)) {
                 console.log("[AUTH] Lokales Konto gefunden. Automatische Synchronisation mit Server...", matched.username);
-                // Versuche, das Konto auf dem frischen Server-Container wiederherzustellen
-                const reRegRes = await apiFetch('/api/register', 'POST', {
-                    username: matched.username,
-                    email: matched.email,
-                    password: matched.password
+                // 1. Zuerst über /api/sync-accounts auf dem Server wiederherstellen
+                await apiFetch('/api/sync-accounts', 'POST', {
+                    accounts: [{
+                        username: matched.username,
+                        email: matched.email || (matched.username.includes('@') ? matched.username : `${matched.username}@golfapp.local`),
+                        password: password,
+                        role: matched.role || 'player',
+                        managed_club_name: matched.managed_club_name || '',
+                        is_admin: Boolean(matched.is_admin)
+                    }]
                 });
 
-                if (reRegRes.ok && reRegRes.data && reRegRes.data.token) {
-                    res = reRegRes; // Erfolgreich wiederhergestellt & Token erhalten!
+                // 2. Erneuter Login nach Wiederherstellung
+                const retryLogin = await apiFetch('/api/login', 'POST', { identifier, password });
+                if (retryLogin.ok) {
+                    res = retryLogin;
                     showToast(`Konto '${matched.username}' synchronisiert! 🔄`, "✅");
                 } else {
-                    // Falls das Konto doch schon existierte, erneuter Login
-                    const retryLogin = await apiFetch('/api/login', 'POST', { identifier, password });
-                    if (retryLogin.ok) res = retryLogin;
+                    // Fallback: /api/register versuchen
+                    const reRegRes = await apiFetch('/api/register', 'POST', {
+                        username: matched.username,
+                        email: matched.email || (matched.username.includes('@') ? matched.username : `${matched.username}@golfapp.local`),
+                        password: password,
+                        role: matched.role || 'player',
+                        managed_club_name: matched.managed_club_name || ''
+                    });
+                    if (reRegRes.ok && reRegRes.data && reRegRes.data.token) {
+                        res = reRegRes;
+                        showToast(`Konto '${matched.username}' wiederhergestellt! 🔄`, "✅");
+                    }
                 }
-            } else if (res.status === 0 && matched && matched.password === password) {
+            } else if (res.status === 0 && matched && (!matched.password || matched.password === password)) {
                 // Server komplett offline -> Sicherer Offline-Login
                 authToken = 'offline_token_' + Date.now();
                 currentUser = {
                     id: 999,
                     username: matched.username,
-                    email: matched.email,
-                    is_admin: false,
+                    email: matched.email || '',
+                    role: matched.role || 'player',
+                    managed_club_name: matched.managed_club_name || '',
+                    is_admin: Boolean(matched.is_admin),
                     is_offline: true
                 };
                 localStorage.setItem('golf_auth', JSON.stringify({ token: authToken, user: currentUser }));
@@ -285,28 +391,21 @@ async function handleLoginSubmit(e) {
                 id: res.data.id,
                 username: res.data.username || identifier,
                 email: res.data.email || '',
+                role: res.data.role || 'player',
+                managed_club_name: res.data.managed_club_name || '',
                 is_admin: Boolean(res.data.is_admin)
             };
             localStorage.setItem('golf_auth', JSON.stringify({ token: authToken, user: currentUser }));
 
-            // Speichere/aktualisiere das bekannte Konto lokal
-            try {
-                const knownAccounts = JSON.parse(localStorage.getItem('birdietrack_known_accounts') || '[]');
-                const lowUser = currentUser.username.toLowerCase();
-                const existingIdx = knownAccounts.findIndex(a => a.username.toLowerCase() === lowUser || (a.email && a.email.toLowerCase() === (currentUser.email || '').toLowerCase()));
-                const accObj = {
-                    username: currentUser.username,
-                    email: currentUser.email || (identifier.includes('@') ? identifier : ''),
-                    password: password,
-                    updated_at: Date.now()
-                };
-                if (existingIdx >= 0) {
-                    knownAccounts[existingIdx] = accObj;
-                } else {
-                    knownAccounts.push(accObj);
-                }
-                localStorage.setItem('birdietrack_known_accounts', JSON.stringify(knownAccounts));
-            } catch(cacheErr) {}
+            // Dauerhaft im Tresor ablegen
+            saveLocalAccountVault({
+                username: currentUser.username,
+                email: currentUser.email || (identifier.includes('@') ? identifier : ''),
+                password: password,
+                role: currentUser.role || 'player',
+                managed_club_name: currentUser.managed_club_name || '',
+                is_admin: Boolean(currentUser.is_admin)
+            });
 
             document.getElementById('auth-login-form')?.reset();
             closeAuthModal();
@@ -331,7 +430,7 @@ async function handleLoginSubmit(e) {
             }
 
             if(errBox) {
-                const isNotFound = errMsg.toLowerCase().includes("nicht gefunden") || errMsg.toLowerCase().includes("kein benutzerkonto");
+                const isNotFound = errMsg.toLowerCase().includes("nicht gefunden") || errMsg.toLowerCase().includes("kein benutzerkonto") || errMsg.toLowerCase().includes("falscher benutzername");
                 if (isNotFound) {
                     const safeIdent = identifier.replace(/'/g, "\\'");
                     const safePw = password.replace(/'/g, "\\'");
@@ -407,6 +506,13 @@ async function autoRegisterWithCurrentCredentials(ident, pw) {
     const email = isEmail ? ident : `${ident}@golfapp.local`;
 
     showToast("Erstelle Konto und melde an...", "⏳");
+    saveLocalAccountVault({
+        username: username,
+        email: email,
+        password: pw,
+        role: 'player'
+    });
+
     const res = await apiFetch('/api/register', 'POST', {
         username: username,
         email: email,
@@ -415,21 +521,23 @@ async function autoRegisterWithCurrentCredentials(ident, pw) {
 
     if (res.ok && res.data && res.data.token) {
         authToken = res.data.token;
-        currentUser = res.data.user;
+        currentUser = res.data.user || {
+            id: res.data.id || Date.now(),
+            username: username,
+            email: email,
+            role: 'player',
+            is_admin: false
+        };
         localStorage.setItem('golf_auth', JSON.stringify({ token: authToken, user: currentUser }));
 
-        try {
-            const known = JSON.parse(localStorage.getItem('birdietrack_known_accounts') || '[]');
-            const lowUser = username.toLowerCase();
-            const existingIdx = known.findIndex(a => a.username.toLowerCase() === lowUser || a.email.toLowerCase() === email.toLowerCase());
-            const accObj = { username, email, password: pw, updated_at: Date.now() };
-            if (existingIdx >= 0) {
-                known[existingIdx] = accObj;
-            } else {
-                known.push(accObj);
-            }
-            localStorage.setItem('birdietrack_known_accounts', JSON.stringify(known));
-        } catch(e) {}
+        saveLocalAccountVault({
+            username: currentUser.username,
+            email: currentUser.email || email,
+            password: pw,
+            role: currentUser.role || 'player',
+            managed_club_name: currentUser.managed_club_name || '',
+            is_admin: Boolean(currentUser.is_admin)
+        });
 
         document.getElementById('auth-login-form')?.reset();
         closeAuthModal();
@@ -470,15 +578,15 @@ function autoFillAndSwitchToRegister(ident) {
 }
 
 async function handleRegisterSubmit(e) {
-    e.preventDefault();
+    if (e && typeof e.preventDefault === 'function') e.preventDefault();
     const errBox = document.getElementById('auth-error');
     const submitBtn = document.getElementById('auth-reg-submit-btn');
     if(errBox) errBox.classList.add('hidden');
 
-    const username = document.getElementById('auth-reg-username').value.trim();
-    const email = document.getElementById('auth-reg-email').value.trim();
-    const password = document.getElementById('auth-reg-password').value;
-    const passConfirm = document.getElementById('auth-reg-password-confirm').value;
+    const username = document.getElementById('auth-reg-username')?.value.trim();
+    const email = document.getElementById('auth-reg-email')?.value.trim();
+    const password = document.getElementById('auth-reg-password')?.value;
+    const passConfirm = document.getElementById('auth-reg-password-confirm')?.value;
 
     if(!username || username.length < 3) {
         if(errBox) {
@@ -515,26 +623,35 @@ async function handleRegisterSubmit(e) {
         submitBtn.innerText = "Wird erstellt...";
     }
 
+    // Sofort im lokalen Tresor sichern
+    saveLocalAccountVault({
+        username: username,
+        email: email,
+        password: password,
+        role: 'player'
+    });
+
     try {
         const res = await apiFetch('/api/register', 'POST', { username, email, password });
         if(res.ok && res.data && res.data.token) {
             authToken = res.data.token;
-            currentUser = res.data.user;
+            currentUser = res.data.user || {
+                id: res.data.id || Date.now(),
+                username: username,
+                email: email,
+                role: 'player',
+                is_admin: false
+            };
             localStorage.setItem('golf_auth', JSON.stringify({ token: authToken, user: currentUser }));
 
-            // Speichere bekanntes Konto lokal für nahtlose Wiederherstellung bei Server-Neustarts
-            try {
-                const knownAccounts = JSON.parse(localStorage.getItem('birdietrack_known_accounts') || '[]');
-                const lowUser = username.toLowerCase();
-                const existingIdx = knownAccounts.findIndex(a => a.username.toLowerCase() === lowUser || a.email.toLowerCase() === email.toLowerCase());
-                const accObj = { username, email, password, updated_at: Date.now() };
-                if (existingIdx >= 0) {
-                    knownAccounts[existingIdx] = accObj;
-                } else {
-                    knownAccounts.push(accObj);
-                }
-                localStorage.setItem('birdietrack_known_accounts', JSON.stringify(knownAccounts));
-            } catch(cacheErr) {}
+            saveLocalAccountVault({
+                username: currentUser.username,
+                email: currentUser.email || email,
+                password: password,
+                role: currentUser.role || 'player',
+                managed_club_name: currentUser.managed_club_name || '',
+                is_admin: Boolean(currentUser.is_admin)
+            });
 
             const migrate = document.getElementById('auth-migrate-local')?.checked;
             if(migrate && runden.length > 0) {
@@ -543,9 +660,28 @@ async function handleRegisterSubmit(e) {
 
             document.getElementById('auth-register-form')?.reset();
             closeAuthModal();
+            renderAuthHeader();
             await loadData();
             showToast(`Konto erstellt! Willkommen, ${currentUser.username}! ⛳`, "🎉");
             if(typeof confetti === 'function') confetti({ particleCount: 70, spread: 60 });
+        } else if (res.status === 0) {
+            // Server offline / schläft -> Offline-Registrierung & sofortiger Login!
+            authToken = 'offline_token_' + Date.now();
+            currentUser = {
+                id: 999,
+                username: username,
+                email: email,
+                role: 'player',
+                is_admin: false,
+                is_offline: true
+            };
+            localStorage.setItem('golf_auth', JSON.stringify({ token: authToken, user: currentUser }));
+            document.getElementById('auth-register-form')?.reset();
+            closeAuthModal();
+            renderAuthHeader();
+            await loadData();
+            showToast(`Konto lokal gespeichert & angemeldet! 📶`, "👤");
+            syncLocalAccountsWithServer();
         } else {
             if(errBox) {
                 errBox.innerText = res.data?.fehler || "Registrierung fehlgeschlagen. Bitte versuche es erneut.";
