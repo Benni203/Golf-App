@@ -915,10 +915,10 @@ function initScorecardHoles() {
                 </select>
             </td>
             <td class="py-2 px-2">
-                <div class="inline-flex items-center gap-1.5">
-                    <button type="button" onclick="adjustHoleScore(${holeNum}, -1)" class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 font-bold text-xs">−</button>
-                    <input type="number" id="hole-score-${holeNum}" min="1" max="15" value="${par}" oninput="updateHoleScore(${holeNum}, this.value)" class="w-12 text-center py-1 rounded-md border border-slate-200 text-sm font-bold font-mono">
-                    <button type="button" onclick="adjustHoleScore(${holeNum}, 1)" class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 font-bold text-xs">+</button>
+                <div class="inline-flex items-center gap-1 sm:gap-1.5 bg-slate-100/90 border border-slate-200 rounded-xl p-1 shadow-2xs glove-stepper">
+                    <button type="button" onclick="adjustHoleScore(${holeNum}, -1)" class="glove-btn w-9 h-9 sm:w-8 sm:h-8 min-w-[36px] min-h-[36px] rounded-lg bg-white hover:bg-slate-200 active:bg-slate-300 text-slate-800 font-black text-base flex items-center justify-center select-none active:scale-95 touch-manipulation shadow-xs">−</button>
+                    <input type="number" id="hole-score-${holeNum}" min="1" max="15" value="${par}" oninput="updateHoleScore(${holeNum}, this.value)" class="w-10 sm:w-12 text-center py-1 text-base sm:text-sm font-black font-mono text-slate-900 border-none bg-transparent focus:outline-none">
+                    <button type="button" onclick="adjustHoleScore(${holeNum}, 1)" class="glove-btn w-9 h-9 sm:w-8 sm:h-8 min-w-[36px] min-h-[36px] rounded-lg bg-white hover:bg-slate-200 active:bg-slate-300 text-slate-800 font-black text-base flex items-center justify-center select-none active:scale-95 touch-manipulation shadow-xs">+</button>
                 </div>
             </td>
             <td class="py-2 px-2" id="hole-relative-${holeNum}">
@@ -937,6 +937,16 @@ function adjustHoleScore(holeNum, delta) {
     h.strokes = Math.max(1, h.strokes + delta);
     document.getElementById(`hole-score-${holeNum}`).value = h.strokes;
     updateScorecardTotals();
+
+    if (typeof triggerHaptic === 'function') {
+        if (h.strokes <= h.par - 1) {
+            triggerHaptic('birdie');
+        } else if (h.strokes === h.par) {
+            triggerHaptic('par');
+        } else {
+            triggerHaptic('light');
+        }
+    }
 }
 
 function updateHoleScore(holeNum, val) {
@@ -1673,10 +1683,10 @@ function initScorecardHolesTable(preserveExisting = false) {
             <td class="py-2 px-2 text-center text-slate-400">${si}</td>
             <td class="py-2 px-2 text-center font-bold text-golf-700">${striche > 0 ? '+'.repeat(Math.min(3, striche)) + (striche > 3 ? striche : '') : '-'}</td>
             <td class="py-2 px-3 text-center">
-                <div class="inline-flex items-center gap-1 bg-white border border-slate-200 rounded-lg p-0.5 shadow-xs">
-                    <button type="button" onclick="updateScorecardHole(${i}, -1)" class="w-7 h-7 sm:w-6 sm:h-6 rounded bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 font-black text-xs flex items-center justify-center select-none active:scale-90 touch-manipulation">-</button>
-                    <input type="number" id="sc-stroke-${i}" onchange="onScorecardStrokeInput(${i}, this.value)" value="${initialStrokes}" min="1" max="15" class="w-9 text-center font-black text-sm sm:text-xs text-slate-900 focus:outline-none border-none p-0">
-                    <button type="button" onclick="updateScorecardHole(${i}, 1)" class="w-7 h-7 sm:w-6 sm:h-6 rounded bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 font-black text-xs flex items-center justify-center select-none active:scale-90 touch-manipulation">+</button>
+                <div class="inline-flex items-center gap-1 bg-slate-100/90 border border-slate-200 rounded-xl p-1 shadow-2xs glove-stepper">
+                    <button type="button" onclick="updateScorecardHole(${i}, -1)" class="glove-btn w-9 h-9 sm:w-8 sm:h-8 min-w-[36px] min-h-[36px] rounded-lg bg-white hover:bg-slate-200 active:bg-slate-300 text-slate-800 font-black text-base flex items-center justify-center select-none active:scale-95 touch-manipulation shadow-xs">−</button>
+                    <input type="number" id="sc-stroke-${i}" onchange="onScorecardStrokeInput(${i}, this.value)" value="${initialStrokes}" min="1" max="15" class="w-10 sm:w-9 text-center font-black text-base sm:text-sm text-slate-900 focus:outline-none border-none p-0 bg-transparent">
+                    <button type="button" onclick="updateScorecardHole(${i}, 1)" class="glove-btn w-9 h-9 sm:w-8 sm:h-8 min-w-[36px] min-h-[36px] rounded-lg bg-white hover:bg-slate-200 active:bg-slate-300 text-slate-800 font-black text-base flex items-center justify-center select-none active:scale-95 touch-manipulation shadow-xs">+</button>
                 </div>
             </td>
             <td class="py-2 px-2 text-center font-bold text-golf-800" id="sc-netto-${i}">${netto}</td>
@@ -1724,6 +1734,16 @@ function updateScorecardHole(index, delta) {
     const input = document.getElementById(`sc-stroke-${index}`);
     if(input) input.value = hole.strokes;
     recalculateScorecardRow(index);
+
+    if (typeof triggerHaptic === 'function') {
+        if (hole.strokes <= hole.par - 1) {
+            triggerHaptic('birdie');
+        } else if (hole.strokes === hole.par) {
+            triggerHaptic('par');
+        } else {
+            triggerHaptic('light');
+        }
+    }
 }
 
 function onScorecardStrokeInput(index, value) {

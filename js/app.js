@@ -93,6 +93,9 @@ window.addEventListener('DOMContentLoaded', () => {
 
     loadData();
     initScorecardHoles();
+    if (typeof applyOutdoorSettings === 'function') {
+        applyOutdoorSettings();
+    }
     updateHeaderSyncStatus();
     syncOfflineScorecards();
 });

@@ -196,6 +196,92 @@
                 print-color-adjust: exact !important;
             }
         }
+
+        /* Feature A: Handschuh-freundliche Touch-Ziele (Glove Mode) */
+        .glove-btn {
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        html.glove-mode .glove-btn {
+            width: 48px !important;
+            height: 48px !important;
+            min-width: 48px !important;
+            min-height: 48px !important;
+            font-size: 1.25rem !important;
+            font-weight: 900 !important;
+        }
+        html.glove-mode .glove-stepper {
+            padding: 0.375rem !important;
+            gap: 0.375rem !important;
+        }
+        html.glove-mode .glove-stepper input {
+            width: 44px !important;
+            font-size: 1.125rem !important;
+            font-weight: 900 !important;
+        }
+        html.glove-mode #sc-holes-table-body td,
+        html.glove-mode #scorecard-holes-body td {
+            padding-top: 0.75rem !important;
+            padding-bottom: 0.75rem !important;
+        }
+
+        /* Feature C: Sonnenlicht-Modus / High-Contrast Outdoor Mode */
+        html.sunlight-mode {
+            color-scheme: light;
+        }
+        html.sunlight-mode body {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+        }
+        html.sunlight-mode header,
+        html.sunlight-mode nav#mobile-bottom-nav,
+        html.sunlight-mode .bg-white,
+        html.sunlight-mode .tab-pane {
+            background-color: #ffffff !important;
+            border-color: #000000 !important;
+        }
+        html.sunlight-mode .text-slate-400,
+        html.sunlight-mode .text-slate-500,
+        html.sunlight-mode .text-slate-600 {
+            color: #1e293b !important;
+            font-weight: 700 !important;
+        }
+        html.sunlight-mode .text-slate-700,
+        html.sunlight-mode .text-slate-800,
+        html.sunlight-mode .text-slate-900 {
+            color: #000000 !important;
+            font-weight: 900 !important;
+        }
+        html.sunlight-mode .border-slate-200,
+        html.sunlight-mode .border-slate-100 {
+            border-color: #334155 !important;
+        }
+        html.sunlight-mode table th {
+            background-color: #0f172a !important;
+            color: #ffffff !important;
+            border-color: #000000 !important;
+            font-weight: 900 !important;
+        }
+        html.sunlight-mode table td {
+            border-color: #475569 !important;
+            color: #000000 !important;
+            font-weight: 700 !important;
+        }
+        html.sunlight-mode .glove-btn {
+            background-color: #ffffff !important;
+            border: 2px solid #000000 !important;
+            color: #000000 !important;
+            font-weight: 900 !important;
+        }
+        html.sunlight-mode input,
+        html.sunlight-mode select {
+            border-color: #000000 !important;
+            border-width: 2px !important;
+            color: #000000 !important;
+            background-color: #ffffff !important;
+            font-weight: 800 !important;
+        }
     </style>
 </head>
 <body class="h-full flex flex-col bg-slate-50 text-slate-800 antialiased selection:bg-golf-500 selection:text-white pb-safe">
@@ -264,6 +350,11 @@
                             <span class="truncate max-w-[90px] sm:max-w-[200px] text-xs" id="header-checkin-name">Live</span>
                         </button>
                     </div>
+
+                    <!-- Quick Sunlight Outdoor Toggle (Feature C) -->
+                    <button type="button" onclick="toggleSunlightMode()" id="header-sunlight-btn" class="w-8 h-8 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center text-sm transition-colors shadow-2xs active:scale-95" title="Sonnenlicht High-Contrast Modus umschalten">
+                        ☀️
+                    </button>
 
                     <!-- User Account / Auth Section -->
                     <div id="auth-header-container" class="flex items-center">
@@ -706,9 +797,9 @@
                             <div id="quick-entry-container" class="space-y-3">
                                 <label class="block text-xs font-bold uppercase tracking-wider text-slate-600">Gesamtes Brutto-Ergebnis (Schläge)</label>
                                 <div class="flex items-center gap-3">
-                                    <button type="button" onclick="adjustQuickBrutto(-1)" class="w-12 h-12 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xl flex items-center justify-center transition-colors active:scale-95">−</button>
+                                    <button type="button" onclick="adjustQuickBrutto(-1)" class="glove-btn w-12 h-12 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-2xl flex items-center justify-center transition-colors active:scale-95 touch-manipulation">−</button>
                                     <input type="number" id="rec-brutto" min="20" max="180" placeholder="z.B. 92" required oninput="onRoundInputChanged()" class="flex-1 px-4 py-3 rounded-xl border border-slate-200 focus:border-golf-500 focus:ring-2 focus:ring-golf-200 text-2xl font-black text-center text-slate-900 transition-all font-mono">
-                                    <button type="button" onclick="adjustQuickBrutto(1)" class="w-12 h-12 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xl flex items-center justify-center transition-colors active:scale-95">+</button>
+                                    <button type="button" onclick="adjustQuickBrutto(1)" class="glove-btn w-12 h-12 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-2xl flex items-center justify-center transition-colors active:scale-95 touch-manipulation">+</button>
                                 </div>
                                 <p class="text-[11px] text-slate-500 text-center">Tipp: Brutto-Schläge ohne Abzug von Vorgaben eintragen.</p>
                             </div>
@@ -717,7 +808,11 @@
                             <div id="holes-entry-container" class="hidden space-y-4">
                                 <div class="flex items-center justify-between">
                                     <h4 class="text-sm font-bold text-slate-900">Loch-für-Loch Eingabe</h4>
-                                    <span class="text-xs text-slate-500">Farben zeigen Birdie, Par, Bogey</span>
+                                    <div class="flex items-center gap-1.5">
+                                        <button type="button" onclick="toggleGloveMode()" class="px-2 py-0.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 text-[11px] font-bold flex items-center gap-1" title="Handschuh-Modus (Große Tasten)">
+                                            <span>🧤</span><span class="hidden sm:inline">Handschuh (XL)</span>
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <div class="overflow-x-auto max-h-96 border border-slate-200 rounded-xl">
@@ -2124,6 +2219,14 @@
                 <div id="sc-single-view" class="space-y-4">
                     <div class="flex items-center justify-between pb-1">
                         <div class="text-xs font-bold text-slate-700 uppercase tracking-wider">Loch-Erfassung</div>
+                        <div class="flex items-center gap-1.5">
+                            <button type="button" onclick="toggleGloveMode()" id="sc-glove-toggle-btn" class="px-2.5 py-1 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 text-xs font-bold flex items-center gap-1 shadow-2xs" title="Handschuh-Modus (Große Tasten)">
+                                <span>🧤</span><span class="hidden sm:inline">Handschuh (XL)</span>
+                            </button>
+                            <button type="button" onclick="toggleSunlightMode()" id="sc-sunlight-toggle-btn" class="px-2.5 py-1 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 text-xs font-bold flex items-center gap-1 shadow-2xs" title="Sonnenlicht High-Contrast Modus">
+                                <span>☀️</span><span class="hidden sm:inline">Sonnenlicht</span>
+                            </button>
+                        </div>
                     </div>
                     <div class="overflow-x-auto rounded-xl border border-slate-200">
                         <table class="w-full text-left text-xs font-medium">
@@ -2997,6 +3100,44 @@
                             <span class="font-bold text-xs">Profil & Einstellungen</span>
                         </div>
                         <span class="text-slate-400 text-xs">›</span>
+                    </button>
+                </div>
+
+                <!-- Outdoor & Gameplay Einstellungen (Features A, B, C) -->
+                <div class="pt-3 border-t border-slate-100 space-y-2">
+                    <div class="text-[10px] uppercase font-bold text-slate-400 tracking-wider px-1">Runden- & Display-Modi</div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <!-- Sonnenlicht Modus Toggle -->
+                        <button type="button" onclick="toggleSunlightMode()" id="sheet-sunlight-toggle" class="p-2.5 rounded-2xl border border-slate-200 bg-slate-50 flex items-center justify-between text-left transition-colors active:scale-95">
+                            <div class="flex items-center gap-2">
+                                <span class="text-lg">☀️</span>
+                                <div>
+                                    <div class="text-xs font-bold text-slate-800">Sonnenlicht</div>
+                                    <div id="sheet-sunlight-status" class="text-[10px] text-slate-500 font-medium">Aus</div>
+                                </div>
+                            </div>
+                        </button>
+                        <!-- Handschuh-Modus Toggle -->
+                        <button type="button" onclick="toggleGloveMode()" id="sheet-glove-toggle" class="p-2.5 rounded-2xl border border-slate-200 bg-slate-50 flex items-center justify-between text-left transition-colors active:scale-95">
+                            <div class="flex items-center gap-2">
+                                <span class="text-lg">🧤</span>
+                                <div>
+                                    <div class="text-xs font-bold text-slate-800">Handschuh</div>
+                                    <div id="sheet-glove-status" class="text-[10px] text-slate-500 font-medium">Aus</div>
+                                </div>
+                            </div>
+                        </button>
+                    </div>
+                    <!-- Haptik Feedback Toggle -->
+                    <button type="button" onclick="toggleHapticFeedback()" id="sheet-haptic-toggle" class="w-full p-2.5 rounded-2xl border border-slate-200 bg-slate-50 flex items-center justify-between text-left transition-colors active:scale-95">
+                        <div class="flex items-center gap-2.5">
+                            <span class="text-lg">📳</span>
+                            <div>
+                                <div class="text-xs font-bold text-slate-800">Haptisches Feedback</div>
+                                <div class="text-[10px] text-slate-500">Vibration bei Schlägen & Birdies</div>
+                            </div>
+                        </div>
+                        <span id="sheet-haptic-status" class="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Aktiv</span>
                     </button>
                 </div>
 

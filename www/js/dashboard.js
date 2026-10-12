@@ -474,6 +474,7 @@ function switchTab(tabId) {
 
     // Smoothly scroll to top on mobile tab switch
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (typeof triggerHaptic === 'function') triggerHaptic('light');
 }
 
 function openMobileMoreMenu() {
@@ -482,6 +483,10 @@ function openMobileMoreMenu() {
         if (!currentUser) openAuthModal('login');
         else openProfileModal();
         return;
+    }
+
+    if (typeof applyOutdoorSettings === 'function') {
+        applyOutdoorSettings();
     }
 
     const isAdmin = Boolean(currentUser && (currentUser.is_admin || currentUser.role === 'admin'));

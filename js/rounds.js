@@ -121,6 +121,7 @@ function adjustQuickBrutto(delta) {
     let val = parseInt(input.value, 10) || 90;
     val = Math.max(20, Math.min(180, val + delta));
     input.value = val;
+    if (typeof triggerHaptic === 'function') triggerHaptic('light');
     onRoundInputChanged();
 }
 
@@ -339,6 +340,7 @@ async function handleSaveRound(e) {
     document.getElementById('rec-notes').value = '';
     const recTurnierEl = document.getElementById('rec-turnier');
     if(recTurnierEl) recTurnierEl.value = '';
+    if(typeof triggerHaptic === 'function') triggerHaptic('success');
     switchTab('dashboard');
 }
 
